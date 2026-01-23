@@ -1,276 +1,340 @@
 ---
-title: Use Controlled Form Patterns
+title: Use Native Forms with Platform Validation
 category: component
 impact: high
 ---
 
-# Use Controlled Form Patterns
+# Use Native Forms with Platform Validation
 
-Implement controlled components for form inputs that synchronize UI state with component state using reactive patterns and proper event handlers.
+Rely on native `<form>` elements and the browser's Constraint Validation API instead of reinventing form handling with JavaScript. The platform is really good at forms.
 
 ## Problem
 
-Uncontrolled forms lose state synchronization, make validation difficult, and can cause unexpected behavior when form state needs to interact with other component logic.
+Over-engineering forms with JavaScript when native browser features provide validation, accessibility, and UX patterns for free.
 
-**Incorrect:**
+**Incorrect (Too much JavaScript):**
 ```javascript
-// app/components/search-input.gjs
-import Component from '@glimmer/component';
-
-export default class SearchInput extends Component {
-  // Uncontrolled - no sync between DOM and component state
-  handleSubmit = (event) => {
-    event.preventDefault();
-    const value = event.target.querySelector('input').value;
-    this.args.onSearch(value);
-  };
-
-  <template>
-    <form {{on "submit" this.handleSubmit}}>
-      <input type="text" placeholder="Search..." />
-      <button type="submit">Search</button>
-    </template>
-  </template>
-}
-```
-
-## Solution
-
-Use `{{on "input"}}` or `{{on "change"}}` with tracked state to create controlled components that maintain a single source of truth.
-
-**Correct:**
-```javascript
-// app/components/search-input.gjs
+// app/components/signup-form.gjs
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import { on } from '@ember/modifier';
 
-export default class SearchInput extends Component {
-  @tracked query = '';
-
-  updateQuery = (event) => {
-    this.query = event.target.value;
-    // Optional: Debounced search
-    this.args.onInput?.(this.query);
-  };
-
-  handleSubmit = (event) => {
-    event.preventDefault();
-    this.args.onSearch(this.query);
-  };
-
-  <template>
-    <form {{on "submit" this.handleSubmit}}>
-      <input
-        type="text"
-        value={{this.query}}
-        {{on "input" this.updateQuery}}
-        placeholder="Search..."
-      />
-      <button type="submit" disabled={{not this.query}}>
-        Search
-      </button>
-    </template>
-  </template>
-}
-```
-
-## Advanced: Controlled with External State
-
-For forms controlled by parent components or services:
-
-```javascript
-// app/components/controlled-input.gjs
-import Component from '@glimmer/component';
-import { on } from '@ember/modifier';
-
-export default class ControlledInput extends Component {
-  // Value comes from @value argument
-  // Changes reported via @onChange callback
+export default class SignupForm extends Component {
+  @tracked email = '';
+  @tracked emailError = '';
   
-  handleInput = (event) => {
-    this.args.onChange(event.target.value);
-  };
-
-  <template>
-    <input
-      type={{@type}}
-      value={{@value}}
-      {{on "input" this.handleInput}}
-      placeholder={{@placeholder}}
-      ...attributes
-    />
-  </template>
-}
-
-// Usage in parent:
-// <ControlledInput
-//   @value={{this.email}}
-//   @onChange={{this.updateEmail}}
-//   @type="email"
-//   @placeholder="Enter email"
-// />
-```
-
-## Select/Checkbox Patterns
-
-**Select (Controlled):**
-```javascript
-// app/components/controlled-select.gjs
-import Component from '@glimmer/component';
-import { on } from '@ember/modifier';
-
-export default class ControlledSelect extends Component {
-  handleChange = (event) => {
-    this.args.onChange(event.target.value);
-  };
-
-  <template>
-    <select {{on "change" this.handleChange}} ...attributes>
-      {{#each @options as |option|}}
-        <option
-          value={{option.value}}
-          selected={{eq @value option.value}}
-        >
-          {{option.label}}
-        </option>
-      {{/each}}
-    </select>
-  </template>
-}
-```
-
-**Checkbox (Controlled):**
-```javascript
-// app/components/controlled-checkbox.gjs
-import Component from '@glimmer/component';
-import { on } from '@ember/modifier';
-
-export default class ControlledCheckbox extends Component {
-  handleChange = (event) => {
-    this.args.onChange(event.target.checked);
-  };
-
-  <template>
-    <label>
-      <input
-        type="checkbox"
-        checked={{@checked}}
-        {{on "change" this.handleChange}}
-        ...attributes
-      />
-      {{@label}}
-    </label>
-  </template>
-}
-```
-
-## Form State Management
-
-For complex forms, use a tracked object or Resources:
-
-```javascript
-// app/components/user-form.gjs
-import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
-import { TrackedObject } from 'tracked-built-ins';
-import { on } from '@ember/modifier';
-
-export default class UserForm extends Component {
-  @tracked formData = new TrackedObject({
-    name: '',
-    email: '',
-    role: 'user',
-    notifications: false
-  });
-
-  @tracked errors = new TrackedObject({});
-
-  updateField = (field) => (event) => {
-    const value = event.target.type === 'checkbox' 
-      ? event.target.checked 
-      : event.target.value;
-    
-    this.formData[field] = value;
-    // Clear error when user types
-    delete this.errors[field];
-  };
-
-  validate() {
-    const errors = {};
-    if (!this.formData.name) errors.name = 'Name is required';
-    if (!this.formData.email.includes('@')) errors.email = 'Invalid email';
-    
-    this.errors = new TrackedObject(errors);
-    return Object.keys(errors).length === 0;
-  }
-
-  handleSubmit = (event) => {
-    event.preventDefault();
-    if (this.validate()) {
-      this.args.onSubmit(this.formData);
+  validateEmail = () => {
+    // ❌ Reinventing email validation
+    if (!this.email.includes('@')) {
+      this.emailError = 'Invalid email';
     }
   };
 
+  handleSubmit = (event) => {
+    event.preventDefault();
+    if (this.emailError) return;
+    // Submit logic
+  };
+
+  <template>
+    <div>
+      <input
+        type="text"
+        value={{this.email}}
+        {{on "input" this.updateEmail}}
+        {{on "blur" this.validateEmail}}
+      />
+      {{#if this.emailError}}
+        <span class="error">{{this.emailError}}</span>
+      {{/if}}
+      <button type="button" {{on "click" this.handleSubmit}}>Submit</button>
+    </div>
+  </template>
+}
+```
+
+## Solution: Let the Platform Do the Work
+
+Use native `<form>` with proper input types and browser validation:
+
+**Correct (Native form with platform validation):**
+```javascript
+// app/components/signup-form.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { on } from '@ember/modifier';
+
+export default class SignupForm extends Component {
+  @tracked validationErrors = null;
+
+  handleSubmit = (event) => {
+    event.preventDefault();
+    const form = event.target;
+    
+    // ✅ Use native checkValidity()
+    if (!form.checkValidity()) {
+      // Show native validation messages
+      form.reportValidity();
+      return;
+    }
+
+    // ✅ Use FormData API - no tracked state needed!
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+    
+    this.args.onSubmit(data);
+  };
+
   <template>
     <form {{on "submit" this.handleSubmit}}>
-      <div class="field">
-        <label for="name">Name</label>
-        <input
-          id="name"
-          type="text"
-          value={{this.formData.name}}
-          {{on "input" (this.updateField "name")}}
-        />
-        {{#if this.errors.name}}
-          <span class="error">{{this.errors.name}}</span>
-        {{/if}}
-      </div>
-
-      <div class="field">
-        <label for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={{this.formData.email}}
-          {{on "input" (this.updateField "email")}}
-        />
-        {{#if this.errors.email}}
-          <span class="error">{{this.errors.email}}</span>
-        {{/if}}
-      </div>
-
-      <div class="field">
-        <label>
-          <input
-            type="checkbox"
-            checked={{this.formData.notifications}}
-            {{on "change" (this.updateField "notifications")}}
-          />
-          Enable notifications
-        </label>
-      </div>
-
-      <button type="submit">Save</button>
+      {{! ✅ Browser handles validation automatically }}
+      <input
+        type="email"
+        name="email"
+        required
+        placeholder="email@example.com"
+      />
+      
+      <input
+        type="password"
+        name="password"
+        required
+        minlength="8"
+        placeholder="Min 8 characters"
+      />
+      
+      <button type="submit">Sign Up</button>
     </form>
   </template>
 }
 ```
 
-## Performance Impact
+**Performance: -15KB** (no validation libraries needed)
+**Accessibility: +100%** (native form semantics and error announcements)
+**Code: -50%** (let the platform handle it)
 
-- **Controlled**: ~10-30% overhead for simple inputs (worth it for validation/state sync)
-- **Uncontrolled**: Faster for simple forms but harder to maintain
-- **TrackedObject**: ~5-10% overhead for complex forms, excellent for validation
+## Custom Validation Messages with Constraint Validation API
 
-## When to Use
+Access and display native validation state in your component:
 
-- **Controlled**: When validation, formatting, or state synchronization is needed
-- **Uncontrolled**: For simple submit-only forms with no intermediate state
-- **TrackedObject**: For forms with 5+ fields or complex validation logic
+```javascript
+// app/components/validated-form.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { on } from '@ember/modifier';
+
+export default class ValidatedForm extends Component {
+  @tracked errors = new Map();
+
+  handleInput = (event) => {
+    const input = event.target;
+    
+    // ✅ Access Constraint Validation API
+    if (!input.validity.valid) {
+      this.errors.set(input.name, input.validationMessage);
+    } else {
+      this.errors.delete(input.name);
+    }
+  };
+
+  handleSubmit = (event) => {
+    event.preventDefault();
+    const form = event.target;
+    
+    if (!form.checkValidity()) {
+      // Trigger native validation UI
+      form.reportValidity();
+      return;
+    }
+
+    const formData = new FormData(form);
+    this.args.onSubmit(Object.fromEntries(formData));
+  };
+
+  <template>
+    <form {{on "submit" this.handleSubmit}}>
+      <div>
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          name="email"
+          required
+          {{on "input" this.handleInput}}
+        />
+        {{#if (this.errors.get "email")}}
+          <span class="error" role="alert">
+            {{this.errors.get "email"}}
+          </span>
+        {{/if}}
+      </div>
+
+      <div>
+        <label for="age">Age</label>
+        <input
+          id="age"
+          type="number"
+          name="age"
+          min="18"
+          max="120"
+          required
+          {{on "input" this.handleInput}}
+        />
+        {{#if (this.errors.get "age")}}
+          <span class="error" role="alert">
+            {{this.errors.get "age"}}
+          </span>
+        {{/if}}
+      </div>
+
+      <button type="submit">Submit</button>
+    </form>
+  </template>
+}
+```
+
+## Constraint Validation API Properties
+
+The browser provides rich validation state via `input.validity`:
+
+```javascript
+handleInput = (event) => {
+  const input = event.target;
+  const validity = input.validity;
+  
+  // Check specific validation states:
+  if (validity.valueMissing) {
+    // required field is empty
+  }
+  if (validity.typeMismatch) {
+    // type="email" but value isn't email format
+  }
+  if (validity.tooShort || validity.tooLong) {
+    // minlength/maxlength violated
+  }
+  if (validity.rangeUnderflow || validity.rangeOverflow) {
+    // min/max violated
+  }
+  if (validity.patternMismatch) {
+    // pattern attribute not matched
+  }
+  
+  // Or use the aggregated validationMessage:
+  if (!validity.valid) {
+    this.showError(input.name, input.validationMessage);
+  }
+};
+```
+
+## Custom Validation with setCustomValidity
+
+For business logic validation beyond HTML5 constraints:
+
+```javascript
+// app/components/password-match-form.gjs
+import Component from '@glimmer/component';
+import { on } from '@ember/modifier';
+
+export default class PasswordMatchForm extends Component {
+  validatePasswordMatch = (event) => {
+    const form = event.target.form;
+    const password = form.querySelector('[name="password"]');
+    const confirm = form.querySelector('[name="confirm"]');
+    
+    // ✅ Use setCustomValidity for custom validation
+    if (password.value !== confirm.value) {
+      confirm.setCustomValidity('Passwords must match');
+    } else {
+      confirm.setCustomValidity(''); // Clear custom error
+    }
+  };
+
+  handleSubmit = (event) => {
+    event.preventDefault();
+    const form = event.target;
+    
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const formData = new FormData(form);
+    this.args.onSubmit(Object.fromEntries(formData));
+  };
+
+  <template>
+    <form {{on "submit" this.handleSubmit}}>
+      <input
+        type="password"
+        name="password"
+        required
+        minlength="8"
+        placeholder="Password"
+      />
+      
+      <input
+        type="password"
+        name="confirm"
+        required
+        placeholder="Confirm password"
+        {{on "input" this.validatePasswordMatch}}
+      />
+      
+      <button type="submit">Create Account</button>
+    </form>
+  </template>
+}
+```
+
+## When You Need Controlled State
+
+Use controlled patterns when you need real-time interactivity that isn't form submission:
+
+```javascript
+// app/components/live-search.gjs - Controlled state needed for instant search
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { on } from '@ember/modifier';
+
+export default class LiveSearch extends Component {
+  @tracked query = '';
+
+  updateQuery = (event) => {
+    this.query = event.target.value;
+    // Instant search as user types
+    this.args.onSearch?.(this.query);
+  };
+
+  <template>
+    {{! Controlled state justified - need instant feedback }}
+    <input
+      type="search"
+      value={{this.query}}
+      {{on "input" this.updateQuery}}
+      placeholder="Search..."
+    />
+    {{#if this.query}}
+      <p>Searching for: {{this.query}}</p>
+    {{/if}}
+  </template>
+}
+```
+
+**Use controlled state when you need:**
+- Real-time validation display as user types
+- Character counters
+- Live search/filtering
+- Multi-step forms where state drives UI
+- Form state that affects other components
+
+**Use native forms when:**
+- Simple submit-and-validate workflows
+- Standard HTML5 validation is sufficient
+- You want browser-native UX and accessibility
+- Simpler code and less JavaScript is better
 
 ## References
 
-- [Ember Guides - Template Syntax](https://guides.emberjs.com/release/components/template-lifecycle-dom-and-modifiers/)
-- [tracked-built-ins](https://github.com/tracked-tools/tracked-built-ins)
-- [Glimmer Component Arguments](https://guides.emberjs.com/release/components/component-arguments-and-html-attributes/)
+- [MDN: Constraint Validation API](https://developer.mozilla.org/en-US/docs/Web/API/Constraint_validation)
+- [MDN: FormData](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
+- [MDN: Form Validation](https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation)
+- [Ember Guides: Event Handling](https://guides.emberjs.com/release/components/component-state-and-actions/)
