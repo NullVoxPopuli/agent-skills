@@ -9,7 +9,7 @@ metadata:
 
 # Ember.js Best Practices
 
-Comprehensive performance optimization and accessibility guide for Ember.js applications. Contains 37 rules across 7 categories, prioritized by impact to guide automated refactoring and code generation.
+Comprehensive performance optimization and accessibility guide for Ember.js applications. Contains 38 rules across 7 categories, prioritized by impact to guide automated refactoring and code generation.
 
 ## When to Apply
 
@@ -70,6 +70,7 @@ Reference these guidelines when:
 - `service-cache-responses` - Cache API responses in services
 - `service-shared-state` - Use services for shared state
 - `service-ember-data-optimization` - Optimize WarpDrive queries
+- `service-owner-linkage` - Manage service owner and linkage patterns
 
 ### 6. Template Optimization (MEDIUM)
 
