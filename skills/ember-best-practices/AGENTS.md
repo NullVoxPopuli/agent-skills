@@ -1,40 +1,30 @@
 # Ember.js Community - Ember.js Best Practices
-
 **Version:** 1.0.0
-
 **Organization:** Ember.js Community
-
 **Date:** January 2026
-
 **Last Updated:** January 2026
 
-
 ## Abstract
-
-Comprehensive performance optimization and accessibility guide for Ember.js applications, designed for AI agents and LLMs. Contains 33 rules across 7 categories, prioritized by impact from critical (route loading optimization, build performance) to advanced patterns (Resources, ember-concurrency, modern testing). Each rule includes detailed explanations, real-world examples comparing incorrect vs. correct implementations, and specific impact metrics to guide automated refactoring and code generation. Uses WarpDrive for modern data management, includes accessibility best practices leveraging ember-a11y-testing and other OSS tools.
-
+Comprehensive performance optimization and accessibility guide for Ember.js applications, designed for AI agents and LLMs. Contains 37 rules across 7 categories, prioritized by impact from critical (route loading optimization, build performance) to advanced patterns (Resources, ember-concurrency, modern testing, composition patterns). Each rule includes detailed explanations, real-world examples comparing incorrect vs. correct implementations, and specific impact metrics to guide automated refactoring and code generation. Uses WarpDrive for modern data management, includes accessibility best practices leveraging ember-a11y-testing and other OSS tools, and comprehensive coverage of reactive composition and data derivation patterns.
 
 ## Table of Contents
 
 1. [Route Loading and Data Fetching](#route) - 5 rules
 2. [Build and Bundle Optimization](#bundle) - 3 rules
-3. [Component and Reactivity Optimization](#component) - 8 rules
+3. [Component and Reactivity Optimization](#component) - 11 rules
 4. [Accessibility Best Practices](#a11y) - 5 rules
 5. [Service and State Management](#service) - 3 rules
-6. [Template Optimization](#template) - 4 rules
+6. [Template Optimization](#template) - 5 rules
 7. [Advanced Patterns](#advanced) - 5 rules
 
 
 ---
 
-
 ## 1. Route Loading and Data Fetching
 
 **Impact:** CRITICAL
 
-
 Efficient route loading and parallel data fetching eliminate waterfalls. Using route model hooks effectively and loading data in parallel yields the largest performance gains.
-
 
 ## Use Route-Based Code Splitting
 
@@ -87,9 +77,7 @@ Embroider with `splitAtRoutes` creates separate bundles for specified routes, re
 
 Reference: [Embroider Documentation](https://github.com/embroider-build/embroider)
 
-
 ---
-
 
 ## Use Loading Substates for Better UX
 
@@ -132,9 +120,7 @@ export default class PostsRoute extends Route {
 
 Ember automatically renders `{route-name}-loading` route templates while the model promise resolves, providing better UX without extra code.
 
-
 ---
-
 
 ## Implement Smart Route Model Caching
 
@@ -362,9 +348,7 @@ Smart caching reduces server load, improves perceived performance, and provides 
 
 Reference: [WarpDrive Caching](https://warp-drive.io/)
 
-
 ---
-
 
 ## Parallel Data Loading in Model Hooks
 
@@ -413,9 +397,7 @@ export default class DashboardRoute extends Route {
 
 Using `hash()` from RSVP allows Ember to resolve all promises concurrently, significantly reducing load time.
 
-
 ---
-
 
 ## Use Route Templates with Co-located Syntax
 
@@ -516,18 +498,13 @@ Co-located route templates keep route logic and presentation together, making th
 
 Reference: [Ember Routes](https://guides.emberjs.com/release/routing/)
 
-
-
 ---
-
 
 ## 2. Build and Bundle Optimization
 
 **Impact:** CRITICAL
 
-
 Using Embroider with static build optimizations, route-based code splitting, and proper imports reduces bundle size and improves Time to Interactive.
-
 
 ## Avoid Importing Entire Addon Namespaces
 
@@ -585,9 +562,7 @@ export default class MyComponent extends Component {
 
 Direct imports and using built-in Ember utilities reduce bundle size by avoiding unused code.
 
-
 ---
-
 
 ## Use Embroider Static Mode
 
@@ -639,9 +614,7 @@ Enabling static flags allows Embroider to analyze your app at build time, elimin
 
 Reference: [Embroider Options](https://github.com/embroider-build/embroider#options)
 
-
 ---
-
 
 ## Lazy Load Heavy Dependencies
 
@@ -705,18 +678,13 @@ export default helper(async function ensureLoaded([modulePath]) {
 
 Dynamic imports reduce initial bundle size by 30-50%, improving Time to Interactive.
 
-
-
 ---
-
 
 ## 3. Component and Reactivity Optimization
 
 **Impact:** HIGH
 
-
 Proper use of Glimmer components, tracked properties, and avoiding unnecessary recomputation improves rendering performance.
-
 
 ## Validate Component Arguments
 
@@ -887,9 +855,7 @@ Argument validation provides better error messages during development, serves as
 
 Reference: [TypeScript in Ember](https://guides.emberjs.com/release/typescript/)
 
-
 ---
-
 
 ## Use @cached for Expensive Getters
 
@@ -938,9 +904,582 @@ export default class DataTableComponent extends Component {
 
 Reference: [@cached decorator](https://guides.emberjs.com/release/in-depth-topics/autotracking-in-depth/#toc_caching)
 
+---
+
+## Use Class Fields for Component Composition
+
+Use class fields for clean component composition, initialization, and dependency injection patterns.
+
+**Incorrect (constructor initialization):**
+
+```javascript
+// app/components/data-manager.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { inject as service } from '@ember/service';
+
+export default class DataManagerComponent extends Component {
+  constructor() {
+    super(...arguments);
+    
+    this.store = this.owner.lookup('service:store');
+    this.router = this.owner.lookup('service:router');
+    this.currentUser = null;
+    this.isLoading = false;
+    this.error = null;
+    
+    this.loadData();
+  }
+  
+  async loadData() {
+    this.isLoading = true;
+    try {
+      this.currentUser = await this.store.request({ url: '/users/me' });
+    } catch (e) {
+      this.error = e;
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  <template>
+    <div>{{this.currentUser.name}}</div>
+  </template>
+}
+```
+
+**Correct (class fields with proper patterns):**
+
+```javascript
+// app/components/data-manager.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { service } from '@ember/service';
+import { resource } from 'ember-resources';
+
+export default class DataManagerComponent extends Component {
+  // Service injection as class fields
+  @service store;
+  @service router;
+  
+  // Tracked state as class fields
+  @tracked error = null;
+  
+  // Resource for data loading
+  currentUser = resource(({ on }) => {
+    const controller = new AbortController();
+    on.cleanup(() => controller.abort());
+    
+    return this.store.request({ 
+      url: '/users/me',
+      signal: controller.signal 
+    }).catch(e => {
+      this.error = e;
+      return null;
+    });
+  });
+
+  <template>
+    {{#if this.currentUser.value}}
+      <div>{{this.currentUser.value.name}}</div>
+    {{else if this.error}}
+      <div class="error">{{this.error.message}}</div>
+    {{/if}}
+  </template>
+}
+```
+
+**Composition through class field assignment:**
+
+```javascript
+// app/components/form-container.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
+import { TrackedObject } from 'tracked-built-ins';
+
+export default class FormContainerComponent extends Component {
+  // Compose form state
+  @tracked formData = new TrackedObject({
+    firstName: '',
+    lastName: '',
+    email: '',
+    preferences: {
+      newsletter: false,
+      notifications: true
+    }
+  });
+  
+  // Compose validation state
+  @tracked errors = new TrackedObject({});
+  
+  // Compose UI state
+  @tracked ui = new TrackedObject({
+    isSubmitting: false,
+    isDirty: false,
+    showErrors: false
+  });
+  
+  // Computed field based on composed state
+  get isValid() {
+    return Object.keys(this.errors).length === 0 && 
+           this.formData.email && 
+           this.formData.firstName;
+  }
+  
+  get canSubmit() {
+    return this.isValid && !this.ui.isSubmitting && this.ui.isDirty;
+  }
+  
+  @action
+  updateField(field, value) {
+    this.formData[field] = value;
+    this.ui.isDirty = true;
+    this.validate(field, value);
+  }
+  
+  validate(field, value) {
+    if (field === 'email' && !value.includes('@')) {
+      this.errors.email = 'Invalid email';
+    } else {
+      delete this.errors[field];
+    }
+  }
+
+  <template>
+    <form>
+      <input 
+        value={{this.formData.firstName}}
+        {{on "input" (pick "target.value" (fn this.updateField "firstName"))}}
+      />
+      
+      <button disabled={{not this.canSubmit}}>
+        Submit
+      </button>
+    </form>
+  </template>
+}
+```
+
+**Mixin-like composition with class fields:**
+
+```javascript
+// app/utils/pagination-mixin.js
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
+
+export class PaginationState {
+  @tracked page = 1;
+  @tracked perPage = 20;
+  
+  get offset() {
+    return (this.page - 1) * this.perPage;
+  }
+  
+  @action
+  nextPage() {
+    this.page++;
+  }
+  
+  @action
+  prevPage() {
+    if (this.page > 1) this.page--;
+  }
+  
+  @action
+  goToPage(page) {
+    this.page = page;
+  }
+}
+```
+
+```javascript
+// app/components/paginated-list.gjs
+import Component from '@glimmer/component';
+import { cached } from '@glimmer/tracking';
+import { PaginationState } from '../utils/pagination-mixin';
+
+export default class PaginatedListComponent extends Component {
+  // Compose pagination functionality
+  pagination = new PaginationState();
+  
+  @cached
+  get paginatedItems() {
+    const start = this.pagination.offset;
+    const end = start + this.pagination.perPage;
+    return this.args.items.slice(start, end);
+  }
+  
+  get totalPages() {
+    return Math.ceil(this.args.items.length / this.pagination.perPage);
+  }
+
+  <template>
+    <div class="list">
+      {{#each this.paginatedItems as |item|}}
+        <div>{{item.name}}</div>
+      {{/each}}
+      
+      <div class="pagination">
+        <button 
+          {{on "click" this.pagination.prevPage}}
+          disabled={{eq this.pagination.page 1}}
+        >
+          Previous
+        </button>
+        
+        <span>Page {{this.pagination.page}} of {{this.totalPages}}</span>
+        
+        <button 
+          {{on "click" this.pagination.nextPage}}
+          disabled={{eq this.pagination.page this.totalPages}}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </template>
+}
+```
+
+**Shareable state objects:**
+
+```javascript
+// app/utils/selection-state.js
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
+import { TrackedSet } from 'tracked-built-ins';
+
+export class SelectionState {
+  @tracked selectedIds = new TrackedSet();
+  
+  get count() {
+    return this.selectedIds.size;
+  }
+  
+  get hasSelection() {
+    return this.selectedIds.size > 0;
+  }
+  
+  isSelected(id) {
+    return this.selectedIds.has(id);
+  }
+  
+  @action
+  toggle(id) {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+  }
+  
+  @action
+  selectAll(items) {
+    items.forEach(item => this.selectedIds.add(item.id));
+  }
+  
+  @action
+  clear() {
+    this.selectedIds.clear();
+  }
+}
+```
+
+```javascript
+// app/components/selectable-list.gjs
+import Component from '@glimmer/component';
+import { SelectionState } from '../utils/selection-state';
+
+export default class SelectableListComponent extends Component {
+  // Compose selection behavior
+  selection = new SelectionState();
+  
+  get selectedItems() {
+    return this.args.items.filter(item => 
+      this.selection.isSelected(item.id)
+    );
+  }
+
+  <template>
+    <div class="toolbar">
+      <button {{on "click" (fn this.selection.selectAll @items)}}>
+        Select All
+      </button>
+      <button {{on "click" this.selection.clear}}>
+        Clear
+      </button>
+      <span>{{this.selection.count}} selected</span>
+    </div>
+    
+    <ul>
+      {{#each @items as |item|}}
+        <li class={{if (this.selection.isSelected item.id) "selected"}}>
+          <input 
+            type="checkbox"
+            checked={{this.selection.isSelected item.id}}
+            {{on "change" (fn this.selection.toggle item.id)}}
+          />
+          {{item.name}}
+        </li>
+      {{/each}}
+    </ul>
+    
+    {{#if this.selection.hasSelection}}
+      <div class="actions">
+        <button>Delete {{this.selection.count}} items</button>
+      </div>
+    {{/if}}
+  </template>
+}
+```
+
+Class fields provide clean composition patterns, better initialization, and shareable state objects that can be tested independently.
+
+Reference: [JavaScript Class Fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields)
 
 ---
 
+## Use Component Composition Patterns
+
+Use component composition with yield blocks, named blocks, and contextual components for flexible, reusable UI patterns.
+
+**Incorrect (monolithic component):**
+
+```javascript
+// app/components/user-card.gjs
+import Component from '@glimmer/component';
+
+export default class UserCardComponent extends Component {
+  <template>
+    <div class="user-card">
+      <div class="header">
+        <img src={{@user.avatar}} alt={{@user.name}} />
+        <h3>{{@user.name}}</h3>
+        <p>{{@user.email}}</p>
+      </div>
+      
+      {{#if @showActions}}
+        <div class="actions">
+          <button {{on "click" @onEdit}}>Edit</button>
+          <button {{on "click" @onDelete}}>Delete</button>
+        </div>
+      {{/if}}
+      
+      {{#if @showStats}}
+        <div class="stats">
+          <span>Posts: {{@user.postCount}}</span>
+          <span>Followers: {{@user.followers}}</span>
+        </div>
+      {{/if}}
+    </div>
+  </template>
+}
+```
+
+**Correct (composable with named blocks):**
+
+```javascript
+// app/components/user-card.gjs
+import Component from '@glimmer/component';
+
+export default class UserCardComponent extends Component {
+  <template>
+    <div class="user-card" ...attributes>
+      {{#if (has-block "header")}}
+        {{yield to="header"}}
+      {{else}}
+        <div class="header">
+          <img src={{@user.avatar}} alt={{@user.name}} />
+          <h3>{{@user.name}}</h3>
+        </div>
+      {{/if}}
+      
+      {{yield @user to="default"}}
+      
+      {{#if (has-block "actions")}}
+        <div class="actions">
+          {{yield @user to="actions"}}
+        </div>
+      {{/if}}
+      
+      {{#if (has-block "footer")}}
+        <div class="footer">
+          {{yield @user to="footer"}}
+        </div>
+      {{/if}}
+    </div>
+  </template>
+}
+```
+
+**Usage with flexible composition:**
+
+```javascript
+// app/components/user-list.gjs
+import UserCard from './user-card';
+
+<template>
+  {{#each @users as |user|}}
+    <UserCard @user={{user}}>
+      <:header>
+        <div class="custom-header">
+          <span class="badge">{{user.role}}</span>
+          <h3>{{user.name}}</h3>
+        </div>
+      </:header>
+      
+      <:default as |u|>
+        <p class="bio">{{u.bio}}</p>
+        <p class="email">{{u.email}}</p>
+      </:default>
+      
+      <:actions as |u|>
+        <button {{on "click" (fn @onEdit u)}}>Edit</button>
+        <button {{on "click" (fn @onDelete u)}}>Delete</button>
+      </:actions>
+      
+      <:footer as |u|>
+        <div class="stats">
+          Posts: {{u.postCount}} | Followers: {{u.followers}}
+        </div>
+      </:footer>
+    </UserCard>
+  {{/each}}
+</template>
+```
+
+**Contextual components pattern:**
+
+```javascript
+// app/components/data-table.gjs
+import Component from '@glimmer/component';
+import { hash } from '@ember/helper';
+
+class HeaderCell extends Component {
+  <template>
+    <th class="sortable" {{on "click" @onSort}}>
+      {{yield}}
+      {{#if @sorted}}
+        <span class="sort-icon">{{if @ascending "↑" "↓"}}</span>
+      {{/if}}
+    </th>
+  </template>
+}
+
+class Row extends Component {
+  <template>
+    <tr class={{if @selected "selected"}}>
+      {{yield}}
+    </tr>
+  </template>
+}
+
+class Cell extends Component {
+  <template>
+    <td>{{yield}}</td>
+  </template>
+}
+
+export default class DataTableComponent extends Component {
+  <template>
+    <table class="data-table">
+      {{yield (hash
+        Header=HeaderCell
+        Row=Row
+        Cell=Cell
+      )}}
+    </table>
+  </template>
+}
+```
+
+**Using contextual components:**
+
+```javascript
+// app/components/users-table.gjs
+import DataTable from './data-table';
+
+<template>
+  <DataTable as |Table|>
+    <thead>
+      <tr>
+        <Table.Header @onSort={{fn @onSort "name"}}>Name</Table.Header>
+        <Table.Header @onSort={{fn @onSort "email"}}>Email</Table.Header>
+        <Table.Header @onSort={{fn @onSort "role"}}>Role</Table.Header>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each @users as |user|}}
+        <Table.Row @selected={{eq @selectedId user.id}}>
+          <Table.Cell>{{user.name}}</Table.Cell>
+          <Table.Cell>{{user.email}}</Table.Cell>
+          <Table.Cell>{{user.role}}</Table.Cell>
+        </Table.Row>
+      {{/each}}
+    </tbody>
+  </DataTable>
+</template>
+```
+
+**Renderless component pattern:**
+
+```javascript
+// app/components/dropdown.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
+import { hash } from '@ember/helper';
+
+export default class DropdownComponent extends Component {
+  @tracked isOpen = false;
+  
+  @action
+  toggle() {
+    this.isOpen = !this.isOpen;
+  }
+  
+  @action
+  close() {
+    this.isOpen = false;
+  }
+
+  <template>
+    {{yield (hash
+      isOpen=this.isOpen
+      toggle=this.toggle
+      close=this.close
+    )}}
+  </template>
+}
+```
+
+```javascript
+// Usage
+import Dropdown from './dropdown';
+
+<template>
+  <Dropdown as |dd|>
+    <button {{on "click" dd.toggle}}>
+      Menu {{if dd.isOpen "▲" "▼"}}
+    </button>
+    
+    {{#if dd.isOpen}}
+      <ul class="dropdown-menu">
+        <li><a href="#" {{on "click" dd.close}}>Profile</a></li>
+        <li><a href="#" {{on "click" dd.close}}>Settings</a></li>
+        <li><a href="#" {{on "click" dd.close}}>Logout</a></li>
+      </ul>
+    {{/if}}
+  </Dropdown>
+</template>
+```
+
+Component composition provides flexibility, reusability, and clean separation of concerns while maintaining type safety and clarity.
+
+Reference: [Ember Components - Block Parameters](https://guides.emberjs.com/release/components/block-content/)
+
+---
 
 ## Prevent Memory Leaks in Components
 
@@ -1153,9 +1692,7 @@ Always clean up timers, event listeners, subscriptions, and pending requests to 
 
 Reference: [Ember Destroyable](https://api.emberjs.com/ember/release/modules/@ember%2Fdestroyable)
 
-
 ---
-
 
 ## Avoid Unnecessary Tracking
 
@@ -1208,9 +1745,7 @@ export default class FormComponent extends Component {
 
 Only track properties that directly affect the template or other tracked getters to minimize unnecessary re-renders.
 
-
 ---
-
 
 ## Use {{on}} Modifier for Event Handling
 
@@ -1341,9 +1876,299 @@ The `{{on}}` modifier properly cleans up event listeners, supports event options
 
 Reference: [Ember Modifiers - on](https://guides.emberjs.com/release/components/template-lifecycle-dom-and-modifiers/#toc_event-handlers)
 
-
 ---
 
+## Build Reactive Chains with Dependent Getters
+
+Create reactive chains where getters depend on other getters or tracked properties for clear, maintainable data derivation.
+
+**Incorrect (imperative updates):**
+
+```javascript
+// app/components/shopping-cart.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
+
+export default class ShoppingCartComponent extends Component {
+  @tracked items = [];
+  @tracked subtotal = 0;
+  @tracked tax = 0;
+  @tracked shipping = 0;
+  @tracked total = 0;
+  
+  @action
+  addItem(item) {
+    this.items = [...this.items, item];
+    this.recalculate();
+  }
+  
+  @action
+  removeItem(index) {
+    this.items = this.items.filter((_, i) => i !== index);
+    this.recalculate();
+  }
+  
+  recalculate() {
+    this.subtotal = this.items.reduce((sum, item) => sum + item.price, 0);
+    this.tax = this.subtotal * 0.08;
+    this.shipping = this.subtotal > 50 ? 0 : 5.99;
+    this.total = this.subtotal + this.tax + this.shipping;
+  }
+
+  <template>
+    <div class="cart">
+      <div>Subtotal: ${{this.subtotal}}</div>
+      <div>Tax: ${{this.tax}}</div>
+      <div>Shipping: ${{this.shipping}}</div>
+      <div>Total: ${{this.total}}</div>
+    </div>
+  </template>
+}
+```
+
+**Correct (reactive getter chains):**
+
+```javascript
+// app/components/shopping-cart.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
+import { TrackedArray } from 'tracked-built-ins';
+
+export default class ShoppingCartComponent extends Component {
+  @tracked items = new TrackedArray([]);
+  
+  // Base calculation
+  get subtotal() {
+    return this.items.reduce((sum, item) => sum + item.price, 0);
+  }
+  
+  // Depends on subtotal
+  get tax() {
+    return this.subtotal * 0.08;
+  }
+  
+  // Depends on subtotal
+  get shipping() {
+    return this.subtotal > 50 ? 0 : 5.99;
+  }
+  
+  // Depends on subtotal, tax, and shipping
+  get total() {
+    return this.subtotal + this.tax + this.shipping;
+  }
+  
+  // Derived from total
+  get formattedTotal() {
+    return `$${this.total.toFixed(2)}`;
+  }
+  
+  // Multiple dependencies
+  get discount() {
+    if (this.items.length >= 5) return this.subtotal * 0.1;
+    if (this.subtotal > 100) return this.subtotal * 0.05;
+    return 0;
+  }
+  
+  // Depends on total and discount
+  get finalTotal() {
+    return this.total - this.discount;
+  }
+  
+  @action
+  addItem(item) {
+    this.items.push(item);
+    // All getters automatically update!
+  }
+  
+  @action
+  removeItem(index) {
+    this.items.splice(index, 1);
+    // All getters automatically update!
+  }
+
+  <template>
+    <div class="cart">
+      <div>Items: {{this.items.length}}</div>
+      <div>Subtotal: ${{this.subtotal.toFixed 2}}</div>
+      <div>Tax: ${{this.tax.toFixed 2}}</div>
+      <div>Shipping: ${{this.shipping.toFixed 2}}</div>
+      {{#if this.discount}}
+        <div class="discount">Discount: -${{this.discount.toFixed 2}}</div>
+      {{/if}}
+      <div class="total">Total: {{this.formattedTotal}}</div>
+    </div>
+  </template>
+}
+```
+
+**Complex reactive chains with @cached:**
+
+```javascript
+// app/components/data-analysis.gjs
+import Component from '@glimmer/component';
+import { cached } from '@glimmer/tracking';
+
+export default class DataAnalysisComponent extends Component {
+  // Base data
+  get rawData() {
+    return this.args.data || [];
+  }
+  
+  // Level 1: Filter
+  @cached
+  get validData() {
+    return this.rawData.filter(item => item.value != null);
+  }
+  
+  // Level 2: Transform (depends on validData)
+  @cached
+  get normalizedData() {
+    const max = Math.max(...this.validData.map(d => d.value));
+    return this.validData.map(item => ({
+      ...item,
+      normalized: item.value / max
+    }));
+  }
+  
+  // Level 2: Statistics (depends on validData)
+  @cached
+  get statistics() {
+    const values = this.validData.map(d => d.value);
+    const sum = values.reduce((a, b) => a + b, 0);
+    const mean = sum / values.length;
+    const variance = values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length;
+    
+    return {
+      count: values.length,
+      sum,
+      mean,
+      stdDev: Math.sqrt(variance),
+      min: Math.min(...values),
+      max: Math.max(...values)
+    };
+  }
+  
+  // Level 3: Depends on normalizedData and statistics
+  @cached
+  get outliers() {
+    const threshold = this.statistics.mean + (2 * this.statistics.stdDev);
+    return this.normalizedData.filter(item => item.value > threshold);
+  }
+  
+  // Level 3: Depends on statistics
+  get qualityScore() {
+    const validRatio = this.validData.length / this.rawData.length;
+    const outlierRatio = this.outliers.length / this.validData.length;
+    return (validRatio * 0.7) + ((1 - outlierRatio) * 0.3);
+  }
+
+  <template>
+    <div class="analysis">
+      <h3>Data Quality: {{this.qualityScore.toFixed 2}}</h3>
+      <div>Valid: {{this.validData.length}} / {{this.rawData.length}}</div>
+      <div>Mean: {{this.statistics.mean.toFixed 2}}</div>
+      <div>Std Dev: {{this.statistics.stdDev.toFixed 2}}</div>
+      <div>Outliers: {{this.outliers.length}}</div>
+    </div>
+  </template>
+}
+```
+
+**Combining multiple tracked sources:**
+
+```javascript
+// app/components/filtered-list.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { cached } from '@glimmer/tracking';
+
+export default class FilteredListComponent extends Component {
+  @tracked searchTerm = '';
+  @tracked selectedCategory = 'all';
+  @tracked sortDirection = 'asc';
+  
+  // Depends on args.items and searchTerm
+  @cached
+  get searchFiltered() {
+    if (!this.searchTerm) return this.args.items;
+    
+    const term = this.searchTerm.toLowerCase();
+    return this.args.items.filter(item => 
+      item.name.toLowerCase().includes(term) ||
+      item.description?.toLowerCase().includes(term)
+    );
+  }
+  
+  // Depends on searchFiltered and selectedCategory
+  @cached
+  get categoryFiltered() {
+    if (this.selectedCategory === 'all') return this.searchFiltered;
+    
+    return this.searchFiltered.filter(item => 
+      item.category === this.selectedCategory
+    );
+  }
+  
+  // Depends on categoryFiltered and sortDirection
+  @cached
+  get sorted() {
+    const items = [...this.categoryFiltered];
+    const direction = this.sortDirection === 'asc' ? 1 : -1;
+    
+    return items.sort((a, b) => 
+      direction * a.name.localeCompare(b.name)
+    );
+  }
+  
+  // Final result
+  get items() {
+    return this.sorted;
+  }
+  
+  // Metadata derived from chain
+  get resultsCount() {
+    return this.items.length;
+  }
+  
+  get hasFilters() {
+    return this.searchTerm || this.selectedCategory !== 'all';
+  }
+
+  <template>
+    <div class="filtered-list">
+      <input 
+        type="search"
+        value={{this.searchTerm}}
+        {{on "input" (pick "target.value" (set this "searchTerm"))}}
+      />
+      
+      <select 
+        value={{this.selectedCategory}}
+        {{on "change" (pick "target.value" (set this "selectedCategory"))}}
+      >
+        <option value="all">All Categories</option>
+        {{#each @categories as |cat|}}
+          <option value={{cat}}>{{cat}}</option>
+        {{/each}}
+      </select>
+      
+      <p>Showing {{this.resultsCount}} results</p>
+      
+      {{#each this.items as |item|}}
+        <div>{{item.name}}</div>
+      {{/each}}
+    </div>
+  </template>
+}
+```
+
+Reactive getter chains provide automatic updates, clear data dependencies, and better performance through intelligent caching with @cached.
+
+Reference: [Glimmer Tracking](https://guides.emberjs.com/release/in-depth-topics/autotracking-in-depth/)
+
+---
 
 ## Use Strict Mode and Template-Only Components
 
@@ -1425,9 +2250,7 @@ Template-only components are lighter, more performant, and easier to understand.
 
 Reference: [Ember Strict Mode](https://guides.emberjs.com/release/upgrading/current-edition/templates/)
 
-
 ---
-
 
 ## Use Tracked Toolbox for Complex State
 
@@ -1496,9 +2319,7 @@ tracked-built-ins provides fine-grained reactivity and better performance than r
 
 Reference: [tracked-built-ins](https://github.com/tracked-tools/tracked-built-ins)
 
-
 ---
-
 
 ## Use Glimmer Components Over Classic Components
 
@@ -1550,18 +2371,13 @@ Glimmer components are 30-50% faster, have cleaner APIs, and integrate better wi
 
 Reference: [Glimmer Components](https://guides.emberjs.com/release/components/component-state-and-actions/)
 
-
-
 ---
-
 
 ## 4. Accessibility Best Practices
 
 **Impact:** HIGH
 
-
 Making applications accessible is critical. Use ember-a11y-testing, semantic HTML, proper ARIA attributes, and keyboard navigation support.
-
 
 ## Use ember-a11y-testing for Automated Checks
 
@@ -1631,9 +2447,7 @@ ember-a11y-testing catches issues like missing labels, insufficient color contra
 
 Reference: [ember-a11y-testing](https://github.com/ember-a11y/ember-a11y-testing)
 
-
 ---
-
 
 ## Form Labels and Error Announcements
 
@@ -1743,9 +2557,7 @@ Always associate labels with inputs and announce dynamic changes to screen reade
 
 Reference: [Ember Accessibility - Application Considerations](https://guides.emberjs.com/release/accessibility/application-considerations/)
 
-
 ---
-
 
 ## Keyboard Navigation Support
 
@@ -1893,9 +2705,7 @@ Proper keyboard navigation ensures all users can interact with your application 
 
 Reference: [Ember Accessibility - Keyboard](https://guides.emberjs.com/release/accessibility/keyboard/)
 
-
 ---
-
 
 ## Announce Route Transitions to Screen Readers
 
@@ -2024,9 +2834,7 @@ Route announcements ensure screen reader users know when navigation occurs, impr
 
 Reference: [Ember Accessibility - Page Titles](https://guides.emberjs.com/release/accessibility/page-template-considerations/)
 
-
 ---
-
 
 ## Semantic HTML and ARIA Attributes
 
@@ -2117,18 +2925,13 @@ Always use native semantic elements when possible. When creating custom interact
 
 Reference: [Ember Accessibility Guide](https://guides.emberjs.com/release/accessibility/)
 
-
-
 ---
-
 
 ## 5. Service and State Management
 
 **Impact:** MEDIUM-HIGH
 
-
 Efficient service patterns, proper dependency injection, and state management reduce redundant computations and API calls.
-
 
 ## Cache API Responses in Services
 
@@ -2223,9 +3026,7 @@ export default class DataService extends Service {
 
 Caching in services prevents duplicate API requests and improves performance significantly.
 
-
 ---
-
 
 ## Optimize WarpDrive Queries
 
@@ -2349,9 +3150,7 @@ Efficient WarpDrive usage reduces network overhead and improves application perf
 
 Reference: [WarpDrive Documentation](https://warp-drive.io/)
 
-
 ---
-
 
 ## Use Services for Shared State
 
@@ -2466,18 +3265,307 @@ export default class CartService extends Service {
 
 Reference: [Ember Services](https://guides.emberjs.com/release/services/)
 
-
-
 ---
-
 
 ## 6. Template Optimization
 
 **Impact:** MEDIUM
 
-
 Optimizing templates with proper helpers, avoiding expensive computations in templates, and using {{#each}} efficiently improves rendering speed.
 
+## Compose Helpers for Reusable Logic
+
+Compose helpers to create reusable, testable logic that can be combined in templates and components.
+
+**Incorrect (logic duplicated in templates):**
+
+```javascript
+// app/components/user-profile.gjs
+<template>
+  <div class="profile">
+    <h1>{{uppercase (truncate @user.name 20)}}</h1>
+    
+    {{#if (and @user.isActive (not @user.isDeleted))}}
+      <span class="status">Active</span>
+    {{/if}}
+    
+    <p>{{lowercase @user.email}}</p>
+    
+    {{#if (gt @user.posts.length 0)}}
+      <span>Posts: {{@user.posts.length}}</span>
+    {{/if}}
+  </div>
+</template>
+```
+
+**Correct (composed helpers):**
+
+```javascript
+// app/helpers/display-name.js
+import { helper } from '@ember/component/helper';
+
+export function displayName([name], { maxLength = 20 }) {
+  if (!name) return '';
+  
+  const truncated = name.length > maxLength 
+    ? name.slice(0, maxLength) + '...'
+    : name;
+    
+  return truncated.toUpperCase();
+}
+
+export default helper(displayName);
+```
+
+```javascript
+// app/helpers/is-visible-user.js
+import { helper } from '@ember/component/helper';
+
+export function isVisibleUser([user]) {
+  return user && user.isActive && !user.isDeleted;
+}
+
+export default helper(isVisibleUser);
+```
+
+```javascript
+// app/helpers/format-email.js
+import { helper } from '@ember/component/helper';
+
+export function formatEmail([email]) {
+  return email?.toLowerCase() || '';
+}
+
+export default helper(formatEmail);
+```
+
+```javascript
+// app/components/user-profile.gjs
+import { displayName } from '../helpers/display-name';
+import { isVisibleUser } from '../helpers/is-visible-user';
+import { formatEmail } from '../helpers/format-email';
+
+<template>
+  <div class="profile">
+    <h1>{{displayName @user.name}}</h1>
+    
+    {{#if (isVisibleUser @user)}}
+      <span class="status">Active</span>
+    {{/if}}
+    
+    <p>{{formatEmail @user.email}}</p>
+    
+    {{#if (gt @user.posts.length 0)}}
+      <span>Posts: {{@user.posts.length}}</span>
+    {{/if}}
+  </div>
+</template>
+```
+
+**Functional composition with pipe helper:**
+
+```javascript
+// app/helpers/pipe.js
+import { helper } from '@ember/component/helper';
+
+export function pipe(params) {
+  return params.reduce((acc, fn) => fn(acc));
+}
+
+export default helper(pipe);
+```
+
+**Or use a compose helper:**
+
+```javascript
+// app/helpers/compose.js
+import { helper } from '@ember/component/helper';
+
+export function compose(helperFns) {
+  return (value) => {
+    return helperFns.reduceRight((acc, fn) => fn(acc), value);
+  };
+}
+
+export default helper(compose);
+```
+
+**Usage:**
+
+```javascript
+// app/components/text-processor.gjs
+import { fn } from '@ember/helper';
+
+// Individual helpers
+const uppercase = (str) => str?.toUpperCase() || '';
+const trim = (str) => str?.trim() || '';
+const truncate = (str, length = 20) => str?.slice(0, length) || '';
+
+<template>
+  {{! Compose multiple transformations }}
+  <div>
+    {{pipe @text (fn trim) (fn uppercase) (fn truncate 50)}}
+  </div>
+</template>
+```
+
+**Higher-order helpers:**
+
+```javascript
+// app/helpers/partial-apply.js
+import { helper } from '@ember/component/helper';
+
+export function partialApply([fn, ...args]) {
+  return (...moreArgs) => fn(...args, ...moreArgs);
+}
+
+export default helper(partialApply);
+```
+
+```javascript
+// app/helpers/map-by.js
+import { helper } from '@ember/component/helper';
+
+export function mapBy([array, property]) {
+  return array?.map(item => item[property]) || [];
+}
+
+export default helper(mapBy);
+```
+
+```javascript
+// Usage in template
+import { mapBy } from '../helpers/map-by';
+import { partialApply } from '../helpers/partial-apply';
+
+<template>
+  {{! Extract property from array }}
+  <ul>
+    {{#each (mapBy @users "name") as |name|}}
+      <li>{{name}}</li>
+    {{/each}}
+  </ul>
+  
+  {{! Partial application }}
+  {{#let (partialApply @formatNumber 2) as |formatTwoDecimals|}}
+    <span>Price: {{formatTwoDecimals @price}}</span>
+  {{/let}}
+</template>
+```
+
+**Chainable transformation helpers:**
+
+```javascript
+// app/helpers/transform.js
+import { helper } from '@ember/component/helper';
+
+class Transform {
+  constructor(value) {
+    this.value = value;
+  }
+  
+  filter(fn) {
+    this.value = this.value?.filter(fn) || [];
+    return this;
+  }
+  
+  map(fn) {
+    this.value = this.value?.map(fn) || [];
+    return this;
+  }
+  
+  sort(fn) {
+    this.value = [...(this.value || [])].sort(fn);
+    return this;
+  }
+  
+  take(n) {
+    this.value = this.value?.slice(0, n) || [];
+    return this;
+  }
+  
+  get result() {
+    return this.value;
+  }
+}
+
+export function transform([value]) {
+  return new Transform(value);
+}
+
+export default helper(transform);
+```
+
+```javascript
+// Usage
+import { transform } from '../helpers/transform';
+
+<template>
+  {{#let (transform @items) as |t|}}
+    {{#each t.filter((i) => i.active).sort((a, b) => a.name.localeCompare(b.name)).take(10).result as |item|}}
+      <div>{{item.name}}</div>
+    {{/each}}
+  {{/let}}
+</template>
+```
+
+**Conditional composition:**
+
+```javascript
+// app/helpers/when.js
+import { helper } from '@ember/component/helper';
+
+export function when([condition, trueFn, falseFn]) {
+  return condition ? trueFn() : (falseFn ? falseFn() : null);
+}
+
+export default helper(when);
+```
+
+```javascript
+// app/helpers/unless.js
+import { helper } from '@ember/component/helper';
+
+export function unless([condition, falseFn, trueFn]) {
+  return !condition ? falseFn() : (trueFn ? trueFn() : null);
+}
+
+export default helper(unless);
+```
+
+**Testing composed helpers:**
+
+```javascript
+// tests/helpers/display-name-test.js
+import { module, test } from 'qunit';
+import { displayName } from 'my-app/helpers/display-name';
+
+module('Unit | Helper | display-name', function() {
+  test('it formats name correctly', function(assert) {
+    assert.strictEqual(
+      displayName(['John Doe']),
+      'JOHN DOE'
+    );
+  });
+  
+  test('it truncates long names', function(assert) {
+    assert.strictEqual(
+      displayName(['A Very Long Name That Should Be Truncated'], { maxLength: 10 }),
+      'A VERY LON...'
+    );
+  });
+  
+  test('it handles null', function(assert) {
+    assert.strictEqual(displayName([null]), '');
+  });
+});
+```
+
+Composed helpers provide testable, reusable logic that keeps templates clean and components focused on behavior rather than data transformation.
+
+Reference: [Ember Helpers](https://guides.emberjs.com/release/components/helper-functions/)
+
+---
 
 ## Avoid Heavy Computation in Templates
 
@@ -2556,9 +3644,7 @@ export default class StatsComponent extends Component {
 
 Moving computations to cached getters ensures they run only when dependencies change, not on every render.
 
-
 ---
-
 
 ## Use {{#each}} with @key for Lists
 
@@ -2632,9 +3718,7 @@ Using proper keys allows Ember's rendering engine to efficiently update, reorder
 
 Reference: [Glimmer Rendering](https://guides.emberjs.com/release/components/looping-through-lists/)
 
-
 ---
-
 
 ## Import Helpers Directly in Templates
 
@@ -2751,9 +3835,7 @@ Explicit helper imports enable better tree-shaking, make dependencies clear, and
 
 Reference: [Template Imports](https://github.com/ember-template-imports/ember-template-imports)
 
-
 ---
-
 
 ## Use {{#let}} to Avoid Recomputation
 
@@ -2830,18 +3912,13 @@ Use `{{#let}}` to compute expensive values once and reuse them in the template i
 
 `{{#let}}` computes values once and caches them for the block scope, reducing redundant calculations.
 
-
-
 ---
-
 
 ## 7. Advanced Patterns
 
 **Impact:** MEDIUM-HIGH
 
-
 Modern Ember patterns including Resources for lifecycle management, ember-concurrency for async operations, strict mode components, event handling with {{on}}, argument validation, memory leak prevention, route caching strategies, and comprehensive testing patterns.
-
 
 ## Use Ember Concurrency for Task Management
 
@@ -2991,9 +4068,7 @@ ember-concurrency provides automatic cancelation, derived state (isRunning, isId
 
 Reference: [ember-concurrency](https://ember-concurrency.com/)
 
-
 ---
-
 
 ## Use Helper Functions for Reusable Logic
 
@@ -3094,9 +4169,7 @@ Helpers promote code reuse, are easier to test, and keep components focused on b
 
 Reference: [Ember Helpers](https://guides.emberjs.com/release/components/helper-functions/)
 
-
 ---
-
 
 ## Use Modifiers for DOM Side Effects
 
@@ -3204,9 +4277,7 @@ Modifiers provide a clean, reusable way to manage DOM side effects without coupl
 
 Reference: [Ember Modifiers](https://guides.emberjs.com/release/components/template-lifecycle-dom-and-modifiers/)
 
-
 ---
-
 
 ## Use Resources for Declarative Data Management
 
@@ -3311,9 +4382,7 @@ Resources provide automatic cleanup, prevent memory leaks, and offer better comp
 
 Reference: [ember-resources](https://github.com/NullVoxPopuli/ember-resources)
 
-
 ---
-
 
 ## Use Modern Testing Patterns
 

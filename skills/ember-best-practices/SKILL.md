@@ -9,7 +9,7 @@ metadata:
 
 # Ember.js Best Practices
 
-Comprehensive performance optimization and accessibility guide for Ember.js applications. Contains 33 rules across 7 categories, prioritized by impact to guide automated refactoring and code generation.
+Comprehensive performance optimization and accessibility guide for Ember.js applications. Contains 37 rules across 7 categories, prioritized by impact to guide automated refactoring and code generation.
 
 ## When to Apply
 
@@ -53,6 +53,9 @@ Reference these guidelines when:
 - `component-cached-getters` - Use @cached for expensive computations
 - `component-minimal-tracking` - Only track properties that affect rendering
 - `component-tracked-toolbox` - Use tracked-built-ins for complex state
+- `component-composition-patterns` - Use yield blocks and contextual components
+- `component-reactive-chains` - Build reactive chains with dependent getters
+- `component-class-fields` - Use class fields for component composition
 
 ### 4. Accessibility Best Practices (HIGH)
 
@@ -73,6 +76,8 @@ Reference these guidelines when:
 - `template-let-helper` - Use {{#let}} to avoid recomputation
 - `template-each-key` - Use {{#each}} with @key for efficient list updates
 - `template-avoid-computation` - Move expensive work to cached getters
+- `template-helper-imports` - Import helpers directly in templates
+- `helper-composition` - Compose helpers for reusable logic
 
 ### 7. Advanced Patterns (MEDIUM-HIGH)
 

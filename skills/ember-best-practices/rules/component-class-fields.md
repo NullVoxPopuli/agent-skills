@@ -1,0 +1,338 @@
+---
+title: Use Class Fields for Component Composition
+impact: MEDIUM-HIGH
+impactDescription: Better composition and initialization patterns
+tags: components, class-fields, composition, initialization
+---
+
+## Use Class Fields for Component Composition
+
+Use class fields for clean component composition, initialization, and dependency injection patterns.
+
+**Incorrect (constructor initialization):**
+
+```javascript
+// app/components/data-manager.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { inject as service } from '@ember/service';
+
+export default class DataManagerComponent extends Component {
+  constructor() {
+    super(...arguments);
+    
+    this.store = this.owner.lookup('service:store');
+    this.router = this.owner.lookup('service:router');
+    this.currentUser = null;
+    this.isLoading = false;
+    this.error = null;
+    
+    this.loadData();
+  }
+  
+  async loadData() {
+    this.isLoading = true;
+    try {
+      this.currentUser = await this.store.request({ url: '/users/me' });
+    } catch (e) {
+      this.error = e;
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  <template>
+    <div>{{this.currentUser.name}}</div>
+  </template>
+}
+```
+
+**Correct (class fields with proper patterns):**
+
+```javascript
+// app/components/data-manager.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { service } from '@ember/service';
+import { resource } from 'ember-resources';
+
+export default class DataManagerComponent extends Component {
+  // Service injection as class fields
+  @service store;
+  @service router;
+  
+  // Tracked state as class fields
+  @tracked error = null;
+  
+  // Resource for data loading
+  currentUser = resource(({ on }) => {
+    const controller = new AbortController();
+    on.cleanup(() => controller.abort());
+    
+    return this.store.request({ 
+      url: '/users/me',
+      signal: controller.signal 
+    }).catch(e => {
+      this.error = e;
+      return null;
+    });
+  });
+
+  <template>
+    {{#if this.currentUser.value}}
+      <div>{{this.currentUser.value.name}}</div>
+    {{else if this.error}}
+      <div class="error">{{this.error.message}}</div>
+    {{/if}}
+  </template>
+}
+```
+
+**Composition through class field assignment:**
+
+```javascript
+// app/components/form-container.gjs
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
+import { TrackedObject } from 'tracked-built-ins';
+
+export default class FormContainerComponent extends Component {
+  // Compose form state
+  @tracked formData = new TrackedObject({
+    firstName: '',
+    lastName: '',
+    email: '',
+    preferences: {
+      newsletter: false,
+      notifications: true
+    }
+  });
+  
+  // Compose validation state
+  @tracked errors = new TrackedObject({});
+  
+  // Compose UI state
+  @tracked ui = new TrackedObject({
+    isSubmitting: false,
+    isDirty: false,
+    showErrors: false
+  });
+  
+  // Computed field based on composed state
+  get isValid() {
+    return Object.keys(this.errors).length === 0 && 
+           this.formData.email && 
+           this.formData.firstName;
+  }
+  
+  get canSubmit() {
+    return this.isValid && !this.ui.isSubmitting && this.ui.isDirty;
+  }
+  
+  @action
+  updateField(field, value) {
+    this.formData[field] = value;
+    this.ui.isDirty = true;
+    this.validate(field, value);
+  }
+  
+  validate(field, value) {
+    if (field === 'email' && !value.includes('@')) {
+      this.errors.email = 'Invalid email';
+    } else {
+      delete this.errors[field];
+    }
+  }
+
+  <template>
+    <form>
+      <input 
+        value={{this.formData.firstName}}
+        {{on "input" (pick "target.value" (fn this.updateField "firstName"))}}
+      />
+      
+      <button disabled={{not this.canSubmit}}>
+        Submit
+      </button>
+    </form>
+  </template>
+}
+```
+
+**Mixin-like composition with class fields:**
+
+```javascript
+// app/utils/pagination-mixin.js
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
+
+export class PaginationState {
+  @tracked page = 1;
+  @tracked perPage = 20;
+  
+  get offset() {
+    return (this.page - 1) * this.perPage;
+  }
+  
+  @action
+  nextPage() {
+    this.page++;
+  }
+  
+  @action
+  prevPage() {
+    if (this.page > 1) this.page--;
+  }
+  
+  @action
+  goToPage(page) {
+    this.page = page;
+  }
+}
+```
+
+```javascript
+// app/components/paginated-list.gjs
+import Component from '@glimmer/component';
+import { cached } from '@glimmer/tracking';
+import { PaginationState } from '../utils/pagination-mixin';
+
+export default class PaginatedListComponent extends Component {
+  // Compose pagination functionality
+  pagination = new PaginationState();
+  
+  @cached
+  get paginatedItems() {
+    const start = this.pagination.offset;
+    const end = start + this.pagination.perPage;
+    return this.args.items.slice(start, end);
+  }
+  
+  get totalPages() {
+    return Math.ceil(this.args.items.length / this.pagination.perPage);
+  }
+
+  <template>
+    <div class="list">
+      {{#each this.paginatedItems as |item|}}
+        <div>{{item.name}}</div>
+      {{/each}}
+      
+      <div class="pagination">
+        <button 
+          {{on "click" this.pagination.prevPage}}
+          disabled={{eq this.pagination.page 1}}
+        >
+          Previous
+        </button>
+        
+        <span>Page {{this.pagination.page}} of {{this.totalPages}}</span>
+        
+        <button 
+          {{on "click" this.pagination.nextPage}}
+          disabled={{eq this.pagination.page this.totalPages}}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </template>
+}
+```
+
+**Shareable state objects:**
+
+```javascript
+// app/utils/selection-state.js
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
+import { TrackedSet } from 'tracked-built-ins';
+
+export class SelectionState {
+  @tracked selectedIds = new TrackedSet();
+  
+  get count() {
+    return this.selectedIds.size;
+  }
+  
+  get hasSelection() {
+    return this.selectedIds.size > 0;
+  }
+  
+  isSelected(id) {
+    return this.selectedIds.has(id);
+  }
+  
+  @action
+  toggle(id) {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+  }
+  
+  @action
+  selectAll(items) {
+    items.forEach(item => this.selectedIds.add(item.id));
+  }
+  
+  @action
+  clear() {
+    this.selectedIds.clear();
+  }
+}
+```
+
+```javascript
+// app/components/selectable-list.gjs
+import Component from '@glimmer/component';
+import { SelectionState } from '../utils/selection-state';
+
+export default class SelectableListComponent extends Component {
+  // Compose selection behavior
+  selection = new SelectionState();
+  
+  get selectedItems() {
+    return this.args.items.filter(item => 
+      this.selection.isSelected(item.id)
+    );
+  }
+
+  <template>
+    <div class="toolbar">
+      <button {{on "click" (fn this.selection.selectAll @items)}}>
+        Select All
+      </button>
+      <button {{on "click" this.selection.clear}}>
+        Clear
+      </button>
+      <span>{{this.selection.count}} selected</span>
+    </div>
+    
+    <ul>
+      {{#each @items as |item|}}
+        <li class={{if (this.selection.isSelected item.id) "selected"}}>
+          <input 
+            type="checkbox"
+            checked={{this.selection.isSelected item.id}}
+            {{on "change" (fn this.selection.toggle item.id)}}
+          />
+          {{item.name}}
+        </li>
+      {{/each}}
+    </ul>
+    
+    {{#if this.selection.hasSelection}}
+      <div class="actions">
+        <button>Delete {{this.selection.count}} items</button>
+      </div>
+    {{/if}}
+  </template>
+}
+```
+
+Class fields provide clean composition patterns, better initialization, and shareable state objects that can be tested independently.
+
+Reference: [JavaScript Class Fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Public_class_fields)
