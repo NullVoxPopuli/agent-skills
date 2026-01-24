@@ -9,10 +9,10 @@ tags: routes, templates, gjs, co-location
 
 Use co-located route templates with modern gjs syntax for better organization and maintainability.
 
-**Incorrect (separate template file):**
+**Incorrect (separate template file - old pattern):**
 
 ```javascript
-// app/routes/posts.js
+// app/routes/posts.js (separate file)
 import Route from '@ember/routing/route';
 
 export default class PostsRoute extends Route {
@@ -20,16 +20,16 @@ export default class PostsRoute extends Route {
     return this.store.request({ url: '/posts' });
   }
 }
-```
 
-```handlebars
-{{! app/templates/posts.hbs }}
-<h1>Posts</h1>
-<ul>
-  {{#each @model as |post|}}
-    <li>{{post.title}}</li>
-  {{/each}}
-</ul>
+// app/templates/posts.gjs (separate template file)
+<template>
+  <h1>Posts</h1>
+  <ul>
+    {{#each @model as |post|}}
+      <li>{{post.title}}</li>
+    {{/each}}
+  </ul>
+</template>
 ```
 
 **Correct (co-located route template):**

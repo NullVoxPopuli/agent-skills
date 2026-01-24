@@ -16,13 +16,13 @@ Integrate ember-a11y-testing into your test suite to automatically catch common 
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render, fillIn, click } from '@ember/test-helpers';
-import { hbs } from 'ember-cli-htmlbars';
+import UserForm from 'my-app/components/user-form';
 
 module('Integration | Component | user-form', function(hooks) {
   setupRenderingTest(hooks);
 
   test('it submits the form', async function(assert) {
-    await render(hbs`<UserForm />`);
+    await render(<template><UserForm /></template>);
     await fillIn('input', 'John');
     await click('button');
     assert.ok(true);
@@ -37,14 +37,14 @@ module('Integration | Component | user-form', function(hooks) {
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render, fillIn, click } from '@ember/test-helpers';
-import { hbs } from 'ember-cli-htmlbars';
 import a11yAudit from 'ember-a11y-testing/test-support/audit';
+import UserForm from 'my-app/components/user-form';
 
 module('Integration | Component | user-form', function(hooks) {
   setupRenderingTest(hooks);
 
   test('it submits the form', async function(assert) {
-    await render(hbs`<UserForm />`);
+    await render(<template><UserForm /></template>);
     
     // Automatically checks for a11y violations
     await a11yAudit();

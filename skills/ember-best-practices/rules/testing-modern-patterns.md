@@ -16,14 +16,15 @@ Use modern Ember testing patterns with `@ember/test-helpers` and `qunit-dom` for
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render, find, click } from '@ember/test-helpers';
-import hbs from 'htmlbars-inline-precompile';
+import UserCard from 'my-app/components/user-card';
 
 module('Integration | Component | user-card', function(hooks) {
   setupRenderingTest(hooks);
 
   test('it renders', async function(assert) {
-    await render(hbs`<UserCard />`);
+    await render(<template><UserCard /></template>);
     
+    // Using find() instead of qunit-dom
     assert.ok(find('.user-card'));
   });
 });
