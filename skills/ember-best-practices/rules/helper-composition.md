@@ -34,9 +34,7 @@ Compose helpers to create reusable, testable logic that can be combined in templ
 
 ```javascript
 // app/helpers/display-name.js
-import { helper } from '@ember/component/helper';
-
-export function displayName([name], { maxLength = 20 }) {
+export function displayName(name, { maxLength = 20 } = {}) {
   if (!name) return '';
   
   const truncated = name.length > maxLength 
@@ -45,30 +43,20 @@ export function displayName([name], { maxLength = 20 }) {
     
   return truncated.toUpperCase();
 }
-
-export default helper(displayName);
 ```
 
 ```javascript
 // app/helpers/is-visible-user.js
-import { helper } from '@ember/component/helper';
-
-export function isVisibleUser([user]) {
+export function isVisibleUser(user) {
   return user && user.isActive && !user.isDeleted;
 }
-
-export default helper(isVisibleUser);
 ```
 
 ```javascript
 // app/helpers/format-email.js
-import { helper } from '@ember/component/helper';
-
-export function formatEmail([email]) {
+export function formatEmail(email) {
   return email?.toLowerCase() || '';
 }
-
-export default helper(formatEmail);
 ```
 
 ```javascript
@@ -98,28 +86,18 @@ import { formatEmail } from '../helpers/format-email';
 
 ```javascript
 // app/helpers/pipe.js
-import { helper } from '@ember/component/helper';
-
-export function pipe(params) {
-  return params.reduce((acc, fn) => fn(acc));
+export function pipe(...fns) {
+  return (value) => fns.reduce((acc, fn) => fn(acc), value);
 }
-
-export default helper(pipe);
 ```
 
 **Or use a compose helper:**
 
 ```javascript
 // app/helpers/compose.js
-import { helper } from '@ember/component/helper';
-
-export function compose(helperFns) {
-  return (value) => {
-    return helperFns.reduceRight((acc, fn) => fn(acc), value);
-  };
+export function compose(...helperFns) {
+  return (value) => helperFns.reduceRight((acc, fn) => fn(acc), value);
 }
-
-export default helper(compose);
 ```
 
 **Usage:**
@@ -145,24 +123,16 @@ const truncate = (str, length = 20) => str?.slice(0, length) || '';
 
 ```javascript
 // app/helpers/partial-apply.js
-import { helper } from '@ember/component/helper';
-
-export function partialApply([fn, ...args]) {
+export function partialApply(fn, ...args) {
   return (...moreArgs) => fn(...args, ...moreArgs);
 }
-
-export default helper(partialApply);
 ```
 
 ```javascript
 // app/helpers/map-by.js
-import { helper } from '@ember/component/helper';
-
-export function mapBy([array, property]) {
+export function mapBy(array, property) {
   return array?.map(item => item[property]) || [];
 }
-
-export default helper(mapBy);
 ```
 
 ```javascript
@@ -189,8 +159,6 @@ import { partialApply } from '../helpers/partial-apply';
 
 ```javascript
 // app/helpers/transform.js
-import { helper } from '@ember/component/helper';
-
 class Transform {
   constructor(value) {
     this.value = value;
@@ -221,11 +189,9 @@ class Transform {
   }
 }
 
-export function transform([value]) {
+export function transform(value) {
   return new Transform(value);
 }
-
-export default helper(transform);
 ```
 
 ```javascript
@@ -245,24 +211,16 @@ import { transform } from '../helpers/transform';
 
 ```javascript
 // app/helpers/when.js
-import { helper } from '@ember/component/helper';
-
-export function when([condition, trueFn, falseFn]) {
+export function when(condition, trueFn, falseFn) {
   return condition ? trueFn() : (falseFn ? falseFn() : null);
 }
-
-export default helper(when);
 ```
 
 ```javascript
 // app/helpers/unless.js
-import { helper } from '@ember/component/helper';
-
-export function unless([condition, falseFn, trueFn]) {
+export function unless(condition, falseFn, trueFn) {
   return !condition ? falseFn() : (trueFn ? trueFn() : null);
 }
-
-export default helper(unless);
 ```
 
 **Testing composed helpers:**
@@ -275,20 +233,20 @@ import { displayName } from 'my-app/helpers/display-name';
 module('Unit | Helper | display-name', function() {
   test('it formats name correctly', function(assert) {
     assert.strictEqual(
-      displayName(['John Doe']),
+      displayName('John Doe'),
       'JOHN DOE'
     );
   });
   
   test('it truncates long names', function(assert) {
     assert.strictEqual(
-      displayName(['A Very Long Name That Should Be Truncated'], { maxLength: 10 }),
+      displayName('A Very Long Name That Should Be Truncated', { maxLength: 10 }),
       'A VERY LON...'
     );
   });
   
   test('it handles null', function(assert) {
-    assert.strictEqual(displayName([null]), '');
+    assert.strictEqual(displayName(null), '');
   });
 });
 ```
