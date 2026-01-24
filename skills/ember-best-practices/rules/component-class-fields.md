@@ -9,7 +9,7 @@ tags: components, class-fields, composition, initialization
 
 Use class fields for clean component composition, initialization, and dependency injection patterns.
 
-**Incorrect (constructor initialization):**
+**Incorrect (imperative initialization, scattered state):**
 
 ```javascript
 // app/components/data-manager.gjs
@@ -18,19 +18,15 @@ import { tracked } from '@glimmer/tracking';
 import { service } from '@ember/service';
 
 class DataManager extends Component {
-  constructor() {
-    super(...arguments);
-    
-    this.store = this.owner.lookup('service:store');
-    this.router = this.owner.lookup('service:router');
-    this.currentUser = null;
-    this.isLoading = false;
-    this.error = null;
-    
-    this.loadData();
-  }
+  @service store;
+  @service router;
   
-  async loadData() {
+  // Scattered state management - hard to track relationships
+  @tracked currentUser = null;
+  @tracked isLoading = false;
+  @tracked error = null;
+  
+  loadData = async () => {
     this.isLoading = true;
     try {
       this.currentUser = await this.store.request({ url: '/users/me' });
@@ -39,7 +35,7 @@ class DataManager extends Component {
     } finally {
       this.isLoading = false;
     }
-  }
+  };
 
   <template>
     <div>{{this.currentUser.name}}</div>
@@ -94,7 +90,6 @@ class DataManager extends Component {
 // app/components/form-container.gjs
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import { action } from '@ember/object';
 import { TrackedObject } from 'tracked-built-ins';
 
 class FormContainer extends Component {
@@ -130,12 +125,11 @@ class FormContainer extends Component {
     return this.isValid && !this.ui.isSubmitting && this.ui.isDirty;
   }
   
-  @action
-  updateField(field, value) {
+  updateField = (field, value) => {
     this.formData[field] = value;
     this.ui.isDirty = true;
     this.validate(field, value);
-  }
+  };
   
   validate(field, value) {
     if (field === 'email' && !value.includes('@')) {
@@ -165,7 +159,6 @@ class FormContainer extends Component {
 ```javascript
 // app/utils/pagination-mixin.js
 import { tracked } from '@glimmer/tracking';
-import { action } from '@ember/object';
 
 export class PaginationState {
   @tracked page = 1;
@@ -175,20 +168,17 @@ export class PaginationState {
     return (this.page - 1) * this.perPage;
   }
   
-  @action
-  nextPage() {
+  nextPage = () => {
     this.page++;
-  }
+  };
   
-  @action
-  prevPage() {
+  prevPage = () => {
     if (this.page > 1) this.page--;
-  }
+  };
   
-  @action
-  goToPage(page) {
+  goToPage = (page) => {
     this.page = page;
-  }
+  };
 }
 ```
 
@@ -246,7 +236,6 @@ class PaginatedList extends Component {
 ```javascript
 // app/utils/selection-state.js
 import { tracked } from '@glimmer/tracking';
-import { action } from '@ember/object';
 import { TrackedSet } from 'tracked-built-ins';
 
 export class SelectionState {
@@ -264,24 +253,21 @@ export class SelectionState {
     return this.selectedIds.has(id);
   }
   
-  @action
-  toggle(id) {
+  toggle = (id) => {
     if (this.selectedIds.has(id)) {
       this.selectedIds.delete(id);
     } else {
       this.selectedIds.add(id);
     }
-  }
+  };
   
-  @action
-  selectAll(items) {
+  selectAll = (items) => {
     items.forEach(item => this.selectedIds.add(item.id));
-  }
+  };
   
-  @action
-  clear() {
+  clear = () => {
     this.selectedIds.clear();
-  }
+  };
 }
 ```
 
