@@ -78,35 +78,33 @@ module('Integration | Component | user-card', function(hooks) {
   });
 });```
 
-**Component testing with TypeScript:**
+**Component testing with reactive state:**
 
 ```glimmer-ts
 // tests/integration/components/search-box-test.ts
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render, fillIn, waitFor } from '@ember/test-helpers';
-import type { TestContext } from '@ember/test-helpers';
+import { render, fillIn } from '@ember/test-helpers';
+import { trackedObject } from '@ember/reactive/collections';
 import SearchBox from 'my-app/components/search-box';
-
-interface Context extends TestContext {
-  query: string;
-  results: string[];
-}
 
 module('Integration | Component | search-box', function(hooks) {
   setupRenderingTest(hooks);
 
-  test('it performs search', async function(this: Context, assert) {
-    this.results = [];
+  test('it performs search', async function(assert) {
+    // Use trackedObject for reactive state in tests
+    const state = trackedObject({
+      results: [] as string[]
+    });
     
     const handleSearch = (query: string) => {
-      this.results = [`Result for ${query}`];
+      state.results = [`Result for ${query}`];
     };
     
     await render(<template>
       <SearchBox @onSearch={{handleSearch}} />
       <ul data-test-results>
-        {{#each this.results as |result|}}
+        {{#each state.results as |result|}}
           <li>{{result}}</li>
         {{/each}}
       </ul>
@@ -114,8 +112,7 @@ module('Integration | Component | search-box', function(hooks) {
     
     await fillIn('[data-test-search-input]', 'ember');
     
-    await waitFor('[data-test-results] li');
-    
+    // State updates reactively - no waitFor needed when using test-waiters
     assert.dom('[data-test-results] li').hasText('Result for ember');
   });
 });
@@ -127,7 +124,7 @@ module('Integration | Component | search-box', function(hooks) {
 // tests/integration/components/async-button-test.js
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render, click, waitFor } from '@ember/test-helpers';
+import { render, click, settled } from '@ember/test-helpers';
 import { task } from 'ember-concurrency';
 import AsyncButton from 'my-app/components/async-button';
 
@@ -152,7 +149,8 @@ module('Integration | Component | async-button', function(hooks) {
     assert.dom('[data-test-loading-spinner]').exists();
     
     resolveTask();
-    await waitFor('[data-test-button]:not([disabled])');
+    // settled() waits for test-waiters automatically
+    await settled();
     
     assert.dom('[data-test-loading-spinner]').doesNotExist();
   });
