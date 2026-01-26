@@ -49,7 +49,7 @@ import { eq, not } from 'ember-truth-helpers'; // From ember-truth-helpers addon
     {{#if (eq @status "active")}}
       <span class="badge">Active</span>
     {{/if}}
-    
+
     {{#if (not @isLoading)}}
       <button {{on "click" (fn @onSave (hash id=@id data=@data))}}>
         Save

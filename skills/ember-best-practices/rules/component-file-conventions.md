@@ -69,7 +69,7 @@ import { service } from '@ember/service';
 
 export class UserProfile extends Component {
   @service session;
-  
+
   <template>
     <div class="profile">
       <h1>{{@name}}</h1>
@@ -116,7 +116,7 @@ export class UserProfile extends Component {
 | `todo-list.gjs` | `class TodoList` | `<TodoList />` |
 | `search-input.gjs` | `class SearchInput` | `<SearchInput />` |
 
-**Conversion rule:** 
+**Conversion rule:**
 - Filename: all lowercase, words separated by hyphens
 - Class: PascalCase, same words, no hyphens
 - `user-card.gjs` → `class UserCard`

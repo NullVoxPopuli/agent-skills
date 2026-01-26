@@ -127,26 +127,26 @@ Configure MCP servers in `.vscode/settings.json` to integrate AI coding assistan
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  
+
   "[glimmer-js]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[glimmer-ts]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  
+
   "files.associations": {
     "*.gjs": "glimmer-js",
     "*.gts": "glimmer-ts"
   },
-  
+
   "glint.enabled": true,
   "glint.configPath": "./tsconfig.json",
-  
+
   "github.copilot.enable": {
     "*": true
   },
-  
+
   "mcp.servers": {
     "ember-mcp": {
       "command": "npx",

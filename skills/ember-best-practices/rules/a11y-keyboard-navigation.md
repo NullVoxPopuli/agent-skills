@@ -48,12 +48,12 @@ import focusFirst from '../modifiers/focus-first';
 
 class Dropdown extends Component {
   @tracked isOpen = false;
-  
+
   @action
   toggleMenu() {
     this.isOpen = !this.isOpen;
   }
-  
+
   @action
   handleButtonKeyDown(event) {
     if (event.key === 'ArrowDown') {
@@ -61,7 +61,7 @@ class Dropdown extends Component {
       this.isOpen = true;
     }
   }
-  
+
   @action
   handleMenuKeyDown(event) {
     if (event.key === 'Escape') {
@@ -75,7 +75,7 @@ class Dropdown extends Component {
       this.moveFocus(event.key === 'ArrowDown' ? 1 : -1);
     }
   }
-  
+
   moveFocus(direction) {
     const items = Array.from(
       document.querySelectorAll('[role="menuitem"] button')
@@ -84,7 +84,7 @@ class Dropdown extends Component {
     const nextIndex = (currentIndex + direction + items.length) % items.length;
     items[nextIndex]?.focus();
   }
-  
+
   @action
   selectOption(value) {
     this.args.onSelect?.(value);
@@ -93,7 +93,7 @@ class Dropdown extends Component {
 
   <template>
     <div class="dropdown">
-      <button 
+      <button
         type="button"
         {{on "click" this.toggleMenu}}
         {{on "keydown" this.handleButtonKeyDown}}
@@ -102,10 +102,10 @@ class Dropdown extends Component {
       >
         Menu
       </button>
-      
+
       {{#if this.isOpen}}
-        <ul 
-          class="dropdown-menu" 
+        <ul
+          class="dropdown-menu"
           role="menu"
           {{focusFirst '[role="menuitem"] button'}}
           {{on "keydown" this.handleMenuKeyDown}}
@@ -139,7 +139,7 @@ import FocusTrap from 'ember-focus-trap/components/focus-trap';
 
 <template>
   {{#if this.showModal}}
-    <FocusTrap 
+    <FocusTrap
       @isActive={{true}}
       @initialFocus="#modal-title"
     >

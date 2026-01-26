@@ -33,7 +33,7 @@ export default class TodoList extends Component {
     // This won't trigger a re-render!
     this.todos.push({ id: Date.now(), text });
   }
-  
+
   @action
   removeTodo(id) {
     // This also won't trigger a re-render!
@@ -71,7 +71,7 @@ export default class TodoList extends Component {
     // Now this triggers re-render!
     this.todos.push({ id: Date.now(), text });
   }
-  
+
   @action
   removeTodo(id) {
     // This also triggers re-render!
@@ -105,17 +105,17 @@ import { trackedMap } from '@ember/reactive/collections';
 
 export default class UserCache extends Component {
   userCache = trackedMap(); // key: userId, value: userData
-  
+
   @action
   cacheUser(userId, userData) {
     this.userCache.set(userId, userData);
   }
-  
+
   @action
   clearUser(userId) {
     this.userCache.delete(userId);
   }
-  
+
   get cachedUsers() {
     return Array.from(this.userCache.values());
   }
@@ -143,7 +143,7 @@ import { trackedSet } from '@ember/reactive/collections';
 
 export default class TagSelector extends Component {
   selectedTags = trackedSet();
-  
+
   @action
   toggleTag(tag) {
     if (this.selectedTags.has(tag)) {
@@ -152,7 +152,7 @@ export default class TagSelector extends Component {
       this.selectedTags.add(tag);
     }
   }
-  
+
   get selectedCount() {
     return this.selectedTags.size;
   }
@@ -241,13 +241,13 @@ import { tracked } from '@glimmer/tracking';
 
 export default class TodoList extends Component {
   @tracked todos = [];
-  
+
   @action
   addTodo(text) {
     // Reassignment is reactive
     this.todos = [...this.todos, { id: Date.now(), text }];
   }
-  
+
   @action
   removeTodo(id) {
     // Reassignment is reactive

@@ -51,10 +51,10 @@ test('sorting works', async function(assert) {
   await render(<template>
     <DataGrid @rows={{this.rows}} />
   </template>);
-  
+
   // Fragile: breaks if class names or structure change
   await click('.data-grid__header .sort-button[data-column="name"]');
-  
+
   assert.dom('.data-grid__row:first-child').hasText('Alice');
 });
 ```
@@ -155,12 +155,12 @@ test('sorting works', async function(assert) {
   await render(<template>
     <DataGrid @rows={{this.rows}} @columns={{this.columns}} />
   </template>);
-  
+
   const grid = getDataGrid();
-  
+
   // Clean API: no DOM knowledge required
   await grid.sortBy('name');
-  
+
   assert.strictEqual(grid.getRow(0), 'Alice');
   assert.deepEqual(grid.getRows(), ['Alice', 'Bob', 'Charlie']);
 });
@@ -205,7 +205,7 @@ For solo projects, the benefit is smaller but still valuable:
 /**
  * @class FormTestHelper
  * @description Test utility for Form component
- * 
+ *
  * @example
  * const form = getForm();
  * await form.fillIn('email', 'user@example.com');
@@ -241,7 +241,7 @@ export class FormTestHelper {
     }
     await fillIn(field, value);
   }
-  
+
   getFieldNames() {
     return Array.from(this.container.querySelectorAll('[data-test-field]'))
       .map(el => el.dataset.testField);
@@ -295,7 +295,7 @@ export class ModalTestHelper {
 
   async clickButton(buttonText) {
     const buttons = findAll('[data-test-modal-button]', this.element);
-    const button = buttons.find(btn => 
+    const button = buttons.find(btn =>
       btn.textContent.trim() === buttonText
     );
     if (!button) {

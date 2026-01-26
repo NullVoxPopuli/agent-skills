@@ -44,10 +44,10 @@ module('Integration | Component | user-form', function(hooks) {
 
   test('it submits the form', async function(assert) {
     await render(<template><UserForm /></template>);
-    
+
     // Automatically checks for a11y violations
     await a11yAudit();
-    
+
     await fillIn('input', 'John');
     await click('button');
     assert.ok(true);

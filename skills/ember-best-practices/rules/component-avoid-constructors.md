@@ -20,25 +20,25 @@ import { service } from '@ember/service';
 class UserProfile extends Component {
   constructor() {
     super(...arguments);
-    
+
     // Anti-pattern: Manual service lookup
     this.store = this.owner.lookup('service:store');
     this.router = this.owner.lookup('service:router');
-    
+
     // Anti-pattern: Imperative initialization
     this.data = null;
     this.isLoading = false;
     this.error = null;
-    
+
     // Anti-pattern: Side effects in constructor
     this.loadUserData();
   }
-  
+
   async loadUserData() {
     this.isLoading = true;
     try {
-      this.data = await this.store.request({ 
-        url: `/users/${this.args.userId}` 
+      this.data = await this.store.request({
+        url: `/users/${this.args.userId}`
       });
     } catch (e) {
       this.error = e;
@@ -71,19 +71,19 @@ import { tracked } from '@glimmer/tracking';
 
 class ComplexSetup extends Component {
   @service store;
-  
+
   @tracked state = null;
-  
+
   constructor(owner, args) {
     super(owner, args);
-    
+
     // Only if you absolutely must do something that can't be done with class fields
     // Even then, prefer resources or modifiers
     if (this.args.legacyInitMode) {
       this.initializeLegacyMode();
     }
   }
-  
+
   initializeLegacyMode() {
     // Rare edge case initialization
   }
@@ -121,6 +121,6 @@ class ComplexSetup extends Component {
 
 **Strongly discourage constructors** - they add complexity and infinite render loop risks. Use declarative class fields and getPromiseState instead.
 
-Reference: 
+Reference:
 - [Ember Octane Guide](https://guides.emberjs.com/release/upgrading/current-edition/)
 - [warp-drive/reactiveweb](https://github.com/emberjs/data/tree/main/packages/reactiveweb)

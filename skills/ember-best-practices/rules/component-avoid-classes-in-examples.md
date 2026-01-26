@@ -22,17 +22,17 @@ export class UserCard extends Component {
         <h3 class="user-card__name">{{@user.name}}</h3>
         <p class="user-card__email">{{@user.email}}</p>
       </div>
-      
+
       {{#if @user.avatarUrl}}
         <img class="user-card__avatar" src={{@user.avatarUrl}} alt={{@user.name}} />
       {{/if}}
-      
+
       {{#if @onEdit}}
         <button class="user-card__edit-button" {{on "click" (fn @onEdit @user)}}>
           Edit
         </button>
       {{/if}}
-      
+
       <div class="user-card__content">
         {{yield}}
       </div>
@@ -59,15 +59,15 @@ export class UserCard extends Component {
     <div ...attributes>
       <h3>{{@user.name}}</h3>
       <p>{{@user.email}}</p>
-      
+
       {{#if @user.avatarUrl}}
         <img src={{@user.avatarUrl}} alt={{@user.name}} />
       {{/if}}
-      
+
       {{#if @onEdit}}
         <button {{on "click" (fn @onEdit @user)}}>Edit</button>
       {{/if}}
-      
+
       {{yield}}
     </div>
   </template>
@@ -125,7 +125,7 @@ export class Card extends Component {
 // Good: Teaching about dynamic classes
 export class TabButton extends Component {
   <template>
-    <button 
+    <button
       class={{if @isActive "active"}}
       {{on "click" @onClick}}
     >
@@ -162,9 +162,9 @@ In production code, you'll have classes for styling. But in learning materials, 
 
 **Common Violations:**
 
-❌ BEM classes in examples (`user-card__header`)  
-❌ Utility classes unless teaching utilities (`flex`, `mt-4`)  
-❌ Semantic classes that don't teach anything (`container`, `wrapper`)  
+❌ BEM classes in examples (`user-card__header`)
+❌ Utility classes unless teaching utilities (`flex`, `mt-4`)
+❌ Semantic classes that don't teach anything (`container`, `wrapper`)
 ❌ Design system classes unless teaching design system integration
 
 **Summary:**

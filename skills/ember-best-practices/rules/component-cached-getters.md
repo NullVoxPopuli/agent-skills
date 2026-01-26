@@ -40,7 +40,7 @@ class DataTable extends Component {
       .sort((a, b) => a[this.args.sortBy] - b[this.args.sortBy])
       .map(item => this.transformItem(item));
   }
-  
+
   transformItem(item) {
     // Expensive transformation
     return { ...item, computed: this.expensiveCalculation(item) };

@@ -23,7 +23,7 @@ module('Integration | Component | user-card', function(hooks) {
 
   test('it renders', async function(assert) {
     await render(<template><UserCard /></template>);
-    
+
     // Using find() instead of qunit-dom
     assert.ok(find('.user-card'));
   });
@@ -49,11 +49,11 @@ module('Integration | Component | user-card', function(hooks) {
       email: 'john@example.com',
       avatarUrl: '/avatar.jpg'
     };
-    
+
     await render(<template>
       <UserCard @user={{user}} />
     </template>);
-    
+
     // qunit-dom assertions
     assert.dom('[data-test-user-name]').hasText('John Doe');
     assert.dom('[data-test-user-email]').hasText('john@example.com');
@@ -61,19 +61,19 @@ module('Integration | Component | user-card', function(hooks) {
       .hasAttribute('src', '/avatar.jpg')
       .hasAttribute('alt', 'John Doe');
   });
-  
+
   test('it handles edit action', async function(assert) {
     assert.expect(1);
-    
+
     const user = { name: 'John Doe', email: 'john@example.com' };
     const handleEdit = (editedUser) => {
       assert.deepEqual(editedUser, user, 'Edit handler called with user');
     };
-    
+
     await render(<template>
       <UserCard @user={{user}} @onEdit={{handleEdit}} />
     </template>);
-    
+
     await click('[data-test-edit-button]');
   });
 });```
@@ -96,11 +96,11 @@ module('Integration | Component | search-box', function(hooks) {
     const state = trackedObject({
       results: [] as string[]
     });
-    
+
     const handleSearch = (query: string) => {
       state.results = [`Result for ${query}`];
     };
-    
+
     await render(<template>
       <SearchBox @onSearch={{handleSearch}} />
       <ul data-test-results>
@@ -109,9 +109,9 @@ module('Integration | Component | search-box', function(hooks) {
         {{/each}}
       </ul>
     </template>);
-    
+
     await fillIn('[data-test-search-input]', 'ember');
-    
+
     // State updates reactively - no waitFor needed when using test-waiters
     assert.dom('[data-test-results] li').hasText('Result for ember');
   });
@@ -132,7 +132,7 @@ export default class AsyncButtonComponent extends Component {
   }
 
   <template>
-    <button 
+    <button
       type="button"
       disabled={{this.saveTask.isRunning}}
       {{on "click" (perform this.saveTask)}}
@@ -163,25 +163,25 @@ module('Integration | Component | async-button', function(hooks) {
     const onSave = () => {
       return new Promise(resolve => { resolveTask = resolve; });
     };
-    
+
     await render(<template>
       <AsyncButton @onSave={{onSave}}>
         Save
       </AsyncButton>
     </template>);
-    
+
     // Trigger the task
     await click('[data-test-button]');
-    
+
     // ember-concurrency automatically registers test waiters
     // The button will be disabled while the task runs
     assert.dom('[data-test-button]').hasAttribute('disabled');
     assert.dom('[data-test-loading-spinner]').hasText('Saving...');
-    
+
     // Resolve the task
     resolveTask();
     // No need to call settled() - ember-concurrency's test waiters handle this
-    
+
     assert.dom('[data-test-button]').doesNotHaveAttribute('disabled');
     assert.dom('[data-test-loading-spinner]').doesNotExist();
     assert.dom('[data-test-button]').hasText('Save');
@@ -230,13 +230,13 @@ module('Acceptance | posts', function(hooks) {
         });
       })
     );
-    
+
     await visit('/posts');
-    
+
     assert.strictEqual(currentURL(), '/posts');
     assert.dom('[data-test-post-item]').exists({ count: 3 });
   });
-  
+
   test('clicking a post navigates to detail', async function(assert) {
     server.use(
       http.get('/api/posts', () => {
@@ -252,10 +252,10 @@ module('Acceptance | posts', function(hooks) {
         });
       })
     );
-    
+
     await visit('/posts');
     await click('[data-test-post-item]:first-child');
-    
+
     assert.strictEqual(currentURL(), '/posts/test-post');
     assert.dom('[data-test-post-title]').hasText('Test Post');
   });
@@ -283,11 +283,11 @@ module('Integration | Component | modal', function(hooks) {
         <p>Modal content</p>
       </Modal>
     </template>);
-    
+
     await a11yAudit();
     assert.ok(true, 'no a11y violations');
   });
-  
+
   test('it traps focus', async function(assert) {
     await render(<template>
       <Modal @isOpen={{true}}>
@@ -295,9 +295,9 @@ module('Integration | Component | modal', function(hooks) {
         <button data-test-last>Last</button>
       </Modal>
     </template>);
-    
+
     assert.dom('[data-test-first]').isFocused();
-    
+
     // Tab should stay within modal
     await click('[data-test-last]');
     assert.dom('[data-test-last]').isFocused();
@@ -313,16 +313,16 @@ import Component from '@glimmer/component';
 class UserProfile extends Component {
   <template>
     <div class="user-profile" data-test-user-profile>
-      <img 
-        src={{@user.avatar}} 
+      <img
+        src={{@user.avatar}}
         alt={{@user.name}}
         data-test-avatar
       />
       <h2 data-test-name>{{@user.name}}</h2>
       <p data-test-email>{{@user.email}}</p>
-      
+
       {{#if @onEdit}}
-        <button 
+        <button
           {{on "click" (fn @onEdit @user)}}
           data-test-edit-button
         >

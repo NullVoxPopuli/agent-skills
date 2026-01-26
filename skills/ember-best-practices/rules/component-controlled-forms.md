@@ -21,7 +21,7 @@ import { tracked } from '@glimmer/tracking';
 class SignupForm extends Component {
   @tracked email = '';
   @tracked emailError = '';
-  
+
   validateEmail = () => {
     // ❌ Reinventing email validation
     if (!this.email.includes('@')) {
@@ -68,7 +68,7 @@ class SignupForm extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
     const form = event.target;
-    
+
     // ✅ Use native checkValidity()
     if (!form.checkValidity()) {
       // Show native validation messages
@@ -79,7 +79,7 @@ class SignupForm extends Component {
     // ✅ Use FormData API - no tracked state needed!
     const formData = new FormData(form);
     const data = Object.fromEntries(formData);
-    
+
     this.args.onSubmit(data);
   };
 
@@ -92,7 +92,7 @@ class SignupForm extends Component {
         required
         placeholder="email@example.com"
       />
-      
+
       <input
         type="password"
         name="password"
@@ -100,7 +100,7 @@ class SignupForm extends Component {
         minlength="8"
         placeholder="Min 8 characters"
       />
-      
+
       <button type="submit">Sign Up</button>
     </form>
   </template>
@@ -125,7 +125,7 @@ class ValidatedForm extends Component {
 
   handleInput = (event) => {
     const input = event.target;
-    
+
     // ✅ Access Constraint Validation API
     if (!input.validity.valid) {
       this.errors.set(input.name, input.validationMessage);
@@ -137,7 +137,7 @@ class ValidatedForm extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
     const form = event.target;
-    
+
     if (!form.checkValidity()) {
       // Trigger native validation UI
       form.reportValidity();
@@ -197,7 +197,7 @@ The browser provides rich validation state via `input.validity`:
 handleInput = (event) => {
   const input = event.target;
   const validity = input.validity;
-  
+
   // Check specific validation states:
   if (validity.valueMissing) {
     // required field is empty
@@ -214,7 +214,7 @@ handleInput = (event) => {
   if (validity.patternMismatch) {
     // pattern attribute not matched
   }
-  
+
   // Or use the aggregated validationMessage:
   if (!validity.valid) {
     this.showError(input.name, input.validationMessage);
@@ -236,7 +236,7 @@ class PasswordMatchForm extends Component {
     const form = event.target.form;
     const password = form.querySelector('[name="password"]');
     const confirm = form.querySelector('[name="confirm"]');
-    
+
     // ✅ Use setCustomValidity for custom validation
     if (password.value !== confirm.value) {
       confirm.setCustomValidity('Passwords must match');
@@ -248,7 +248,7 @@ class PasswordMatchForm extends Component {
   handleSubmit = (event) => {
     event.preventDefault();
     const form = event.target;
-    
+
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
@@ -267,7 +267,7 @@ class PasswordMatchForm extends Component {
         minlength="8"
         placeholder="Password"
       />
-      
+
       <input
         type="password"
         name="confirm"
@@ -275,7 +275,7 @@ class PasswordMatchForm extends Component {
         placeholder="Confirm password"
         {{on "input" this.validatePasswordMatch}}
       />
-      
+
       <button type="submit">Create Account</button>
     </form>
   </template>

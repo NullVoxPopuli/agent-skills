@@ -49,7 +49,7 @@ export default class PostsRoute extends Route {
         <li>{{post.title}}</li>
       {{/each}}
     </ul>
-    
+
     {{outlet}}
   </template>
 }```
@@ -63,7 +63,7 @@ import { service } from '@ember/service';
 
 export default class PostsRoute extends Route {
   @service store;
-  
+
   model() {
     return this.store.request({ url: '/posts' });
   }
@@ -71,7 +71,7 @@ export default class PostsRoute extends Route {
   <template>
     <div class="posts-page">
       <h1>Posts</h1>
-      
+
       {{#if @model}}
         <ul>
           {{#each @model as |post|}}
@@ -79,7 +79,7 @@ export default class PostsRoute extends Route {
           {{/each}}
         </ul>
       {{/if}}
-      
+
       {{outlet}}
     </div>
   </template>

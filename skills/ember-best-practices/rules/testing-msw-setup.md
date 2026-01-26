@@ -15,12 +15,12 @@ Use MSW (Mock Service Worker) for API mocking in tests. MSW provides a cleaner a
 // mirage/config.js
 export default function() {
   this.namespace = '/api';
-  
+
   // Complex schema and factories
   this.get('/users', (schema) => {
     return schema.users.all();
   });
-  
+
   // Need to maintain schema, factories, serializers
   this.post('/users', (schema, request) => {
     let attrs = JSON.parse(request.requestBody);
@@ -43,7 +43,7 @@ export const handlers = [
       { id: 2, name: 'Bob' }
     ]);
   }),
-  
+
   http.post('/api/users', async ({ request }) => {
     const user = await request.json();
     return HttpResponse.json({ id: 3, ...user }, { status: 201 });
@@ -121,23 +121,23 @@ module('Acceptance | users', function(hooks) {
       http.get('/api/users', () => {
         return HttpResponse.json({
           data: [
-            { 
-              id: '1', 
-              type: 'user', 
-              attributes: { name: 'Alice', email: 'alice@example.com' } 
+            {
+              id: '1',
+              type: 'user',
+              attributes: { name: 'Alice', email: 'alice@example.com' }
             },
-            { 
-              id: '2', 
-              type: 'user', 
-              attributes: { name: 'Bob', email: 'bob@example.com' } 
+            {
+              id: '2',
+              type: 'user',
+              attributes: { name: 'Bob', email: 'bob@example.com' }
             }
           ]
         });
       })
     );
-    
+
     await visit('/users');
-    
+
     assert.strictEqual(currentURL(), '/users');
     assert.dom('[data-test-user-item]').exists({ count: 2 });
     assert.dom('[data-test-user-name]').hasText('Alice');
@@ -152,9 +152,9 @@ module('Acceptance | users', function(hooks) {
         );
       })
     );
-    
+
     await visit('/users');
-    
+
     assert.dom('[data-test-error-message]').exists();
     assert.dom('[data-test-error-message]').containsText('Server Error');
   });
@@ -168,11 +168,11 @@ import { visit, click, fillIn } from '@ember/test-helpers';
 
 test('creates a new user', async function(assert) {
   let capturedRequest = null;
-  
+
   server.use(
     http.post('/api/users', async ({ request }) => {
       capturedRequest = await request.json();
-      
+
       return HttpResponse.json({
         data: {
           id: '3',
@@ -182,12 +182,12 @@ test('creates a new user', async function(assert) {
       }, { status: 201 });
     })
   );
-  
+
   await visit('/users/new');
   await fillIn('[data-test-name-input]', 'Charlie');
   await fillIn('[data-test-email-input]', 'charlie@example.com');
   await click('[data-test-submit-button]');
-  
+
   assert.strictEqual(currentURL(), '/users/3');
   assert.deepEqual(capturedRequest.data.attributes, {
     name: 'Charlie',
@@ -217,11 +217,11 @@ test('updates an existing user', async function(assert) {
       });
     })
   );
-  
+
   await visit('/users/1/edit');
   await fillIn('[data-test-name-input]', 'Alice Updated');
   await click('[data-test-submit-button]');
-  
+
   assert.dom('[data-test-user-name]').hasText('Alice Updated');
 });
 
@@ -238,10 +238,10 @@ test('deletes a user', async function(assert) {
       return new HttpResponse(null, { status: 204 });
     })
   );
-  
+
   await visit('/users');
   await click('[data-test-delete-button]');
-  
+
   assert.dom('[data-test-user-item]').doesNotExist();
 });
 ```
@@ -254,22 +254,22 @@ test('filters users by query parameter', async function(assert) {
     http.get('/api/users', ({ request }) => {
       const url = new URL(request.url);
       const searchQuery = url.searchParams.get('filter[name]');
-      
+
       const users = [
         { id: '1', type: 'user', attributes: { name: 'Alice' } },
         { id: '2', type: 'user', attributes: { name: 'Bob' } }
       ];
-      
+
       const filtered = searchQuery
         ? users.filter(u => u.attributes.name.includes(searchQuery))
         : users;
-      
+
       return HttpResponse.json({ data: filtered });
     })
   );
-  
+
   await visit('/users?filter[name]=Alice');
-  
+
   assert.dom('[data-test-user-item]').exists({ count: 1 });
   assert.dom('[data-test-user-name]').hasText('Alice');
 });
@@ -286,9 +286,9 @@ test('handles dynamic route segments', async function(assert) {
       });
     })
   );
-  
+
   await visit('/users/42');
-  
+
   assert.dom('[data-test-user-name]').hasText('User 42');
 });
 ```
@@ -301,7 +301,7 @@ test('handles slow network responses', async function(assert) {
     http.get('/api/users', async () => {
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       return HttpResponse.json({
         data: [
           { id: '1', type: 'user', attributes: { name: 'Alice' } }
@@ -309,14 +309,14 @@ test('handles slow network responses', async function(assert) {
       });
     })
   );
-  
+
   const visitPromise = visit('/users');
-  
+
   // Loading state should be visible
   assert.dom('[data-test-loading-spinner]').exists();
-  
+
   await visitPromise;
-  
+
   assert.dom('[data-test-loading-spinner]').doesNotExist();
   assert.dom('[data-test-user-item]').exists();
 });
@@ -334,13 +334,13 @@ export const userHandlers = {
       return HttpResponse.json({ data: users });
     });
   },
-  
+
   get: (user) => {
     return http.get(`/api/users/${user.id}`, () => {
       return HttpResponse.json({ data: user });
     });
   },
-  
+
   create: (attributes) => {
     return http.post('/api/users', () => {
       return HttpResponse.json({
@@ -379,9 +379,9 @@ test('displays list of users', async function(assert) {
   server.use(
     userHandlers.list([fixtures.users.alice, fixtures.users.bob])
   );
-  
+
   await visit('/users');
-  
+
   assert.dom('[data-test-user-item]').exists({ count: 2 });
 });
 ```
@@ -412,14 +412,14 @@ module('Integration | Component | user-list', function(hooks) {
         });
       })
     );
-    
+
     await render(<template>
       <UserList />
     </template>);
-    
+
     // Wait for async data to load
     await waitFor('[data-test-user-item]');
-    
+
     assert.dom('[data-test-user-item]').exists();
     assert.dom('[data-test-user-name]').hasText('Alice');
   });
@@ -469,14 +469,14 @@ test('one-time response', async function(assert) {
       return HttpResponse.json({ data: 'special' });
     })
   );
-  
+
   // First request gets mocked response
   await visit('/special');
   assert.dom('[data-test-data]').hasText('special');
-  
+
   // Reset to remove this handler
   server.resetHandlers();
-  
+
   // Subsequent requests will use default handlers or be unhandled
 });
 ```
@@ -486,13 +486,13 @@ test('one-time response', async function(assert) {
 ```javascript
 http.post('/api/login', async ({ request }) => {
   const { email, password } = await request.json();
-  
+
   if (email === 'test@example.com' && password === 'password') {
     return HttpResponse.json({
       data: { token: 'abc123' }
     });
   }
-  
+
   return HttpResponse.json(
     { errors: [{ title: 'Invalid credentials' }] },
     { status: 401 }

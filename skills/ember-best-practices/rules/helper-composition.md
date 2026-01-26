@@ -16,13 +16,13 @@ Compose helpers to create reusable, testable logic that can be combined in templ
 <template>
   <div class="profile">
     <h1>{{uppercase (truncate @user.name 20)}}</h1>
-    
+
     {{#if (and @user.isActive (not @user.isDeleted))}}
       <span class="status">Active</span>
     {{/if}}
-    
+
     <p>{{lowercase @user.email}}</p>
-    
+
     {{#if (gt @user.posts.length 0)}}
       <span>Posts: {{@user.posts.length}}</span>
     {{/if}}
@@ -36,11 +36,11 @@ Compose helpers to create reusable, testable logic that can be combined in templ
 // app/helpers/display-name.js
 export function displayName(name, { maxLength = 20 } = {}) {
   if (!name) return '';
-  
-  const truncated = name.length > maxLength 
+
+  const truncated = name.length > maxLength
     ? name.slice(0, maxLength) + '...'
     : name;
-    
+
   return truncated.toUpperCase();
 }
 ```
@@ -68,13 +68,13 @@ import { formatEmail } from '../helpers/format-email';
 <template>
   <div class="profile">
     <h1>{{displayName @user.name}}</h1>
-    
+
     {{#if (isVisibleUser @user)}}
       <span class="status">Active</span>
     {{/if}}
-    
+
     <p>{{formatEmail @user.email}}</p>
-    
+
     {{#if (gt @user.posts.length 0)}}
       <span>Posts: {{@user.posts.length}}</span>
     {{/if}}
@@ -147,7 +147,7 @@ import { partialApply } from '../helpers/partial-apply';
       <li>{{name}}</li>
     {{/each}}
   </ul>
-  
+
   {{! Partial application }}
   {{#let (partialApply @formatNumber 2) as |formatTwoDecimals|}}
     <span>Price: {{formatTwoDecimals @price}}</span>
@@ -163,27 +163,27 @@ class Transform {
   constructor(value) {
     this.value = value;
   }
-  
+
   filter(fn) {
     this.value = this.value?.filter(fn) || [];
     return this;
   }
-  
+
   map(fn) {
     this.value = this.value?.map(fn) || [];
     return this;
   }
-  
+
   sort(fn) {
     this.value = [...(this.value || [])].sort(fn);
     return this;
   }
-  
+
   take(n) {
     this.value = this.value?.slice(0, n) || [];
     return this;
   }
-  
+
   get result() {
     return this.value;
   }
@@ -237,14 +237,14 @@ module('Unit | Helper | display-name', function() {
       'JOHN DOE'
     );
   });
-  
+
   test('it truncates long names', function(assert) {
     assert.strictEqual(
       displayName('A Very Long Name That Should Be Truncated', { maxLength: 10 }),
       'A VERY LON...'
     );
   });
-  
+
   test('it handles null', function(assert) {
     assert.strictEqual(displayName(null), '');
   });

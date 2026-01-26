@@ -21,7 +21,7 @@ test('it renders', async function(assert) {
   await render(<template>
     <LoadingSpinner />
   </template>);
-  
+
   assert.dom('[data-test-spinner]').exists();
 });
 ```
@@ -36,7 +36,7 @@ import LoadingSpinner from 'my-app/components/loading-spinner';
 test('it renders', async function(assert) {
   // ✅ Simple: pass component directly when no args needed
   await render(LoadingSpinner);
-  
+
   assert.dom('[data-test-spinner]').exists();
 });
 ```
@@ -56,7 +56,7 @@ module('Integration | Component | loading-spinner', function(hooks) {
   test('it renders without arguments', async function(assert) {
     // ✅ Simple: pass component directly when no args needed
     await render(LoadingSpinner);
-    
+
     assert.dom('[data-test-spinner]').exists();
     assert.dom('[data-test-spinner]').hasClass('loading');
   });
@@ -77,15 +77,15 @@ module('Integration | Component | user-card', function(hooks) {
 
   test('it renders with arguments', async function(assert) {
     const user = { name: 'John Doe', email: 'john@example.com' };
-    
+
     // ✅ Use template tag when passing arguments
     await render(<template>
       <UserCard @user={{user}} />
     </template>);
-    
+
     assert.dom('[data-test-user-name]').hasText('John Doe');
   });
-  
+
   test('it renders with block content', async function(assert) {
     // ✅ Use template tag when providing blocks
     await render(<template>
@@ -94,17 +94,17 @@ module('Integration | Component | user-card', function(hooks) {
         <:body>Custom Content</:body>
       </UserCard>
     </template>);
-    
+
     assert.dom('[data-test-header]').hasText('Custom Header');
     assert.dom('[data-test-body]').hasText('Custom Content');
   });
-  
+
   test('it renders with HTML attributes', async function(assert) {
     // ✅ Use template tag when passing HTML attributes
     await render(<template>
       <UserCard class="featured" data-test-featured />
     </template>);
-    
+
     assert.dom('[data-test-featured]').exists();
     assert.dom('[data-test-featured]').hasClass('featured');
   });
@@ -125,41 +125,41 @@ module('Integration | Component | button', function(hooks) {
   test('it renders default button', async function(assert) {
     // ✅ No args needed - use direct render
     await render(Button);
-    
+
     assert.dom('button').exists();
     assert.dom('button').hasText('Click me');
   });
-  
+
   test('it renders with custom text', async function(assert) {
     // ✅ Needs block content - use template tag
     await render(<template>
       <Button>Submit Form</Button>
     </template>);
-    
+
     assert.dom('button').hasText('Submit Form');
   });
-  
+
   test('it handles click action', async function(assert) {
     assert.expect(1);
-    
+
     const handleClick = () => {
       assert.ok(true, 'Click handler called');
     };
-    
+
     // ✅ Needs argument - use template tag
     await render(<template>
       <Button @onClick={{handleClick}}>Click me</Button>
     </template>);
-    
+
     await click('button');
   });
-  
+
   test('it applies variant styling', async function(assert) {
     // ✅ Needs argument - use template tag
     await render(<template>
       <Button @variant="primary">Primary Button</Button>
     </template>);
-    
+
     assert.dom('button').hasClass('btn-primary');
   });
 });```
@@ -179,16 +179,16 @@ module('Integration | Component | icon', function(hooks) {
   test('it renders default icon', async function(assert) {
     // ✅ Template-only component with no args - use direct render
     await render(Icon);
-    
+
     assert.dom('[data-test-icon]').exists();
   });
-  
+
   test('it renders specific icon', async function(assert) {
     // ✅ Needs @name argument - use template tag
     await render(<template>
       <Icon @name="check" @size="large" />
     </template>);
-    
+
     assert.dom('[data-test-icon]').hasAttribute('data-icon', 'check');
     assert.dom('[data-test-icon]').hasClass('icon-large');
   });

@@ -17,12 +17,12 @@ import Component from '@glimmer/component';
 
 class Chart extends Component {
   chartInstance = null;
-  
+
   constructor() {
     super(...arguments);
     // Can't access element here - element doesn't exist yet!
   }
-  
+
   willDestroy() {
     super.willDestroy(...arguments);
     this.chartInstance?.destroy();
@@ -44,7 +44,7 @@ import { modifier } from 'ember-modifier';
 export default modifier((element, [config]) => {
   // Initialize chart
   const chartInstance = new Chart(element, config);
-  
+
   // Return cleanup function
   return () => {
     chartInstance.destroy();
@@ -67,9 +67,9 @@ export default class ChartModifier extends Modifier {
     if (this.chartInstance) {
       this.chartInstance.destroy();
     }
-    
+
     this.chartInstance = new Chart(element, config);
-    
+
     // Register cleanup
     registerDestructor(this, () => {
       this.chartInstance?.destroy();

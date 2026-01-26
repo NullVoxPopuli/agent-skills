@@ -76,7 +76,7 @@ export class FormatRelativeTime {
   constructor(owner) {
     this.intl = owner.lookup('service:intl');
   }
-  
+
   compute(date) {
     return this.intl.formatRelative(date);
   }

@@ -55,7 +55,7 @@ function isOnSale(product) {
 <template>
   <div class="product-card">
     <h3>{{@product.name}}</h3>
-    
+
     {{#if (isOnSale @product)}}
       <div class="price">
         <span class="original">{{formatPrice @product.price}}</span>
@@ -66,7 +66,7 @@ function isOnSale(product) {
     {{else}}
       <div class="price">{{formatPrice @product.price}}</div>
     {{/if}}
-    
+
     <p>{{@product.description}}</p>
   </div>
 </template>
@@ -87,15 +87,15 @@ export class ProductList extends Component {
   @cached
   get sortedProducts() {
     // Expensive sort, accessed in template multiple times
-    return [...this.args.products].sort((a, b) => 
+    return [...this.args.products].sort((a, b) =>
       a.name.localeCompare(b.name)
     );
   }
-  
+
   @cached
   get filteredProducts() {
     // Depends on sortedProducts - benefits from caching
-    return this.sortedProducts.filter(p => 
+    return this.sortedProducts.filter(p =>
       p.category === this.args.selectedCategory
     );
   }

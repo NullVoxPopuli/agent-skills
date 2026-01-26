@@ -23,7 +23,7 @@ export default class DashboardRoute extends Route {
     const user = await this.store.request({ url: '/users/me' });
     const posts = await this.store.request({ url: '/posts?recent=true' });
     const notifications = await this.store.request({ url: '/notifications?unread=true' });
-    
+
     return { user, posts, notifications };
   }
 }

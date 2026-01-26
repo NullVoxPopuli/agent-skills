@@ -23,19 +23,19 @@ class ShoppingCart extends Component {
   @tracked tax = 0;
   @tracked shipping = 0;
   @tracked total = 0;
-  
+
   @action
   addItem(item) {
     this.items = [...this.items, item];
     this.recalculate();
   }
-  
+
   @action
   removeItem(index) {
     this.items = this.items.filter((_, i) => i !== index);
     this.recalculate();
   }
-  
+
   recalculate() {
     this.subtotal = this.items.reduce((sum, item) => sum + item.price, 0);
     this.tax = this.subtotal * 0.08;
@@ -64,50 +64,50 @@ import { TrackedArray } from 'tracked-built-ins';
 
 class ShoppingCart extends Component {
   @tracked items = new TrackedArray([]);
-  
+
   // Base calculation
   get subtotal() {
     return this.items.reduce((sum, item) => sum + item.price, 0);
   }
-  
+
   // Depends on subtotal
   get tax() {
     return this.subtotal * 0.08;
   }
-  
+
   // Depends on subtotal
   get shipping() {
     return this.subtotal > 50 ? 0 : 5.99;
   }
-  
+
   // Depends on subtotal, tax, and shipping
   get total() {
     return this.subtotal + this.tax + this.shipping;
   }
-  
+
   // Derived from total
   get formattedTotal() {
     return `$${this.total.toFixed(2)}`;
   }
-  
+
   // Multiple dependencies
   get discount() {
     if (this.items.length >= 5) return this.subtotal * 0.1;
     if (this.subtotal > 100) return this.subtotal * 0.05;
     return 0;
   }
-  
+
   // Depends on total and discount
   get finalTotal() {
     return this.total - this.discount;
   }
-  
+
   @action
   addItem(item) {
     this.items.push(item);
     // All getters automatically update!
   }
-  
+
   @action
   removeItem(index) {
     this.items.splice(index, 1);
@@ -140,13 +140,13 @@ class DataAnalysis extends Component {
   get rawData() {
     return this.args.data || [];
   }
-  
+
   // Level 1: Filter
   @cached
   get validData() {
     return this.rawData.filter(item => item.value != null);
   }
-  
+
   // Level 2: Transform (depends on validData)
   @cached
   get normalizedData() {
@@ -156,7 +156,7 @@ class DataAnalysis extends Component {
       normalized: item.value / max
     }));
   }
-  
+
   // Level 2: Statistics (depends on validData)
   @cached
   get statistics() {
@@ -164,7 +164,7 @@ class DataAnalysis extends Component {
     const sum = values.reduce((a, b) => a + b, 0);
     const mean = sum / values.length;
     const variance = values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length;
-    
+
     return {
       count: values.length,
       sum,
@@ -174,14 +174,14 @@ class DataAnalysis extends Component {
       max: Math.max(...values)
     };
   }
-  
+
   // Level 3: Depends on normalizedData and statistics
   @cached
   get outliers() {
     const threshold = this.statistics.mean + (2 * this.statistics.stdDev);
     return this.normalizedData.filter(item => item.value > threshold);
   }
-  
+
   // Level 3: Depends on statistics
   get qualityScore() {
     const validRatio = this.validData.length / this.rawData.length;
@@ -212,63 +212,63 @@ class FilteredList extends Component {
   @tracked searchTerm = '';
   @tracked selectedCategory = 'all';
   @tracked sortDirection = 'asc';
-  
+
   // Depends on args.items and searchTerm
   @cached
   get searchFiltered() {
     if (!this.searchTerm) return this.args.items;
-    
+
     const term = this.searchTerm.toLowerCase();
-    return this.args.items.filter(item => 
+    return this.args.items.filter(item =>
       item.name.toLowerCase().includes(term) ||
       item.description?.toLowerCase().includes(term)
     );
   }
-  
+
   // Depends on searchFiltered and selectedCategory
   @cached
   get categoryFiltered() {
     if (this.selectedCategory === 'all') return this.searchFiltered;
-    
-    return this.searchFiltered.filter(item => 
+
+    return this.searchFiltered.filter(item =>
       item.category === this.selectedCategory
     );
   }
-  
+
   // Depends on categoryFiltered and sortDirection
   @cached
   get sorted() {
     const items = [...this.categoryFiltered];
     const direction = this.sortDirection === 'asc' ? 1 : -1;
-    
-    return items.sort((a, b) => 
+
+    return items.sort((a, b) =>
       direction * a.name.localeCompare(b.name)
     );
   }
-  
+
   // Final result
   get items() {
     return this.sorted;
   }
-  
+
   // Metadata derived from chain
   get resultsCount() {
     return this.items.length;
   }
-  
+
   get hasFilters() {
     return this.searchTerm || this.selectedCategory !== 'all';
   }
 
   <template>
     <div class="filtered-list">
-      <input 
+      <input
         type="search"
         value={{this.searchTerm}}
         {{on "input" (pick "target.value" (set this "searchTerm"))}}
       />
-      
-      <select 
+
+      <select
         value={{this.selectedCategory}}
         {{on "change" (pick "target.value" (set this "selectedCategory"))}}
       >
@@ -277,9 +277,9 @@ class FilteredList extends Component {
           <option value={{cat}}>{{cat}}</option>
         {{/each}}
       </select>
-      
+
       <p>Showing {{this.resultsCount}} results</p>
-      
+
       {{#each this.items as |item|}}
         <div>{{item.name}}</div>
       {{/each}}

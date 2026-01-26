@@ -18,7 +18,7 @@ import { service } from '@ember/service';
 
 export default class PostRoute extends Route {
   @service store;
-  
+
   model(params) {
     // Always makes API call, even if we just loaded this post
     return this.store.request({ url: `/posts/${params.post_id}` });
@@ -42,26 +42,26 @@ import { service } from '@ember/service';
 
 export default class PostRoute extends Route {
   @service store;
-  
+
   model(params) {
     // Check cache first
     const cached = this.store.cache.peek({
       type: 'post',
       id: params.post_id
     });
-    
+
     // Return cached if fresh (less than 5 minutes old)
     if (cached && this.isCacheFresh(cached)) {
       return cached;
     }
-    
+
     // Fetch fresh data
-    return this.store.request({ 
+    return this.store.request({
       url: `/posts/${params.post_id}`,
       options: { reload: true }
     });
   }
-  
+
   isCacheFresh(record) {
     const cacheTime = record.meta?.cachedAt || 0;
     const fiveMinutes = 5 * 60 * 1000;
@@ -87,33 +87,33 @@ import { TrackedMap } from 'tracked-built-ins';
 
 export default class PostCacheService extends Service {
   @service store;
-  
+
   cache = new TrackedMap();
   cacheTimes = new Map();
   cacheTimeout = 5 * 60 * 1000; // 5 minutes
-  
+
   async getPost(id, { forceRefresh = false } = {}) {
     const now = Date.now();
     const cacheTime = this.cacheTimes.get(id) || 0;
     const isFresh = (now - cacheTime) < this.cacheTimeout;
-    
+
     if (!forceRefresh && isFresh && this.cache.has(id)) {
       return this.cache.get(id);
     }
-    
+
     const post = await this.store.request({ url: `/posts/${id}` });
-    
+
     this.cache.set(id, post);
     this.cacheTimes.set(id, now);
-    
+
     return post;
   }
-  
+
   invalidate(id) {
     this.cache.delete(id);
     this.cacheTimes.delete(id);
   }
-  
+
   invalidateAll() {
     this.cache.clear();
     this.cacheTimes.clear();
@@ -128,11 +128,11 @@ import { service } from '@ember/service';
 
 export default class PostRoute extends Route {
   @service postCache;
-  
+
   model(params) {
     return this.postCache.getPost(params.post_id);
   }
-  
+
   // Refresh data when returning to route
   async activate() {
     super.activate(...arguments);
@@ -158,19 +158,19 @@ import { service } from '@ember/service';
 
 export default class PostsRoute extends Route {
   @service store;
-  
+
   queryParams = {
     refresh: { refreshModel: true }
   };
-  
+
   model(params) {
-    const options = params.refresh 
-      ? { reload: true } 
+    const options = params.refresh
+      ? { reload: true }
       : { backgroundReload: true };
-    
-    return this.store.request({ 
+
+    return this.store.request({
       url: '/posts',
-      options 
+      options
     });
   }
 
@@ -179,7 +179,7 @@ export default class PostsRoute extends Route {
       <button {{on "click" (fn this.refresh)}}>
         Refresh
       </button>
-      
+
       <ul>
         {{#each @model as |post|}}
           <li>{{post.title}}</li>
@@ -199,17 +199,17 @@ import { service } from '@ember/service';
 
 export default class DashboardRoute extends Route {
   @service store;
-  
+
   async model() {
     // Return cached data immediately
     const cached = this.store.cache.peek({ type: 'dashboard' });
-    
+
     // Refresh in background
-    this.store.request({ 
+    this.store.request({
       url: '/dashboard',
       options: { backgroundReload: true }
     });
-    
+
     return cached || this.store.request({ url: '/dashboard' });
   }
 

@@ -61,7 +61,7 @@ class ScrollTracker extends Component {
   }
 
   <template>
-    <div 
+    <div
       class="scrollable"
       {{on "scroll" this.handleScroll passive=true}}
     >
@@ -80,15 +80,15 @@ import { on } from '@ember/modifier';
 
 class InputField extends Component {
   @tracked isFocused = false;
-  
+
   handleFocus = () => {
     this.isFocused = true;
   }
-  
+
   handleBlur = () => {
     this.isFocused = false;
   }
-  
+
   handleInput = (event) => {
     this.args.onInput?.(event.target.value);
   }

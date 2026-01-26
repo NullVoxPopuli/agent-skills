@@ -21,7 +21,7 @@ class Form extends Component {
   @tracked lastName = '';  // Used in template ✓
   @tracked _formId = Date.now(); // Internal, never rendered ✗
   @tracked _validationCache = new Map(); // Internal state ✗
-  
+
   @action
   validate() {
     this._validationCache.set('firstName', this.firstName.length > 0);
@@ -41,10 +41,10 @@ class Form extends Component {
   @tracked firstName = ''; // Rendered in template
   @tracked lastName = '';  // Rendered in template
   @tracked isValid = false; // Rendered status
-  
+
   _formId = Date.now(); // Not tracked - internal only
   _validationCache = new Map(); // Not tracked - internal state
-  
+
   @action
   validate() {
     this._validationCache.set('firstName', this.firstName.length > 0);

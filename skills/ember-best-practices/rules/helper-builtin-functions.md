@@ -69,16 +69,16 @@ class ComparisonExamples extends Component {
   <template>
     {{! Equality }}
     {{#if (eq @status "active")}}Active{{/if}}
-    
+
     {{! Negation }}
     {{#if (not @isDeleted)}}Visible{{/if}}
-    
+
     {{! Logical AND }}
     {{#if (and @isPremium @hasAccess)}}Premium Content{{/if}}
-    
+
     {{! Logical OR }}
     {{#if (or @isAdmin @isModerator)}}Moderation Tools{{/if}}
-    
+
     {{! Comparisons }}
     {{#if (gt @score 100)}}High Score!{{/if}}
     {{#if (lte @attempts 3)}}Try again{{/if}}
@@ -101,12 +101,12 @@ class CollectionHelpers extends Component {
     {{#each (array "apple" "banana" "cherry") as |fruit|}}
       <li>{{fruit}}</li>
     {{/each}}
-    
+
     {{! Create object inline }}
     {{#let (hash name="John" age=30 active=true) as |user|}}
       <p>{{user.name}} is {{user.age}} years old</p>
     {{/let}}
-    
+
     {{! Dynamic property access }}
     <p>{{get @user @propertyName}}</p>
   </template>
@@ -125,9 +125,9 @@ class StringHelpers extends Component {
     <p class={{concat "user-" @user.id "-card"}}>
       {{concat @user.firstName " " @user.lastName}}
     </p>
-    
+
     {{! With dynamic values }}
-    <img 
+    <img
       src={{concat "/images/" @category "/" @filename ".jpg"}}
       alt={{concat "Image of " @title}}
     />
@@ -156,7 +156,7 @@ class ActionHelpers extends Component {
     <input
       {{on "input" (fn this.updateValue "email")}}
     />
-    
+
     {{#each @items as |item|}}
       <li>
         {{item.name}}
@@ -181,12 +181,12 @@ class ConditionalInline extends Component {
     <span class={{ifHelper @isActive "active" "inactive"}}>
       {{@user.name}}
     </span>
-    
+
     {{! Conditional attribute }}
     <button disabled={{ifHelper @isProcessing true}}>
       {{ifHelper @isProcessing "Processing..." "Submit"}}
     </button>
-    
+
     {{! With default value }}
     <p>{{ifHelper @description @description "No description provided"}}</p>
   </template>
@@ -237,8 +237,8 @@ class FilteredList extends Component {
   <template>
     <select {{on "change" (fn (mut this.filter) target.value)}}>
       {{#each (array "all" "active" "pending" "completed") as |option|}}
-        <option 
-          value={{option}} 
+        <option
+          value={{option}}
           selected={{eq this.filter option}}
         >
           {{option}}
@@ -276,16 +276,16 @@ class UserProfileCard extends Component {
       (ifHelper (and @user.isOnline (not @user.isAway)) "online ")
     }}>
       <h2>{{concat @user.firstName " " @user.lastName}}</h2>
-      
+
       {{#if (or (eq @user.role "admin") (eq @user.role "moderator"))}}
         <span class="badge">
-          {{get (hash 
-            admin="Administrator" 
+          {{get (hash
+            admin="Administrator"
             moderator="Moderator"
           ) @user.role}}
         </span>
       {{/if}}
-      
+
       {{#if (and @canEdit (not @user.locked))}}
         <div class="actions">
           {{#each (array "profile" "settings" "privacy") as |section|}}
@@ -295,7 +295,7 @@ class UserProfileCard extends Component {
           {{/each}}
         </div>
       {{/if}}
-      
+
       <p class={{ifHelper @user.verified "verified" "unverified"}}>
         {{ifHelper @user.bio @user.bio "No bio provided"}}
       </p>

@@ -18,10 +18,10 @@ import { tracked } from '@glimmer/tracking';
 
 class LiveClock extends Component {
   @tracked time = new Date();
-  
+
   constructor() {
     super(...arguments);
-    
+
     // Memory leak: interval never cleared
     setInterval(() => {
       this.time = new Date();
@@ -43,14 +43,14 @@ import { registerDestructor } from '@ember/destroyable';
 
 class LiveClock extends Component {
   @tracked time = new Date();
-  
+
   constructor() {
     super(...arguments);
-    
+
     const intervalId = setInterval(() => {
       this.time = new Date();
     }, 1000);
-    
+
     // Proper cleanup
     registerDestructor(this, () => {
       clearInterval(intervalId);
@@ -73,17 +73,17 @@ import { registerDestructor } from '@ember/destroyable';
 class WindowSize extends Component {
   @tracked width = window.innerWidth;
   @tracked height = window.innerHeight;
-  
+
   constructor() {
     super(...arguments);
-    
+
     const handleResize = () => {
       this.width = window.innerWidth;
       this.height = window.innerHeight;
     };
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     registerDestructor(this, () => {
       window.removeEventListener('resize', handleResize);
     });
@@ -102,7 +102,7 @@ import { modifier } from 'ember-modifier';
 
 export default modifier((element, [eventName, handler]) => {
   window.addEventListener(eventName, handler);
-  
+
   // Automatic cleanup when element is removed
   return () => {
     window.removeEventListener(eventName, handler);
@@ -118,7 +118,7 @@ import windowListener from '../modifiers/window-listener';
 
 class ResizeAware extends Component {
   @tracked size = { width: 0, height: 0 };
-  
+
   handleResize = () => {
     this.size = {
       width: window.innerWidth,
@@ -144,17 +144,17 @@ import { registerDestructor } from '@ember/destroyable';
 class DataLoader extends Component {
   @tracked data = null;
   abortController = new AbortController();
-  
+
   constructor() {
     super(...arguments);
-    
+
     this.loadData();
-    
+
     registerDestructor(this, () => {
       this.abortController.abort();
     });
   }
-  
+
   async loadData() {
     try {
       const response = await fetch('/api/data', {
@@ -186,16 +186,16 @@ class WebsocketData extends Component {
   messages = resource(({ on }) => {
     const messages = [];
     const ws = new WebSocket('wss://example.com/socket');
-    
+
     ws.onmessage = (event) => {
       messages.push(event.data);
     };
-    
+
     // Automatic cleanup
     on.cleanup(() => {
       ws.close();
     });
-    
+
     return messages;
   });
 

@@ -1,13 +1,13 @@
 # Ember Best Practices
 
-**Version 1.0.0**  
-Ember.js Community  
+**Version 1.0.0**
+Ember.js Community
 January 2026
 
-> **Note:**  
-> This document is mainly for agents and LLMs to follow when maintaining,  
-> generating, or refactoring Ember.js codebases. Humans  
-> may also find it useful, but guidance here is optimized for automation  
+> **Note:**
+> This document is mainly for agents and LLMs to follow when maintaining,
+> generating, or refactoring Ember.js codebases. Humans
+> may also find it useful, but guidance here is optimized for automation
 > and consistency by AI-assisted workflows.
 
 ---
@@ -178,25 +178,25 @@ import { service } from '@ember/service';
 class UserProfile extends Component {
   constructor() {
     super(...arguments);
-    
+
     // Anti-pattern: Manual service lookup
     this.store = this.owner.lookup('service:store');
     this.router = this.owner.lookup('service:router');
-    
+
     // Anti-pattern: Imperative initialization
     this.data = null;
     this.isLoading = false;
     this.error = null;
-    
+
     // Anti-pattern: Side effects in constructor
     this.loadUserData();
   }
-  
+
   async loadUserData() {
     this.isLoading = true;
     try {
-      this.data = await this.store.request({ 
-        url: `/users/${this.args.userId}` 
+      this.data = await this.store.request({
+        url: `/users/${this.args.userId}`
       });
     } catch (e) {
       this.error = e;
@@ -330,17 +330,17 @@ export class UserCard extends Component {
         <h3 class="user-card__name">{{@user.name}}</h3>
         <p class="user-card__email">{{@user.email}}</p>
       </div>
-      
+
       {{#if @user.avatarUrl}}
         <img class="user-card__avatar" src={{@user.avatarUrl}} alt={{@user.name}} />
       {{/if}}
-      
+
       {{#if @onEdit}}
         <button class="user-card__edit-button" {{on "click" (fn @onEdit @user)}}>
           Edit
         </button>
       {{/if}}
-      
+
       <div class="user-card__content">
         {{yield}}
       </div>
@@ -372,15 +372,15 @@ export class UserCard extends Component {
     <div ...attributes>
       <h3>{{@user.name}}</h3>
       <p>{{@user.email}}</p>
-      
+
       {{#if @user.avatarUrl}}
         <img src={{@user.avatarUrl}} alt={{@user.name}} />
       {{/if}}
-      
+
       {{#if @onEdit}}
         <button {{on "click" (fn @onEdit @user)}}>Edit</button>
       {{/if}}
-      
+
       {{yield}}
     </div>
   </template>
@@ -458,11 +458,11 @@ In production code, you'll have classes for styling. But in learning materials, 
 
 **Common Violations:**
 
-❌ BEM classes in examples (`user-card__header`)  
+❌ BEM classes in examples (`user-card__header`)
 
-❌ Utility classes unless teaching utilities (`flex`, `mt-4`)  
+❌ Utility classes unless teaching utilities (`flex`, `mt-4`)
 
-❌ Semantic classes that don't teach anything (`container`, `wrapper`)  
+❌ Semantic classes that don't teach anything (`container`, `wrapper`)
 
 ❌ Design system classes unless teaching design system integration
 
@@ -499,7 +499,7 @@ import { sum, map, div, max, multiply, sortBy } from '../helpers/math';
     <p>Total: {{sum (map @items "price")}}</p>
     <p>Average: {{div (sum (map @items "price")) @items.length}}</p>
     <p>Max: {{max (map @items "price")}}</p>
-    
+
     {{#each (sortBy "name" @items) as |item|}}
       <div>{{item.name}}: {{multiply item.price item.quantity}}</div>
     {{/each}}
@@ -534,9 +534,9 @@ export class Stats extends Component {
 
     // No @cached needed if only accessed once in template
 
-    return this.args.items.length > 0 
+    return this.args.items.length > 0
 
-      ? this.total / this.args.items.length 
+      ? this.total / this.args.items.length
 
       : 0;
 
@@ -554,7 +554,7 @@ export class Stats extends Component {
 
     // @cached useful here as it's used by itemsWithTotal
 
-    return [...this.args.items].sort((a, b) => 
+    return [...this.args.items].sort((a, b) =>
 
       a.name.localeCompare(b.name)
 
@@ -628,7 +628,7 @@ import { action } from '@ember/object';
 
 class UserGreeting extends Component {
   @tracked displayName = '';
-  
+
   @action
   updateDisplayName() {
     // Runs on every render - inefficient and error-prone
@@ -683,7 +683,7 @@ class UserStats extends Component {
   @cached
   get sortedPosts() {
     // Expensive computation only runs when @posts changes
-    return [...this.args.posts].sort((a, b) => 
+    return [...this.args.posts].sort((a, b) =>
       b.createdAt - a.createdAt
     );
   }
@@ -702,7 +702,7 @@ class UserStats extends Component {
       <p>Total: {{this.statistics.total}}</p>
       <p>Published: {{this.statistics.published}}</p>
       <p>Drafts: {{this.statistics.drafts}}</p>
-      
+
       <ul>
         {{#each this.sortedPosts as |post|}}
           <li>{{post.title}}</li>
@@ -853,12 +853,12 @@ export default class UserDataResource extends Resource {
   @tracked data = null;
   @tracked loading = true;
   controller = new AbortController();
-  
+
   modify(positional, named) {
     const [userId] = positional;
     this.loadUser(userId);
   }
-  
+
   async loadUser(userId) {
     this.loading = true;
     try {
@@ -870,7 +870,7 @@ export default class UserDataResource extends Resource {
       this.loading = false;
     }
   }
-  
+
   willDestroy() {
     // Cleanup happens automatically
     this.controller.abort();
@@ -896,7 +896,7 @@ class Form extends Component {
   @tracked lastName = '';  // Used in template ✓
   @tracked _formId = Date.now(); // Internal, never rendered ✗
   @tracked _validationCache = new Map(); // Internal state ✗
-  
+
   @action
   validate() {
     this._validationCache.set('firstName', this.firstName.length > 0);
@@ -916,10 +916,10 @@ class Form extends Component {
   @tracked firstName = ''; // Rendered in template
   @tracked lastName = '';  // Rendered in template
   @tracked isValid = false; // Rendered status
-  
+
   _formId = Date.now(); // Not tracked - internal only
   _validationCache = new Map(); // Not tracked - internal state
-  
+
   @action
   validate() {
     this._validationCache.set('firstName', this.firstName.length > 0);
@@ -951,19 +951,19 @@ class ShoppingCart extends Component {
   @tracked tax = 0;
   @tracked shipping = 0;
   @tracked total = 0;
-  
+
   @action
   addItem(item) {
     this.items = [...this.items, item];
     this.recalculate();
   }
-  
+
   @action
   removeItem(index) {
     this.items = this.items.filter((_, i) => i !== index);
     this.recalculate();
   }
-  
+
   recalculate() {
     this.subtotal = this.items.reduce((sum, item) => sum + item.price, 0);
     this.tax = this.subtotal * 0.08;
@@ -1117,13 +1117,13 @@ class DataAnalysis extends Component {
   get rawData() {
     return this.args.data || [];
   }
-  
+
   // Level 1: Filter
   @cached
   get validData() {
     return this.rawData.filter(item => item.value != null);
   }
-  
+
   // Level 2: Transform (depends on validData)
   @cached
   get normalizedData() {
@@ -1133,7 +1133,7 @@ class DataAnalysis extends Component {
       normalized: item.value / max
     }));
   }
-  
+
   // Level 2: Statistics (depends on validData)
   @cached
   get statistics() {
@@ -1141,7 +1141,7 @@ class DataAnalysis extends Component {
     const sum = values.reduce((a, b) => a + b, 0);
     const mean = sum / values.length;
     const variance = values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length;
-    
+
     return {
       count: values.length,
       sum,
@@ -1151,14 +1151,14 @@ class DataAnalysis extends Component {
       max: Math.max(...values)
     };
   }
-  
+
   // Level 3: Depends on normalizedData and statistics
   @cached
   get outliers() {
     const threshold = this.statistics.mean + (2 * this.statistics.stdDev);
     return this.normalizedData.filter(item => item.value > threshold);
   }
-  
+
   // Level 3: Depends on statistics
   get qualityScore() {
     const validRatio = this.validData.length / this.rawData.length;
@@ -1207,7 +1207,7 @@ class FilteredList extends Component {
 
     const term = this.searchTerm.toLowerCase();
 
-    return this.args.items.filter(item => 
+    return this.args.items.filter(item =>
 
       item.name.toLowerCase().includes(term) ||
 
@@ -1225,7 +1225,7 @@ class FilteredList extends Component {
 
     if (this.selectedCategory === 'all') return this.searchFiltered;
 
-    return this.searchFiltered.filter(item => 
+    return this.searchFiltered.filter(item =>
 
       item.category === this.selectedCategory
 
@@ -1243,7 +1243,7 @@ class FilteredList extends Component {
 
     const direction = this.sortDirection === 'asc' ? 1 : -1;
 
-    return items.sort((a, b) => 
+    return items.sort((a, b) =>
 
       direction * a.name.localeCompare(b.name)
 
@@ -1277,7 +1277,7 @@ class FilteredList extends Component {
 
     <div class="filtered-list">
 
-      <input 
+      <input
 
         type="search"
 
@@ -1287,7 +1287,7 @@ class FilteredList extends Component {
 
       />
 
-      <select 
+      <select
 
         value={{this.selectedCategory}}
 
@@ -1338,7 +1338,7 @@ import { service } from '@ember/service';
 
 export default class UserService extends Service {
   @service store;
-  
+
   async getCurrentUser() {
     // Fetches from API every time
     return this.store.request({ url: '/users/me' });
@@ -1357,10 +1357,10 @@ import { TrackedMap } from 'tracked-built-ins';
 
 export default class UserService extends Service {
   @service store;
-  
+
   @tracked currentUser = null;
   cache = new TrackedMap();
-  
+
   async getCurrentUser() {
     if (!this.currentUser) {
       const response = await this.store.request({ url: '/users/me' });
@@ -1368,7 +1368,7 @@ export default class UserService extends Service {
     }
     return this.currentUser;
   }
-  
+
   async getUser(id) {
     if (!this.cache.has(id)) {
       const response = await this.store.request({ url: `/users/${id}` });
@@ -1376,7 +1376,7 @@ export default class UserService extends Service {
     }
     return this.cache.get(id);
   }
-  
+
   clearCache() {
     this.currentUser = null;
     this.cache.clear();
@@ -1394,21 +1394,21 @@ export default class DataService extends Service {
   @tracked _cache = null;
   _cacheTimestamp = null;
   _cacheDuration = 5 * 60 * 1000; // 5 minutes
-  
+
   async getData() {
     const now = Date.now();
-    const isCacheValid = this._cache && 
-      this._cacheTimestamp && 
+    const isCacheValid = this._cache &&
+      this._cacheTimestamp &&
       (now - this._cacheTimestamp) < this._cacheDuration;
-    
+
     if (!isCacheValid) {
       this._cache = await this.fetchData();
       this._cacheTimestamp = now;
     }
-    
+
     return this._cache;
   }
-  
+
   async fetchData() {
     const response = await fetch('/api/data');
     return response.json();
@@ -1431,13 +1431,13 @@ Compose helpers to create reusable, testable logic that can be combined in templ
 <template>
   <div class="profile">
     <h1>{{uppercase (truncate @user.name 20)}}</h1>
-    
+
     {{#if (and @user.isActive (not @user.isDeleted))}}
       <span class="status">Active</span>
     {{/if}}
-    
+
     <p>{{lowercase @user.email}}</p>
-    
+
     {{#if (gt @user.posts.length 0)}}
       <span>Posts: {{@user.posts.length}}</span>
     {{/if}}
@@ -1456,13 +1456,13 @@ import { formatEmail } from '../helpers/format-email';
 <template>
   <div class="profile">
     <h1>{{displayName @user.name}}</h1>
-    
+
     {{#if (isVisibleUser @user)}}
       <span class="status">Active</span>
     {{/if}}
-    
+
     <p>{{formatEmail @user.email}}</p>
-    
+
     {{#if (gt @user.posts.length 0)}}
       <span>Posts: {{@user.posts.length}}</span>
     {{/if}}
@@ -1521,7 +1521,7 @@ import { partialApply } from '../helpers/partial-apply';
       <li>{{name}}</li>
     {{/each}}
   </ul>
-  
+
   {{! Partial application }}
   {{#let (partialApply @formatNumber 2) as |formatTwoDecimals|}}
     <span>Price: {{formatTwoDecimals @price}}</span>
@@ -1567,14 +1567,14 @@ module('Unit | Helper | display-name', function() {
       'JOHN DOE'
     );
   });
-  
+
   test('it truncates long names', function(assert) {
     assert.strictEqual(
       displayName('A Very Long Name That Should Be Truncated', { maxLength: 10 }),
       'A VERY LON...'
     );
   });
-  
+
   test('it handles null', function(assert) {
     assert.strictEqual(displayName(null), '');
   });
@@ -1597,17 +1597,17 @@ All form inputs must have associated labels, and validation errors should be ann
 // app/components/form.gjs
 <template>
   <form {{on "submit" this.handleSubmit}}>
-    <input 
-      type="email" 
+    <input
+      type="email"
       value={{this.email}}
       {{on "input" this.updateEmail}}
       placeholder="Email"
     />
-    
+
     {{#if this.emailError}}
       <span>{{this.emailError}}</span>
     {{/if}}
-    
+
     <button type="submit">Submit</button>
   </form>
 </template>```
@@ -1636,11 +1636,11 @@ All form inputs must have associated labels, and validation errors should be ann
 
       </label>
 
-      <input 
+      <input
 
         id="email-input"
 
-        type="email" 
+        type="email"
 
         value={{this.email}}
 
@@ -1656,7 +1656,7 @@ All form inputs must have associated labels, and validation errors should be ann
 
       {{#if this.emailError}}
 
-        <span 
+        <span
 
           id="email-error"
 
@@ -1760,11 +1760,11 @@ export default class DataFetcherService extends Service {
 
       // Note: WarpDrive handles AbortSignal internally
 
-      const response = await this.store.request({ 
+      const response = await this.store.request({
 
         url,
 
-        signal: this.abortController.signal 
+        signal: this.abortController.signal
 
       });
 
@@ -1800,9 +1800,9 @@ export default class PostRoute extends Route {
 
     // First fetch the post
 
-    const post = await this.store.request({ 
+    const post = await this.store.request({
 
-      url: `/posts/${post_id}` 
+      url: `/posts/${post_id}`
 
     });
 
@@ -1812,21 +1812,21 @@ export default class PostRoute extends Route {
 
       post,
 
-      author: this.store.request({ 
+      author: this.store.request({
 
-        url: `/users/${post.content.authorId}` 
-
-      }),
-
-      comments: this.store.request({ 
-
-        url: `/posts/${post_id}/comments` 
+        url: `/users/${post.content.authorId}`
 
       }),
 
-      relatedPosts: this.store.request({ 
+      comments: this.store.request({
 
-        url: `/posts/${post_id}/related` 
+        url: `/posts/${post_id}/comments`
+
+      }),
+
+      relatedPosts: this.store.request({
+
+        url: `/posts/${post_id}/related`
 
       })
 
@@ -1977,7 +1977,7 @@ import { service } from '@ember/service';
 
 export default class PostRoute extends Route {
   @service store;
-  
+
   model(params) {
     // Always makes API call, even if we just loaded this post
     return this.store.request({ url: `/posts/${params.post_id}` });
@@ -2028,7 +2028,7 @@ export default class PostRoute extends Route {
 
     // Fetch fresh data
 
-    return this.store.request({ 
+    return this.store.request({
 
       url: `/posts/${params.post_id}`,
 
@@ -2073,11 +2073,11 @@ import { service } from '@ember/service';
 
 export default class PostRoute extends Route {
   @service postCache;
-  
+
   model(params) {
     return this.postCache.getPost(params.post_id);
   }
-  
+
   // Refresh data when returning to route
   async activate() {
     super.activate(...arguments);
@@ -2116,17 +2116,17 @@ export default class PostsRoute extends Route {
 
   model(params) {
 
-    const options = params.refresh 
+    const options = params.refresh
 
-      ? { reload: true } 
+      ? { reload: true }
 
       : { backgroundReload: true };
 
-    return this.store.request({ 
+    return this.store.request({
 
       url: '/posts',
 
-      options 
+      options
 
     });
 
@@ -2302,12 +2302,12 @@ import focusFirst from '../modifiers/focus-first';
 
 class Dropdown extends Component {
   @tracked isOpen = false;
-  
+
   @action
   toggleMenu() {
     this.isOpen = !this.isOpen;
   }
-  
+
   @action
   handleButtonKeyDown(event) {
     if (event.key === 'ArrowDown') {
@@ -2315,7 +2315,7 @@ class Dropdown extends Component {
       this.isOpen = true;
     }
   }
-  
+
   @action
   handleMenuKeyDown(event) {
     if (event.key === 'Escape') {
@@ -2329,7 +2329,7 @@ class Dropdown extends Component {
       this.moveFocus(event.key === 'ArrowDown' ? 1 : -1);
     }
   }
-  
+
   moveFocus(direction) {
     const items = Array.from(
       document.querySelectorAll('[role="menuitem"] button')
@@ -2338,7 +2338,7 @@ class Dropdown extends Component {
     const nextIndex = (currentIndex + direction + items.length) % items.length;
     items[nextIndex]?.focus();
   }
-  
+
   @action
   selectOption(value) {
     this.args.onSelect?.(value);
@@ -2347,7 +2347,7 @@ class Dropdown extends Component {
 
   <template>
     <div class="dropdown">
-      <button 
+      <button
         type="button"
         {{on "click" this.toggleMenu}}
         {{on "keydown" this.handleButtonKeyDown}}
@@ -2356,10 +2356,10 @@ class Dropdown extends Component {
       >
         Menu
       </button>
-      
+
       {{#if this.isOpen}}
-        <ul 
-          class="dropdown-menu" 
+        <ul
+          class="dropdown-menu"
           role="menu"
           {{focusFirst '[role="menuitem"] button'}}
           {{on "keydown" this.handleMenuKeyDown}}
@@ -2413,7 +2413,7 @@ import ApiService from '../services/api';
 class UserProfile extends Component {
   // ❌ Creates orphaned instance without owner
   api = new ApiService();
-  
+
   async loadUser() {
     // Won't have access to other services or owner features
     return this.api.fetch('/user/me');
@@ -2540,7 +2540,7 @@ class ValidationService {
 
 class FormStateManager {
   data = { email: '' };
-  
+
   updateEmail(value) {
     this.data.email = value;
   }
@@ -2550,7 +2550,7 @@ export class AdvancedForm extends Component {
   // link() handles both owner and destruction automatically
   validation = link(this, () => new ValidationService());
   formState = link(this, () => new FormStateManager());
-  
+
   get isValid() {
     return this.validation.validate(this.formState.data);
   }
@@ -2591,15 +2591,15 @@ import { createService } from 'ember-primitives/utils';
 // Define service logic as a plain function
 function AnalyticsService() {
   let events = [];
-  
+
   return {
     get events() {
       return events;
     },
-    
+
     track(event) {
       events.push({ ...event, timestamp: Date.now() });
-      
+
       // Send to analytics endpoint
       fetch('/analytics', {
         method: 'POST',
@@ -2744,12 +2744,12 @@ export function initialize(appInstance) {
       newDashboard: true,
       betaFeatures: false
     };
-    
+
     isEnabled(flag) {
       return this.flags[flag] || false;
     }
   });
-  
+
   // Make it a singleton
   appInstance.inject('route', 'featureFlags', 'service:feature-flags');
   appInstance.inject('component', 'featureFlags', 'service:feature-flags');
@@ -2794,12 +2794,12 @@ MSW works in integration tests too:
 // mirage/config.js
 export default function() {
   this.namespace = '/api';
-  
+
   // Complex schema and factories
   this.get('/users', (schema) => {
     return schema.users.all();
   });
-  
+
   // Need to maintain schema, factories, serializers
   this.post('/users', (schema, request) => {
     let attrs = JSON.parse(request.requestBody);
@@ -2822,7 +2822,7 @@ export const handlers = [
       { id: 2, name: 'Bob' }
     ]);
   }),
-  
+
   http.post('/api/users', async ({ request }) => {
     const user = await request.json();
     return HttpResponse.json({ id: 3, ...user }, { status: 201 });
@@ -2872,14 +2872,14 @@ test('one-time response', async function(assert) {
       return HttpResponse.json({ data: 'special' });
     })
   );
-  
+
   // First request gets mocked response
   await visit('/special');
   assert.dom('[data-test-data]').hasText('special');
-  
+
   // Reset to remove this handler
   server.resetHandlers();
-  
+
   // Subsequent requests will use default handlers or be unhandled
 });
 ```
@@ -2889,13 +2889,13 @@ test('one-time response', async function(assert) {
 ```javascript
 http.post('/api/login', async ({ request }) => {
   const { email, password } = await request.json();
-  
+
   if (email === 'test@example.com' && password === 'password') {
     return HttpResponse.json({
       data: { token: 'abc123' }
     });
   }
-  
+
   return HttpResponse.json(
     { errors: [{ title: 'Invalid credentials' }] },
     { status: 401 }
@@ -3167,7 +3167,7 @@ export class FormatRelativeTime {
   constructor(owner) {
     this.intl = owner.lookup('service:intl');
   }
-  
+
   compute(date) {
     return this.intl.formatRelative(date);
   }
@@ -3240,13 +3240,13 @@ import { cached } from '@glimmer/tracking';
 class UserCard extends Component {
   @cached
   get isActive() {
-    return this.args.user.status === 'active' && 
+    return this.args.user.status === 'active' &&
            this.args.user.lastLoginDays < 30;
   }
 
   @cached
   get showActions() {
-    return this.args.canEdit && 
+    return this.args.canEdit &&
            !this.args.user.locked &&
            this.isActive;
   }
@@ -3254,7 +3254,7 @@ class UserCard extends Component {
   <template>
     <div class="user-card">
       <h3>{{@user.name}}</h3>
-      
+
       {{#if this.isActive}}
         <span class="status active">Active</span>
       {{else}}
@@ -3459,12 +3459,12 @@ Use WarpDrive's request features effectively to reduce API calls and load only t
 // app/routes/posts.js
 export default class PostsRoute extends Route {
   @service store;
-  
+
   async model() {
     // Loads all posts (could be thousands)
     const response = await this.store.request({ url: '/posts' });
     const posts = response.content.data;
-    
+
     // Then filters in memory
     return posts.filter(post => post.attributes.status === 'published');
   }
@@ -3477,12 +3477,12 @@ export default class PostsRoute extends Route {
 // app/routes/posts.js
 export default class PostsRoute extends Route {
   @service store;
-  
+
   queryParams = {
     page: { refreshModel: true },
     filter: { refreshModel: true }
   };
-  
+
   model(params) {
     // Server-side filtering and pagination
     return this.store.request({
@@ -3512,7 +3512,7 @@ export default class PostsRoute extends Route {
 // app/routes/post.js
 export default class PostRoute extends Route {
   @service store;
-  
+
   model(params) {
     return this.store.request({
       url: `/posts/${params.post_id}`,
@@ -3530,18 +3530,18 @@ export default class PostRoute extends Route {
 // app/components/user-badge.js
 class UserBadge extends Component {
   @service store;
-  
+
   get user() {
     // Check cache first, avoiding API call if already loaded
     const cached = this.store.cache.peek({
       type: 'user',
       id: this.args.userId
     });
-    
+
     if (cached) {
       return cached;
     }
-    
+
     // Only fetch if not in cache
     return this.store.request({
       url: `/users/${this.args.userId}`
@@ -3591,7 +3591,7 @@ export default class DashboardRoute extends Route {
     const user = await this.store.request({ url: '/users/me' });
     const posts = await this.store.request({ url: '/posts?recent=true' });
     const notifications = await this.store.request({ url: '/notifications?unread=true' });
-    
+
     return { user, posts, notifications };
   }
 }
@@ -3635,10 +3635,10 @@ import { tracked } from '@glimmer/tracking';
 
 class LiveClock extends Component {
   @tracked time = new Date();
-  
+
   constructor() {
     super(...arguments);
-    
+
     // Memory leak: interval never cleared
     setInterval(() => {
       this.time = new Date();
@@ -3761,17 +3761,17 @@ import { registerDestructor } from '@ember/destroyable';
 class DataLoader extends Component {
   @tracked data = null;
   abortController = new AbortController();
-  
+
   constructor() {
     super(...arguments);
-    
+
     this.loadData();
-    
+
     registerDestructor(this, () => {
       this.abortController.abort();
     });
   }
-  
+
   async loadData() {
     try {
       const response = await fetch('/api/data', {
@@ -3873,10 +3873,10 @@ test('sorting works', async function(assert) {
   await render(<template>
     <DataGrid @rows={{this.rows}} />
   </template>);
-  
+
   // Fragile: breaks if class names or structure change
   await click('.data-grid__header .sort-button[data-column="name"]');
-  
+
   assert.dom('.data-grid__row:first-child').hasText('Alice');
 });
 ```
@@ -3901,12 +3901,12 @@ test('sorting works', async function(assert) {
   await render(<template>
     <DataGrid @rows={{this.rows}} @columns={{this.columns}} />
   </template>);
-  
+
   const grid = getDataGrid();
-  
+
   // Clean API: no DOM knowledge required
   await grid.sortBy('name');
-  
+
   assert.strictEqual(grid.getRow(0), 'Alice');
   assert.deepEqual(grid.getRows(), ['Alice', 'Bob', 'Charlie']);
 });
@@ -3958,7 +3958,7 @@ export class ModalTestHelper {
 
   async clickButton(buttonText) {
     const buttons = findAll('[data-test-modal-button]', this.element);
-    const button = buttons.find(btn => 
+    const button = buttons.find(btn =>
       btn.textContent.trim() === buttonText
     );
     if (!button) {
@@ -4056,7 +4056,7 @@ Follow modern Ember component file conventions: use kebab-case filenames, match 
 | `todo-list.gjs` | `class TodoList` | `<TodoList />` |
 | `search-input.gjs` | `class SearchInput` | `<SearchInput />` |
 
-**Conversion rule:** 
+**Conversion rule:**
 - Filename: all lowercase, words separated by hyphens
 - Class: PascalCase, same words, no hyphens
 - `user-card.gjs` → `class UserCard`
@@ -4330,7 +4330,7 @@ function isOnSale(product) {
 <template>
   <div class="product-card">
     <h3>{{@product.name}}</h3>
-    
+
     {{#if (isOnSale @product)}}
       <div class="price">
         <span class="original">{{formatPrice @product.price}}</span>
@@ -4341,7 +4341,7 @@ function isOnSale(product) {
     {{else}}
       <div class="price">{{formatPrice @product.price}}</div>
     {{/if}}
-    
+
     <p>{{@product.description}}</p>
   </div>
 </template>
@@ -4580,11 +4580,11 @@ Use `{{#let}}` to compute expensive values once and reuse them in the template i
       <h3>{{this.user.fullName}}</h3>
       <p>Status: Active</p>
     {{/if}}
-    
+
     {{#if (and this.user.isActive (not this.user.isDeleted))}}
       <button {{on "click" this.editUser}}>Edit</button>
     {{/if}}
-    
+
     {{#if (and this.user.isActive (not this.user.isDeleted))}}
       <button {{on "click" this.deleteUser}}>Delete</button>
     {{/if}}
@@ -4870,7 +4870,7 @@ class ScrollTracker extends Component {
   }
 
   <template>
-    <div 
+    <div
       class="scrollable"
       {{on "scroll" this.handleScroll passive=true}}
     >
@@ -4974,7 +4974,7 @@ class DataTable extends Component {
       .sort((a, b) => a[this.args.sortBy] - b[this.args.sortBy])
       .map(item => this.transformItem(item));
   }
-  
+
   transformItem(item) {
     // Expensive transformation
     return { ...item, computed: this.expensiveCalculation(item) };
@@ -5004,7 +5004,7 @@ test('it renders', async function(assert) {
   await render(<template>
     <LoadingSpinner />
   </template>);
-  
+
   assert.dom('[data-test-spinner]').exists();
 });
 ```
@@ -5023,15 +5023,15 @@ module('Integration | Component | user-card', function(hooks) {
 
   test('it renders with arguments', async function(assert) {
     const user = { name: 'John Doe', email: 'john@example.com' };
-    
+
     // ✅ Use template tag when passing arguments
     await render(<template>
       <UserCard @user={{user}} />
     </template>);
-    
+
     assert.dom('[data-test-user-name]').hasText('John Doe');
   });
-  
+
   test('it renders with block content', async function(assert) {
     // ✅ Use template tag when providing blocks
     await render(<template>
@@ -5040,17 +5040,17 @@ module('Integration | Component | user-card', function(hooks) {
         <:body>Custom Content</:body>
       </UserCard>
     </template>);
-    
+
     assert.dom('[data-test-header]').hasText('Custom Header');
     assert.dom('[data-test-body]').hasText('Custom Content');
   });
-  
+
   test('it renders with HTML attributes', async function(assert) {
     // ✅ Use template tag when passing HTML attributes
     await render(<template>
       <UserCard class="featured" data-test-featured />
     </template>);
-    
+
     assert.dom('[data-test-featured]').exists();
     assert.dom('[data-test-featured]').hasClass('featured');
   });
@@ -5157,16 +5157,16 @@ module('Integration | Component | icon', function(hooks) {
   test('it renders default icon', async function(assert) {
     // ✅ Template-only component with no args - use direct render
     await render(Icon);
-    
+
     assert.dom('[data-test-icon]').exists();
   });
-  
+
   test('it renders specific icon', async function(assert) {
     // ✅ Needs @name argument - use template tag
     await render(<template>
       <Icon @name="check" @size="large" />
     </template>);
-    
+
     assert.dom('[data-test-icon]').hasAttribute('data-icon', 'check');
     assert.dom('[data-test-icon]').hasClass('icon-large');
   });
@@ -5296,7 +5296,7 @@ class DataManager extends Component {
 
   get currentUser() {
 
-    const promise = this.store.request({ 
+    const promise = this.store.request({
 
       url: '/users/me'
 
@@ -5372,9 +5372,9 @@ class FormContainer extends Component {
 
   get isValid() {
 
-    return Object.keys(this.errors).length === 0 && 
+    return Object.keys(this.errors).length === 0 &&
 
-           this.formData.email && 
+           this.formData.email &&
 
            this.formData.firstName;
 
@@ -5414,7 +5414,7 @@ class FormContainer extends Component {
 
     <form>
 
-      <input 
+      <input
 
         value={{this.formData.firstName}}
 
@@ -5506,7 +5506,7 @@ class SelectableList extends Component {
 
   get selectedItems() {
 
-    return this.args.items.filter(item => 
+    return this.args.items.filter(item =>
 
       this.selection.isSelected(item.id)
 
@@ -5540,7 +5540,7 @@ class SelectableList extends Component {
 
         <li class={{if (this.selection.isSelected item.id) "selected"}}>
 
-          <input 
+          <input
 
             type="checkbox"
 
@@ -5598,14 +5598,14 @@ class UserCard extends Component {
         <h3>{{@user.name}}</h3>
         <p>{{@user.email}}</p>
       </div>
-      
+
       {{#if @showActions}}
         <div class="actions">
           <button {{on "click" @onEdit}}>Edit</button>
           <button {{on "click" @onDelete}}>Delete</button>
         </div>
       {{/if}}
-      
+
       {{#if @showStats}}
         <div class="stats">
           <span>Posts: {{@user.postCount}}</span>
@@ -5689,17 +5689,17 @@ import UserCard from './user-card';
           <h3>{{user.name}}</h3>
         </div>
       </:header>
-      
+
       <:default as |u|>
         <p class="bio">{{u.bio}}</p>
         <p class="email">{{u.email}}</p>
       </:default>
-      
+
       <:actions as |u|>
         <button {{on "click" (fn @onEdit u)}}>Edit</button>
         <button {{on "click" (fn @onDelete u)}}>Delete</button>
       </:actions>
-      
+
       <:footer as |u|>
         <div class="stats">
           Posts: {{u.postCount}} | Followers: {{u.followers}}
@@ -5955,11 +5955,11 @@ import { computed } from '@ember/object';
 export default Component.extend({
   tagName: 'div',
   classNames: ['user-card'],
-  
+
   fullName: computed('user.{firstName,lastName}', function() {
     return `${this.user.firstName} ${this.user.lastName}`;
   }),
-  
+
   didInsertElement() {
     this._super(...arguments);
     // Complex lifecycle management
@@ -5988,12 +5988,12 @@ class ConditionalInline extends Component {
     <span class={{ifHelper @isActive "active" "inactive"}}>
       {{@user.name}}
     </span>
-    
+
     {{! Conditional attribute }}
     <button disabled={{ifHelper @isProcessing true}}>
       {{ifHelper @isProcessing "Processing..." "Submit"}}
     </button>
-    
+
     {{! With default value }}
     <p>{{ifHelper @description @description "No description provided"}}</p>
   </template>
@@ -6174,8 +6174,8 @@ class FilteredList extends Component {
   <template>
     <select {{on "change" (fn (mut this.filter) target.value)}}>
       {{#each (array "all" "active" "pending" "completed") as |option|}}
-        <option 
-          value={{option}} 
+        <option
+          value={{option}}
           selected={{eq this.filter option}}
         >
           {{option}}
@@ -6233,9 +6233,9 @@ class UserProfileCard extends Component {
 
         <span class="badge">
 
-          {{get (hash 
+          {{get (hash
 
-            admin="Administrator" 
+            admin="Administrator"
 
             moderator="Moderator"
 
@@ -6395,7 +6395,7 @@ module('Integration | Component | user-card', function(hooks) {
 
   test('it renders', async function(assert) {
     await render(<template><UserCard /></template>);
-    
+
     // Using find() instead of qunit-dom
     assert.ok(find('.user-card'));
   });
@@ -6497,11 +6497,11 @@ module('Integration | Component | search-box', function(hooks) {
     const state = trackedObject({
       results: [] as string[]
     });
-    
+
     const handleSearch = (query: string) => {
       state.results = [`Result for ${query}`];
     };
-    
+
     await render(<template>
       <SearchBox @onSearch={{handleSearch}} />
       <ul data-test-results>
@@ -6510,9 +6510,9 @@ module('Integration | Component | search-box', function(hooks) {
         {{/each}}
       </ul>
     </template>);
-    
+
     await fillIn('[data-test-search-input]', 'ember');
-    
+
     // State updates reactively - no waitFor needed when using test-waiters
     assert.dom('[data-test-results] li').hasText('Result for ember');
   });
@@ -6536,25 +6536,25 @@ module('Integration | Component | async-button', function(hooks) {
     const onSave = () => {
       return new Promise(resolve => { resolveTask = resolve; });
     };
-    
+
     await render(<template>
       <AsyncButton @onSave={{onSave}}>
         Save
       </AsyncButton>
     </template>);
-    
+
     // Trigger the task
     await click('[data-test-button]');
-    
+
     // ember-concurrency automatically registers test waiters
     // The button will be disabled while the task runs
     assert.dom('[data-test-button]').hasAttribute('disabled');
     assert.dom('[data-test-loading-spinner]').hasText('Saving...');
-    
+
     // Resolve the task
     resolveTask();
     // No need to call settled() - ember-concurrency's test waiters handle this
-    
+
     assert.dom('[data-test-button]').doesNotHaveAttribute('disabled');
     assert.dom('[data-test-loading-spinner]').doesNotExist();
     assert.dom('[data-test-button]').hasText('Save');
@@ -6610,13 +6610,13 @@ module('Acceptance | posts', function(hooks) {
         });
       })
     );
-    
+
     await visit('/posts');
-    
+
     assert.strictEqual(currentURL(), '/posts');
     assert.dom('[data-test-post-item]').exists({ count: 3 });
   });
-  
+
   test('clicking a post navigates to detail', async function(assert) {
     server.use(
       http.get('/api/posts', () => {
@@ -6632,10 +6632,10 @@ module('Acceptance | posts', function(hooks) {
         });
       })
     );
-    
+
     await visit('/posts');
     await click('[data-test-post-item]:first-child');
-    
+
     assert.strictEqual(currentURL(), '/posts/test-post');
     assert.dom('[data-test-post-title]').hasText('Test Post');
   });
@@ -6663,11 +6663,11 @@ module('Integration | Component | modal', function(hooks) {
         <p>Modal content</p>
       </Modal>
     </template>);
-    
+
     await a11yAudit();
     assert.ok(true, 'no a11y violations');
   });
-  
+
   test('it traps focus', async function(assert) {
     await render(<template>
       <Modal @isOpen={{true}}>
@@ -6675,9 +6675,9 @@ module('Integration | Component | modal', function(hooks) {
         <button data-test-last>Last</button>
       </Modal>
     </template>);
-    
+
     assert.dom('[data-test-first]').isFocused();
-    
+
     // Tab should stay within modal
     await click('[data-test-last]');
     assert.dom('[data-test-last]').isFocused();
@@ -6698,9 +6698,9 @@ class UserProfile extends Component {
 
     <div class="user-profile" data-test-user-profile>
 
-      <img 
+      <img
 
-        src={{@user.avatar}} 
+        src={{@user.avatar}}
 
         alt={{@user.name}}
 
@@ -6714,7 +6714,7 @@ class UserProfile extends Component {
 
       {{#if @onEdit}}
 
-        <button 
+        <button
 
           {{on "click" (fn @onEdit @user)}}
 
@@ -7055,7 +7055,7 @@ import { service } from '@ember/service';
 
 export default class PostsRoute extends Route {
   @service store;
-  
+
   model() {
     return this.store.request({ url: '/posts' });
   }
@@ -7063,7 +7063,7 @@ export default class PostsRoute extends Route {
   <template>
     <div class="posts-page">
       <h1>Posts</h1>
-      
+
       {{#if @model}}
         <ul>
           {{#each @model as |post|}}
@@ -7071,7 +7071,7 @@ export default class PostsRoute extends Route {
           {{/each}}
         </ul>
       {{/if}}
-      
+
       {{outlet}}
     </div>
   </template>
@@ -7393,13 +7393,13 @@ module('Integration | Component | data-loader', function(hooks) {
 
   test('it loads data', async function(assert) {
     await render(<template><DataLoader /></template>);
-    
+
     await click('[data-test-load-button]');
-    
+
     // BAD: Test knows about implementation details
     // If the component changes from polling every 100ms to 200ms, test breaks
     await waitFor('[data-test-data]', { timeout: 5000 });
-    
+
     assert.dom('[data-test-data]').hasText('Loaded data');
   });
 });
@@ -7419,13 +7419,13 @@ module('Integration | Component | data-loader', function(hooks) {
 
   test('it loads data', async function(assert) {
     await render(<template><DataLoader /></template>);
-    
+
     await click('[data-test-load-button]');
-    
+
     // GOOD: settled() automatically waits for test waiters
     // No knowledge of timing needed - tests from user's perspective
     await settled();
-    
+
     assert.dom('[data-test-data]').hasText('Loaded data');
   });
 });
@@ -7446,46 +7446,46 @@ export class PollingWidget extends Component {
   @tracked status = 'idle';
   intervalId = null;
   token = null;
-  
+
   constructor(owner, args) {
     super(owner, args);
-    
+
     registerDestructor(this, () => {
       this.stopPolling();
     });
   }
-  
+
   startPolling = () => {
     // Register async operation
     this.token = waiter.beginAsync();
-    
+
     this.intervalId = setInterval(() => {
       this.checkStatus();
     }, 1000);
   };
-  
+
   stopPolling = () => {
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
-    
+
     // End async operation on cleanup
     if (this.token) {
       waiter.endAsync(this.token);
       this.token = null;
     }
   };
-  
+
   checkStatus = async () => {
     const response = await fetch('/api/status');
     this.status = await response.text();
-    
+
     if (this.status === 'complete') {
       this.stopPolling();
     }
   };
-  
+
   <template>
     <div>
       <button {{on "click" this.startPolling}} data-test-start>
@@ -7510,13 +7510,13 @@ module('Unit | Service | data-sync', function(hooks) {
 
   test('it syncs data', async function(assert) {
     const service = this.owner.lookup('service:data-sync');
-    
+
     // Start async operation
     const syncPromise = service.sync();
-    
+
     // No need for manual waiting - settled() handles it
     await settled();
-    
+
     const result = await syncPromise;
     assert.ok(result, 'Sync completed successfully');
   });
@@ -7535,14 +7535,14 @@ const waiter = buildWaiter('parallel-loader');
 
 export class ParallelLoader extends Component {
   @tracked results = [];
-  
+
   loadAll = async () => {
     const urls = ['/api/data1', '/api/data2', '/api/data3'];
-    
+
     // Each request gets its own token
     const requests = urls.map(async (url) => {
       const token = waiter.beginAsync();
-      
+
       try {
         const response = await fetch(url);
         return await response.json();
@@ -7550,15 +7550,15 @@ export class ParallelLoader extends Component {
         waiter.endAsync(token);
       }
     });
-    
+
     this.results = await Promise.all(requests);
   };
-  
+
   <template>
     <button {{on "click" this.loadAll}} data-test-load-all>
       Load All
     </button>
-    
+
     {{#each this.results as |result|}}
       <div data-test-result>{{result}}</div>
     {{/each}}
@@ -7616,12 +7616,12 @@ import { tracked } from '@glimmer/tracking';
 
 class TodoList extends Component {
   @tracked items = []; // Entire array replaced on every change
-  
+
   addItem = (item) => {
     // Creates new array, invalidates all consumers
     this.items = [...this.items, item];
   };
-  
+
   removeItem = (index) => {
     // Creates new array again
     this.items = this.items.filter((_, i) => i !== index);
@@ -7637,13 +7637,13 @@ import { TrackedArray } from 'tracked-built-ins';
 
 class TodoList extends Component {
   items = new TrackedArray([]);
-  
+
   // Use arrow functions for methods used in templates (no @action needed)
   addItem = (item) => {
     // Efficiently adds to tracked array
     this.items.push(item);
   };
-  
+
   removeItem = (index) => {
     // Efficiently removes from tracked array
     this.items.splice(index, 1);
@@ -7714,15 +7714,15 @@ class UserCard extends Component<UserCardSignature> {
     <div ...attributes>
       <h3>{{@user.name}}</h3>
       <p>{{@user.email}}</p>
-      
+
       {{#if @user.avatarUrl}}
         <img src={{@user.avatarUrl}} alt={{@user.name}} />
       {{/if}}
-      
+
       {{#if @onEdit}}
         <button {{on "click" (fn @onEdit @user)}}>Edit</button>
       {{/if}}
-      
+
       {{yield}}
     </div>
   </template>
@@ -7743,21 +7743,21 @@ class DataTable extends Component {
       'DataTable requires @columns argument',
       this.args.columns && Array.isArray(this.args.columns)
     );
-    
+
     assert(
       '@columns must be an array of objects with "key" and "label" properties',
       this.args.columns.every(col => col.key && col.label)
     );
-    
+
     return this.args.columns;
   }
-  
+
   get rows() {
     assert(
       'DataTable requires @rows argument',
       this.args.rows && Array.isArray(this.args.rows)
     );
-    
+
     return this.args.rows;
   }
 
@@ -7813,7 +7813,7 @@ import Component from '@glimmer/component';
 
 /**
  * Modal dialog component
- * 
+ *
  * @param {Object} args
  * @param {boolean} args.isOpen - Controls modal visibility
  * @param {() => void} args.onClose - Called when modal should close
@@ -8113,7 +8113,7 @@ const { compatBuild } = require('@embroider/compat');
 
 module.exports = async function (defaults) {
   const { buildOnce } = await import('@embroider/vite');
-  
+
   let app = new EmberApp(defaults, {
     // Add options here
   });
@@ -8131,7 +8131,7 @@ const { compatBuild } = require('@embroider/compat');
 
 module.exports = async function (defaults) {
   const { buildOnce } = await import('@embroider/vite');
-  
+
   let app = new EmberApp(defaults, {
     // Add options here
   });
@@ -8182,7 +8182,7 @@ import { task } from 'ember-concurrency';
 class UserProfile extends Component {
   @tracked userData = null;
   @tracked error = null;
-  
+
   // WRONG: Setting tracked state inside task
   loadUserTask = task(async () => {
     try {
@@ -8260,16 +8260,16 @@ class Search extends Component {
   });
 
   <template>
-    <input 
+    <input
       type="search"
       {{on "input" (fn this.searchTask.perform (pick "target.value"))}}
     />
-    
+
     {{! Use derived data from task state - no tracked properties needed }}
     {{#if this.searchTask.isRunning}}
       <div>Searching...</div>
     {{/if}}
-    
+
     {{! lastSuccessful persists previous results while new search runs }}
     {{#if this.searchTask.lastSuccessful}}
       <ul>
@@ -8278,7 +8278,7 @@ class Search extends Component {
         {{/each}}
       </ul>
     {{/if}}
-    
+
     {{! Show error from most recent failed attempt }}
     {{#if this.searchTask.last.isError}}
       <div>Error: {{this.searchTask.last.error.message}}</div>
@@ -8307,7 +8307,7 @@ class FormSubmit extends Component {
   });
 
   <template>
-    <button 
+    <button
       {{on "click" (fn this.submitTask.perform @formData)}}
       disabled={{this.submitTask.isRunning}}
     >
@@ -8317,12 +8317,12 @@ class FormSubmit extends Component {
         Save
       {{/if}}
     </button>
-    
+
     {{! Use lastSuccessful for success message - derived data }}
     {{#if this.submitTask.lastSuccessful}}
       <div>Saved successfully!</div>
     {{/if}}
-    
+
     {{#if this.submitTask.last.isError}}
       <div>Error: {{this.submitTask.last.error.message}}</div>
     {{/if}}
@@ -8386,11 +8386,11 @@ This follows the **derived data pattern** - all state comes from the task itself
 // BEFORE (anti-pattern - setting tracked state)
 class Bad extends Component {
   @tracked data = null;
-  
+
   fetchTask = task(async () => {
     this.data = await fetch('/api/data').then(r => r.json());
   });
-  
+
   // template reads: {{this.data}}
 }
 
@@ -8399,7 +8399,7 @@ class Good extends Component {
   fetchTask = restartableTask(async () => {
     return fetch('/api/data').then(r => r.json());
   });
-  
+
   // template reads: {{this.fetchTask.lastSuccessful.value}}
   // All state derived from task - no tracked properties!
 }
@@ -8410,7 +8410,7 @@ class Better extends Component {
   get data() {
     return getPromiseState(fetch('/api/data').then(r => r.json()));
   }
-  
+
   // template reads: {{#if this.data.isFulfilled}}{{this.data.value}}{{/if}}
 }
 ```
@@ -8436,22 +8436,22 @@ class Search extends Component {
   @tracked isSearching = false;
   @tracked error = null;
   currentRequest = null;
-  
+
   @action
   async search(event) {
     const query = event.target.value;
-    
+
     // Manual cancelation - easy to get wrong
     if (this.currentRequest) {
       this.currentRequest.abort();
     }
-    
+
     this.isSearching = true;
     this.error = null;
-    
+
     const controller = new AbortController();
     this.currentRequest = controller;
-    
+
     try {
       const response = await fetch(`/api/search?q=${query}`, {
         signal: controller.signal
@@ -8491,11 +8491,11 @@ class Search extends Component {
 
   <template>
     <input {{on "input" (fn this.searchTask.perform (pick "target.value"))}} />
-    
+
     {{#if this.searchTask.isRunning}}
       <div class="loading">Loading...</div>
     {{/if}}
-    
+
     {{#if this.searchTask.last.isSuccessful}}
       <ul>
         {{#each this.searchTask.last.value as |result|}}
@@ -8503,7 +8503,7 @@ class Search extends Component {
         {{/each}}
       </ul>
     {{/if}}
-    
+
     {{#if this.searchTask.last.isError}}
       <div class="error">{{this.searchTask.last.error.message}}</div>
     {{/if}}
@@ -8522,22 +8522,22 @@ class Autocomplete extends Component {
   searchTask = restartableTask(async (query) => {
     // Debounce user typing - wait 300ms
     await timeout(300);
-    
+
     const response = await fetch(`/api/autocomplete?q=${query}`);
     return response.json(); // Return value, don't set tracked state
   });
 
   <template>
-    <input 
+    <input
       type="search"
       {{on "input" (fn this.searchTask.perform (pick "target.value"))}}
       placeholder="Search..."
     />
-    
+
     {{#if this.searchTask.isRunning}}
       <div class="spinner"></div>
     {{/if}}
-    
+
     {{#if this.searchTask.lastSuccessful}}
       <ul class="suggestions">
         {{#each this.searchTask.lastSuccessful.value as |item|}}
@@ -8564,7 +8564,7 @@ class FormActions extends Component {
     });
     return response.json();
   });
-  
+
   // enqueueTask: Queues user actions sequentially
   processTask = enqueueTask(async (item) => {
     const response = await fetch('/api/process', {
@@ -8573,15 +8573,15 @@ class FormActions extends Component {
     });
     return response.json();
   });
-  
+
   // restartableTask: Cancels previous, starts new (for search)
   searchTask = restartableTask(async (query) => {
     const response = await fetch(`/api/search?q=${query}`);
     return response.json();
   });
-  
+
   <template>
-    <button 
+    <button
       {{on "click" (fn this.saveTask.perform @data)}}
       disabled={{this.saveTask.isRunning}}
     >
@@ -8639,7 +8639,7 @@ class UserCard extends Component {
     const now = new Date();
     const diffMs = now - date;
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
@@ -8664,7 +8664,7 @@ export function formatRelativeDate(date) {
   const now = new Date();
   const diffMs = now - dateObj;
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return `${diffDays} days ago`;
@@ -8699,7 +8699,7 @@ export class FormatCurrencyHelper {
   constructor(owner) {
     this.intl = owner.lookup('service:intl');
   }
-  
+
   compute(amount, { currency = 'USD' } = {}) {
     return this.intl.formatNumber(amount, {
       style: 'currency',
@@ -8739,12 +8739,12 @@ import Component from '@glimmer/component';
 
 class Chart extends Component {
   chartInstance = null;
-  
+
   constructor() {
     super(...arguments);
     // Can't access element here - element doesn't exist yet!
   }
-  
+
   willDestroy() {
     super.willDestroy(...arguments);
     this.chartInstance?.destroy();
@@ -8766,7 +8766,7 @@ import { modifier } from 'ember-modifier';
 export default modifier((element, [config]) => {
   // Initialize chart
   const chartInstance = new Chart(element, config);
-  
+
   // Return cleanup function
   return () => {
     chartInstance.destroy();

@@ -35,13 +35,13 @@ import { action } from '@ember/object';
 
 export default class ThemeService extends Service {
   @tracked currentTheme = 'dark';
-  
+
   @action
   setTheme(theme) {
     this.currentTheme = theme;
     localStorage.setItem('theme', theme);
   }
-  
+
   @action
   loadTheme() {
     this.currentTheme = localStorage.getItem('theme') || 'dark';
@@ -56,7 +56,7 @@ import { service } from '@ember/service';
 
 class Header extends Component {
   @service theme;
-  
+
   // Access theme.currentTheme directly
 }
 ```
@@ -68,7 +68,7 @@ import { service } from '@ember/service';
 
 class Sidebar extends Component {
   @service theme;
-  
+
   // Access theme.currentTheme directly
 }
 ```
@@ -87,24 +87,24 @@ import { action } from '@ember/object';
 
 export default class CartService extends Service {
   @service store;
-  
+
   items = new TrackedArray([]);
-  
+
   @cached
   get total() {
     return this.items.reduce((sum, item) => sum + item.price, 0);
   }
-  
+
   @cached
   get itemCount() {
     return this.items.length;
   }
-  
+
   @action
   addItem(item) {
     this.items.push(item);
   }
-  
+
   @action
   removeItem(item) {
     const index = this.items.indexOf(item);

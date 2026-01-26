@@ -31,13 +31,13 @@ module('Integration | Component | data-loader', function(hooks) {
 
   test('it loads data', async function(assert) {
     await render(<template><DataLoader /></template>);
-    
+
     await click('[data-test-load-button]');
-    
+
     // BAD: Test knows about implementation details
     // If the component changes from polling every 100ms to 200ms, test breaks
     await waitFor('[data-test-data]', { timeout: 5000 });
-    
+
     assert.dom('[data-test-data]').hasText('Loaded data');
   });
 });
@@ -57,14 +57,14 @@ const waiter = buildWaiter('data-loader');
 export class DataLoader extends Component {
   @tracked data = null;
   @tracked isLoading = false;
-  
+
   loadData = async () => {
     // Register the async operation with test waiter
     const token = waiter.beginAsync();
-    
+
     try {
       this.isLoading = true;
-      
+
       // Simulate async data loading
       const response = await fetch('/api/data');
       this.data = await response.json();
@@ -74,17 +74,17 @@ export class DataLoader extends Component {
       waiter.endAsync(token);
     }
   };
-  
+
   <template>
     <div>
       <button {{on "click" this.loadData}} data-test-load-button>
         Load Data
       </button>
-      
+
       {{#if this.isLoading}}
         <div data-test-loading>Loading...</div>
       {{/if}}
-      
+
       {{#if this.data}}
         <div data-test-data>{{this.data}}</div>
       {{/if}}
@@ -105,13 +105,13 @@ module('Integration | Component | data-loader', function(hooks) {
 
   test('it loads data', async function(assert) {
     await render(<template><DataLoader /></template>);
-    
+
     await click('[data-test-load-button]');
-    
+
     // GOOD: settled() automatically waits for test waiters
     // No knowledge of timing needed - tests from user's perspective
     await settled();
-    
+
     assert.dom('[data-test-data]').hasText('Loaded data');
   });
 });
@@ -132,46 +132,46 @@ export class PollingWidget extends Component {
   @tracked status = 'idle';
   intervalId = null;
   token = null;
-  
+
   constructor(owner, args) {
     super(owner, args);
-    
+
     registerDestructor(this, () => {
       this.stopPolling();
     });
   }
-  
+
   startPolling = () => {
     // Register async operation
     this.token = waiter.beginAsync();
-    
+
     this.intervalId = setInterval(() => {
       this.checkStatus();
     }, 1000);
   };
-  
+
   stopPolling = () => {
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
-    
+
     // End async operation on cleanup
     if (this.token) {
       waiter.endAsync(this.token);
       this.token = null;
     }
   };
-  
+
   checkStatus = async () => {
     const response = await fetch('/api/status');
     this.status = await response.text();
-    
+
     if (this.status === 'complete') {
       this.stopPolling();
     }
   };
-  
+
   <template>
     <div>
       <button {{on "click" this.startPolling}} data-test-start>
@@ -195,16 +195,16 @@ const waiter = buildWaiter('data-sync-service');
 
 export class DataSyncService extends Service {
   @tracked isSyncing = false;
-  
+
   async sync() {
     const token = waiter.beginAsync();
-    
+
     try {
       this.isSyncing = true;
-      
+
       const response = await fetch('/api/sync', { method: 'POST' });
       const result = await response.json();
-      
+
       return result;
     } finally {
       this.isSyncing = false;
@@ -225,13 +225,13 @@ module('Unit | Service | data-sync', function(hooks) {
 
   test('it syncs data', async function(assert) {
     const service = this.owner.lookup('service:data-sync');
-    
+
     // Start async operation
     const syncPromise = service.sync();
-    
+
     // No need for manual waiting - settled() handles it
     await settled();
-    
+
     const result = await syncPromise;
     assert.ok(result, 'Sync completed successfully');
   });
@@ -250,14 +250,14 @@ const waiter = buildWaiter('parallel-loader');
 
 export class ParallelLoader extends Component {
   @tracked results = [];
-  
+
   loadAll = async () => {
     const urls = ['/api/data1', '/api/data2', '/api/data3'];
-    
+
     // Each request gets its own token
     const requests = urls.map(async (url) => {
       const token = waiter.beginAsync();
-      
+
       try {
         const response = await fetch(url);
         return await response.json();
@@ -265,15 +265,15 @@ export class ParallelLoader extends Component {
         waiter.endAsync(token);
       }
     });
-    
+
     this.results = await Promise.all(requests);
   };
-  
+
   <template>
     <button {{on "click" this.loadAll}} data-test-load-all>
       Load All
     </button>
-    
+
     {{#each this.results as |result|}}
       <div data-test-result>{{result}}</div>
     {{/each}}

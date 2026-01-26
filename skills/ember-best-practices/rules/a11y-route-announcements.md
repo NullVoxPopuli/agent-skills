@@ -55,7 +55,7 @@ import { service } from '@ember/service';
 
 export default class DashboardRoute extends Route {
   @service announcer;
-  
+
   afterModel() {
     this.announcer.announce('Loaded dashboard with latest data');
   }
@@ -92,25 +92,25 @@ import { service } from '@ember/service';
 
 export default class ApplicationRoute extends Route {
   @service router;
-  
+
   constructor() {
     super(...arguments);
-    
+
     this.router.on('routeDidChange', (transition) => {
       // Update document title
       const title = this.getPageTitle(transition.to);
       document.title = title;
-      
+
       // Announce to screen readers
       this.announceRouteChange(title);
     });
   }
-  
+
   getPageTitle(route) {
     // Get title from route metadata or generate it
     return route.metadata?.title || route.name;
   }
-  
+
   announceRouteChange(title) {
     const announcement = document.getElementById('route-announcement');
     if (announcement) {
@@ -123,10 +123,10 @@ export default class ApplicationRoute extends Route {
 ```glimmer-js
 // app/routes/application.gjs
 <template>
-  <div 
-    id="route-announcement" 
-    role="status" 
-    aria-live="polite" 
+  <div
+    id="route-announcement"
+    role="status"
+    aria-live="polite"
     aria-atomic="true"
     class="sr-only"
   ></div>

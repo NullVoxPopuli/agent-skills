@@ -70,15 +70,15 @@ class CustomButton extends Component {
       this.handleClick();
     }
   }
-  
+
   @action
   handleClick() {
     this.args.onClick?.();
   }
 
   <template>
-    <div 
-      role="button" 
+    <div
+      role="button"
       tabindex="0"
       {{on "click" this.handleClick}}
       {{on "keydown" this.handleKeyDown}}

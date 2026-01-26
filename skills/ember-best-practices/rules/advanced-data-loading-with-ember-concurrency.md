@@ -20,7 +20,7 @@ import { task } from 'ember-concurrency';
 class UserProfile extends Component {
   @tracked userData = null;
   @tracked error = null;
-  
+
   // WRONG: Setting tracked state inside task
   loadUserTask = task(async () => {
     try {
@@ -94,16 +94,16 @@ class Search extends Component {
   });
 
   <template>
-    <input 
+    <input
       type="search"
       {{on "input" (fn this.searchTask.perform (pick "target.value"))}}
     />
-    
+
     {{! Use derived data from task state - no tracked properties needed }}
     {{#if this.searchTask.isRunning}}
       <div>Searching...</div>
     {{/if}}
-    
+
     {{! lastSuccessful persists previous results while new search runs }}
     {{#if this.searchTask.lastSuccessful}}
       <ul>
@@ -112,7 +112,7 @@ class Search extends Component {
         {{/each}}
       </ul>
     {{/if}}
-    
+
     {{! Show error from most recent failed attempt }}
     {{#if this.searchTask.last.isError}}
       <div>Error: {{this.searchTask.last.error.message}}</div>
@@ -147,7 +147,7 @@ class FormSubmit extends Component {
   });
 
   <template>
-    <button 
+    <button
       {{on "click" (fn this.submitTask.perform @formData)}}
       disabled={{this.submitTask.isRunning}}
     >
@@ -157,12 +157,12 @@ class FormSubmit extends Component {
         Save
       {{/if}}
     </button>
-    
+
     {{! Use lastSuccessful for success message - derived data }}
     {{#if this.submitTask.lastSuccessful}}
       <div>Saved successfully!</div>
     {{/if}}
-    
+
     {{#if this.submitTask.last.isError}}
       <div>Error: {{this.submitTask.last.error.message}}</div>
     {{/if}}
@@ -208,11 +208,11 @@ References:
 // BEFORE (anti-pattern - setting tracked state)
 class Bad extends Component {
   @tracked data = null;
-  
+
   fetchTask = task(async () => {
     this.data = await fetch('/api/data').then(r => r.json());
   });
-  
+
   // template reads: {{this.data}}
 }
 
@@ -221,7 +221,7 @@ class Good extends Component {
   fetchTask = restartableTask(async () => {
     return fetch('/api/data').then(r => r.json());
   });
-  
+
   // template reads: {{this.fetchTask.lastSuccessful.value}}
   // All state derived from task - no tracked properties!
 }
@@ -232,13 +232,13 @@ class Better extends Component {
   get data() {
     return getPromiseState(fetch('/api/data').then(r => r.json()));
   }
-  
+
   // template reads: {{#if this.data.isFulfilled}}{{this.data.value}}{{/if}}
 }
 ```
 
 ember-concurrency is a powerful tool for **user concurrency patterns**. For data loading, use `getPromiseState` instead.
 
-Reference: 
+Reference:
 - [ember-concurrency](https://ember-concurrency.com/)
 - [warp-drive/reactiveweb](https://github.com/emberjs/data/tree/main/packages/reactiveweb)

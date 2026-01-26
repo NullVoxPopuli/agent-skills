@@ -17,12 +17,12 @@ import { tracked } from '@glimmer/tracking';
 
 class TodoList extends Component {
   @tracked items = []; // Entire array replaced on every change
-  
+
   addItem = (item) => {
     // Creates new array, invalidates all consumers
     this.items = [...this.items, item];
   };
-  
+
   removeItem = (index) => {
     // Creates new array again
     this.items = this.items.filter((_, i) => i !== index);
@@ -38,13 +38,13 @@ import { TrackedArray } from 'tracked-built-ins';
 
 class TodoList extends Component {
   items = new TrackedArray([]);
-  
+
   // Use arrow functions for methods used in templates (no @action needed)
   addItem = (item) => {
     // Efficiently adds to tracked array
     this.items.push(item);
   };
-  
+
   removeItem = (index) => {
     // Efficiently removes from tracked array
     this.items.splice(index, 1);

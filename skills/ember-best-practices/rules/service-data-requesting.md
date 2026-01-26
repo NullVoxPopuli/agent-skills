@@ -23,7 +23,7 @@ export default class DashboardRoute extends Route {
     const user = await this.store.request({ url: '/users/me' });
     const posts = await this.store.request({ url: '/posts' });
     const notifications = await this.store.request({ url: '/notifications' });
-    
+
     // No error handling
     // No cancellation
     return { user, posts, notifications };
@@ -108,7 +108,7 @@ class SearchResults extends Component {
   @restartableTask
   *searchTask(query) {
     yield timeout(300); // Debounce
-    
+
     try {
       const response = yield this.store.request({
         url: `/search?q=${encodeURIComponent(query)}`
@@ -127,7 +127,7 @@ class SearchResults extends Component {
       {{on "input" (fn this.searchTask.perform @value)}}
       placeholder="Search..."
     />
-    
+
     {{#if this.searchTask.isRunning}}
       <div class="loading">Searching...</div>
     {{else}}
@@ -154,7 +154,7 @@ export default class DataFetcherService extends Service {
   @service store;
   @tracked data = null;
   @tracked isLoading = false;
-  
+
   abortController = null;
 
   constructor() {
@@ -168,13 +168,13 @@ export default class DataFetcherService extends Service {
     // Cancel previous request
     this.abortController?.abort();
     this.abortController = new AbortController();
-    
+
     this.isLoading = true;
     try {
       // Note: WarpDrive handles AbortSignal internally
-      const response = await this.store.request({ 
+      const response = await this.store.request({
         url,
-        signal: this.abortController.signal 
+        signal: this.abortController.signal
       });
       this.data = response.content;
     } catch (error) {
@@ -200,21 +200,21 @@ import { hash } from 'rsvp';
 export default class PostRoute extends Route {
   async model({ post_id }) {
     // First fetch the post
-    const post = await this.store.request({ 
-      url: `/posts/${post_id}` 
+    const post = await this.store.request({
+      url: `/posts/${post_id}`
     });
-    
+
     // Then fetch related data in parallel
     return hash({
       post,
-      author: this.store.request({ 
-        url: `/users/${post.content.authorId}` 
+      author: this.store.request({
+        url: `/users/${post.content.authorId}`
       }),
-      comments: this.store.request({ 
-        url: `/posts/${post_id}/comments` 
+      comments: this.store.request({
+        url: `/posts/${post_id}/comments`
       }),
-      relatedPosts: this.store.request({ 
-        url: `/posts/${post_id}/related` 
+      relatedPosts: this.store.request({
+        url: `/posts/${post_id}/related`
       })
     });
   }
@@ -234,7 +234,7 @@ import { registerDestructor } from '@ember/destroyable';
 export default class LiveDataService extends Service {
   @service store;
   @tracked data = null;
-  
+
   intervalId = null;
 
   constructor() {
@@ -246,7 +246,7 @@ export default class LiveDataService extends Service {
 
   startPolling(url, interval = 5000) {
     this.stopPolling();
-    
+
     this.poll(url); // Initial fetch
     this.intervalId = setInterval(() => this.poll(url), interval);
   }
@@ -279,17 +279,17 @@ import Service, { service } from '@ember/service';
 
 export default class BatchLoaderService extends Service {
   @service store;
-  
+
   pendingIds = new Set();
   batchTimeout = null;
 
   async loadUser(id) {
     this.pendingIds.add(id);
-    
+
     if (!this.batchTimeout) {
       this.batchTimeout = setTimeout(() => this.executeBatch(), 50);
     }
-    
+
     // Return a promise that resolves when batch completes
     return new Promise((resolve) => {
       this.registerCallback(id, resolve);
@@ -300,11 +300,11 @@ export default class BatchLoaderService extends Service {
     const ids = Array.from(this.pendingIds);
     this.pendingIds.clear();
     this.batchTimeout = null;
-    
+
     const response = await this.store.request({
       url: `/users?ids=${ids.join(',')}`
     });
-    
+
     // Resolve all pending promises
     response.content.forEach(user => {
       this.resolveCallback(user.id, user);

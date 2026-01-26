@@ -15,12 +15,12 @@ Use WarpDrive's request features effectively to reduce API calls and load only t
 // app/routes/posts.js
 export default class PostsRoute extends Route {
   @service store;
-  
+
   async model() {
     // Loads all posts (could be thousands)
     const response = await this.store.request({ url: '/posts' });
     const posts = response.content.data;
-    
+
     // Then filters in memory
     return posts.filter(post => post.attributes.status === 'published');
   }
@@ -33,12 +33,12 @@ export default class PostsRoute extends Route {
 // app/routes/posts.js
 export default class PostsRoute extends Route {
   @service store;
-  
+
   queryParams = {
     page: { refreshModel: true },
     filter: { refreshModel: true }
   };
-  
+
   model(params) {
     // Server-side filtering and pagination
     return this.store.request({
@@ -68,7 +68,7 @@ export default class PostsRoute extends Route {
 // app/routes/post.js
 export default class PostRoute extends Route {
   @service store;
-  
+
   model(params) {
     return this.store.request({
       url: `/posts/${params.post_id}`,
@@ -86,18 +86,18 @@ export default class PostRoute extends Route {
 // app/components/user-badge.js
 class UserBadge extends Component {
   @service store;
-  
+
   get user() {
     // Check cache first, avoiding API call if already loaded
     const cached = this.store.cache.peek({
       type: 'user',
       id: this.args.userId
     });
-    
+
     if (cached) {
       return cached;
     }
-    
+
     // Only fetch if not in cache
     return this.store.request({
       url: `/users/${this.args.userId}`

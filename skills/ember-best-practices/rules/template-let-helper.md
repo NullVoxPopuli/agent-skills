@@ -19,11 +19,11 @@ Use `{{#let}}` to compute expensive values once and reuse them in the template i
       <h3>{{this.user.fullName}}</h3>
       <p>Status: Active</p>
     {{/if}}
-    
+
     {{#if (and this.user.isActive (not this.user.isDeleted))}}
       <button {{on "click" this.editUser}}>Edit</button>
     {{/if}}
-    
+
     {{#if (and this.user.isActive (not this.user.isDeleted))}}
       <button {{on "click" this.deleteUser}}>Delete</button>
     {{/if}}
@@ -41,11 +41,11 @@ Use `{{#let}}` to compute expensive values once and reuse them in the template i
         <h3>{{this.user.fullName}}</h3>
         <p>Status: Active</p>
       {{/if}}
-      
+
       {{#if isEditable}}
         <button {{on "click" this.editUser}}>Edit</button>
       {{/if}}
-      
+
       {{#if isEditable}}
         <button {{on "click" this.deleteUser}}>Delete</button>
       {{/if}}
@@ -58,7 +58,7 @@ Use `{{#let}}` to compute expensive values once and reuse them in the template i
 ```glimmer-js
 // app/components/checkout.gjs
 <template>
-  {{#let 
+  {{#let
     (this.calculateTotal this.items)
     (this.formatCurrency this.total)
     (this.hasDiscount this.user)
@@ -66,7 +66,7 @@ Use `{{#let}}` to compute expensive values once and reuse them in the template i
   }}
     <div class="checkout">
       <p>Total: {{formattedTotal}}</p>
-      
+
       {{#if showDiscount}}
         <p>Original: {{total}}</p>
         <p>Discount Applied!</p>

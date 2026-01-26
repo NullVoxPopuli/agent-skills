@@ -22,22 +22,22 @@ class Search extends Component {
   @tracked isSearching = false;
   @tracked error = null;
   currentRequest = null;
-  
+
   @action
   async search(event) {
     const query = event.target.value;
-    
+
     // Manual cancelation - easy to get wrong
     if (this.currentRequest) {
       this.currentRequest.abort();
     }
-    
+
     this.isSearching = true;
     this.error = null;
-    
+
     const controller = new AbortController();
     this.currentRequest = controller;
-    
+
     try {
       const response = await fetch(`/api/search?q=${query}`, {
         signal: controller.signal
@@ -77,11 +77,11 @@ class Search extends Component {
 
   <template>
     <input {{on "input" (fn this.searchTask.perform (pick "target.value"))}} />
-    
+
     {{#if this.searchTask.isRunning}}
       <div class="loading">Loading...</div>
     {{/if}}
-    
+
     {{#if this.searchTask.last.isSuccessful}}
       <ul>
         {{#each this.searchTask.last.value as |result|}}
@@ -89,7 +89,7 @@ class Search extends Component {
         {{/each}}
       </ul>
     {{/if}}
-    
+
     {{#if this.searchTask.last.isError}}
       <div class="error">{{this.searchTask.last.error.message}}</div>
     {{/if}}
@@ -108,22 +108,22 @@ class Autocomplete extends Component {
   searchTask = restartableTask(async (query) => {
     // Debounce user typing - wait 300ms
     await timeout(300);
-    
+
     const response = await fetch(`/api/autocomplete?q=${query}`);
     return response.json(); // Return value, don't set tracked state
   });
 
   <template>
-    <input 
+    <input
       type="search"
       {{on "input" (fn this.searchTask.perform (pick "target.value"))}}
       placeholder="Search..."
     />
-    
+
     {{#if this.searchTask.isRunning}}
       <div class="spinner"></div>
     {{/if}}
-    
+
     {{#if this.searchTask.lastSuccessful}}
       <ul class="suggestions">
         {{#each this.searchTask.lastSuccessful.value as |item|}}
@@ -150,7 +150,7 @@ class FormActions extends Component {
     });
     return response.json();
   });
-  
+
   // enqueueTask: Queues user actions sequentially
   processTask = enqueueTask(async (item) => {
     const response = await fetch('/api/process', {
@@ -159,15 +159,15 @@ class FormActions extends Component {
     });
     return response.json();
   });
-  
+
   // restartableTask: Cancels previous, starts new (for search)
   searchTask = restartableTask(async (query) => {
     const response = await fetch(`/api/search?q=${query}`);
     return response.json();
   });
-  
+
   <template>
-    <button 
+    <button
       {{on "click" (fn this.saveTask.perform @data)}}
       disabled={{this.saveTask.isRunning}}
     >

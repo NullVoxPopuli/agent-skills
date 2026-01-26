@@ -73,13 +73,13 @@ import { cached } from '@glimmer/tracking';
 class UserCard extends Component {
   @cached
   get isActive() {
-    return this.args.user.status === 'active' && 
+    return this.args.user.status === 'active' &&
            this.args.user.lastLoginDays < 30;
   }
 
   @cached
   get showActions() {
-    return this.args.canEdit && 
+    return this.args.canEdit &&
            !this.args.user.locked &&
            this.isActive;
   }
@@ -87,7 +87,7 @@ class UserCard extends Component {
   <template>
     <div class="user-card">
       <h3>{{@user.name}}</h3>
-      
+
       {{#if this.isActive}}
         <span class="status active">Active</span>
       {{else}}

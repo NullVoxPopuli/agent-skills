@@ -25,14 +25,14 @@ class UserCard extends Component {
         <h3>{{@user.name}}</h3>
         <p>{{@user.email}}</p>
       </div>
-      
+
       {{#if @showActions}}
         <div class="actions">
           <button {{on "click" @onEdit}}>Edit</button>
           <button {{on "click" @onDelete}}>Delete</button>
         </div>
       {{/if}}
-      
+
       {{#if @showStats}}
         <div class="stats">
           <span>Posts: {{@user.postCount}}</span>
@@ -60,15 +60,15 @@ class UserCard extends Component {
           <h3>{{@user.name}}</h3>
         </div>
       {{/if}}
-      
+
       {{yield @user to="default"}}
-      
+
       {{#if (has-block "actions")}}
         <div class="actions">
           {{yield @user to="actions"}}
         </div>
       {{/if}}
-      
+
       {{#if (has-block "footer")}}
         <div class="footer">
           {{yield @user to="footer"}}
@@ -93,17 +93,17 @@ import UserCard from './user-card';
           <h3>{{user.name}}</h3>
         </div>
       </:header>
-      
+
       <:default as |u|>
         <p class="bio">{{u.bio}}</p>
         <p class="email">{{u.email}}</p>
       </:default>
-      
+
       <:actions as |u|>
         <button {{on "click" (fn @onEdit u)}}>Edit</button>
         <button {{on "click" (fn @onDelete u)}}>Delete</button>
       </:actions>
-      
+
       <:footer as |u|>
         <div class="stats">
           Posts: {{u.postCount}} | Followers: {{u.followers}}
@@ -195,12 +195,12 @@ import { hash } from '@ember/helper';
 
 class Dropdown extends Component {
   @tracked isOpen = false;
-  
+
   @action
   toggle() {
     this.isOpen = !this.isOpen;
   }
-  
+
   @action
   close() {
     this.isOpen = false;
@@ -224,7 +224,7 @@ import Dropdown from './dropdown';
     <button {{on "click" dd.toggle}}>
       Menu {{if dd.isOpen "▲" "▼"}}
     </button>
-    
+
     {{#if dd.isOpen}}
       <ul class="dropdown-menu">
         <li><a href="#" {{on "click" dd.close}}>Profile</a></li>

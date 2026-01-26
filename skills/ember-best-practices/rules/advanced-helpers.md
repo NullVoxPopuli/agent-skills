@@ -19,7 +19,7 @@ class UserCard extends Component {
     const now = new Date();
     const diffMs = now - date;
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
@@ -49,7 +49,7 @@ function formatRelativeDate(date) {
   const now = new Date();
   const diffMs = now - dateObj;
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return `${diffDays} days ago`;
@@ -77,7 +77,7 @@ export function formatRelativeDate(date) {
   const now = new Date();
   const diffMs = now - dateObj;
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return `${diffDays} days ago`;
@@ -97,7 +97,7 @@ export function formatRelativeDate(date) {
   const now = new Date();
   const diffMs = now - dateObj;
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return `${diffDays} days ago`;
@@ -133,7 +133,7 @@ export class FormatCurrencyHelper {
   constructor(owner) {
     this.intl = owner.lookup('service:intl');
   }
-  
+
   compute(amount, { currency = 'USD' } = {}) {
     return this.intl.formatNumber(amount, {
       style: 'currency',

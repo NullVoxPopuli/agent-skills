@@ -19,11 +19,11 @@ import { computed } from '@ember/object';
 export default Component.extend({
   tagName: 'div',
   classNames: ['user-card'],
-  
+
   fullName: computed('user.{firstName,lastName}', function() {
     return `${this.user.firstName} ${this.user.lastName}`;
   }),
-  
+
   didInsertElement() {
     this._super(...arguments);
     // Complex lifecycle management

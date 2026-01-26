@@ -100,12 +100,12 @@ export default class InputField extends Component {
   handleFocus() {
     console.log('focused');
   }
-  
+
   @action
   handleBlur() {
     console.log('blurred');
   }
-  
+
   @action
   handleInput(event) {
     this.args.onChange?.(event.target.value);
@@ -138,7 +138,7 @@ export default class Form extends Component {
   handleSubmit(event) {
     event.preventDefault(); // Prevent page reload
     event.stopPropagation(); // Stop event bubbling if needed
-    
+
     this.args.onSubmit?.(/* form data */);
   }
 
@@ -165,7 +165,7 @@ export default class KeyboardNav extends Component {
       event.preventDefault();
       this.args.onActivate?.();
     }
-    
+
     if (event.key === 'Escape') {
       this.args.onCancel?.();
     }

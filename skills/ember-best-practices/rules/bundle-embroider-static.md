@@ -30,7 +30,7 @@ const { compatBuild } = require('@embroider/compat');
 
 module.exports = async function (defaults) {
   const { buildOnce } = await import('@embroider/vite');
-  
+
   let app = new EmberApp(defaults, {
     // Add options here
   });
@@ -48,7 +48,7 @@ const { compatBuild } = require('@embroider/compat');
 
 module.exports = async function (defaults) {
   const { buildOnce } = await import('@embroider/vite');
-  
+
   let app = new EmberApp(defaults, {
     // Add options here
   });

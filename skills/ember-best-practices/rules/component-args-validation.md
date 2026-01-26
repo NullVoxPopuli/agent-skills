@@ -51,15 +51,15 @@ class UserCard extends Component<UserCardSignature> {
     <div ...attributes>
       <h3>{{@user.name}}</h3>
       <p>{{@user.email}}</p>
-      
+
       {{#if @user.avatarUrl}}
         <img src={{@user.avatarUrl}} alt={{@user.name}} />
       {{/if}}
-      
+
       {{#if @onEdit}}
         <button {{on "click" (fn @onEdit @user)}}>Edit</button>
       {{/if}}
-      
+
       {{yield}}
     </div>
   </template>
@@ -80,21 +80,21 @@ class DataTable extends Component {
       'DataTable requires @columns argument',
       this.args.columns && Array.isArray(this.args.columns)
     );
-    
+
     assert(
       '@columns must be an array of objects with "key" and "label" properties',
       this.args.columns.every(col => col.key && col.label)
     );
-    
+
     return this.args.columns;
   }
-  
+
   get rows() {
     assert(
       'DataTable requires @rows argument',
       this.args.rows && Array.isArray(this.args.rows)
     );
-    
+
     return this.args.rows;
   }
 
@@ -150,7 +150,7 @@ import Component from '@glimmer/component';
 
 /**
  * Modal dialog component
- * 
+ *
  * @param {Object} args
  * @param {boolean} args.isOpen - Controls modal visibility
  * @param {() => void} args.onClose - Called when modal should close

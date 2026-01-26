@@ -31,7 +31,7 @@ import { action } from '@ember/object';
 
 class UserGreeting extends Component {
   @tracked displayName = '';
-  
+
   @action
   updateDisplayName() {
     // Runs on every render - inefficient and error-prone
@@ -75,7 +75,7 @@ class UserStats extends Component {
   @cached
   get sortedPosts() {
     // Expensive computation only runs when @posts changes
-    return [...this.args.posts].sort((a, b) => 
+    return [...this.args.posts].sort((a, b) =>
       b.createdAt - a.createdAt
     );
   }
@@ -94,7 +94,7 @@ class UserStats extends Component {
       <p>Total: {{this.statistics.total}}</p>
       <p>Published: {{this.statistics.published}}</p>
       <p>Drafts: {{this.statistics.drafts}}</p>
-      
+
       <ul>
         {{#each this.sortedPosts as |post|}}
           <li>{{post.title}}</li>
@@ -117,12 +117,12 @@ import { action } from '@ember/object';
 
 class Chart extends Component {
   chartInstance = null;
-  
+
   @action
   setupChart(element) {
     this.chartInstance = new Chart(element, this.args.config);
   }
-  
+
   willDestroy() {
     super.willDestroy(...arguments);
     // Easy to forget cleanup!
@@ -144,7 +144,7 @@ import { registerDestructor } from '@ember/destroyable';
 export default modifier((element, [config]) => {
   // Setup
   const chartInstance = new Chart(element, config);
-  
+
   // Cleanup happens automatically
   registerDestructor(element, () => {
     chartInstance.destroy();
@@ -176,7 +176,7 @@ class UserProfile extends Component {
   @tracked userData = null;
   @tracked loading = true;
   controller = new AbortController();
-  
+
   @action
   async loadUser() {
     this.loading = true;
@@ -189,7 +189,7 @@ class UserProfile extends Component {
       this.loading = false;
     }
   }
-  
+
   willDestroy() {
     super.willDestroy(...arguments);
     this.controller.abort(); // Easy to forget!
@@ -217,12 +217,12 @@ export default class UserDataResource extends Resource {
   @tracked data = null;
   @tracked loading = true;
   controller = new AbortController();
-  
+
   modify(positional, named) {
     const [userId] = positional;
     this.loadUser(userId);
   }
-  
+
   async loadUser(userId) {
     this.loading = true;
     try {
@@ -234,7 +234,7 @@ export default class UserDataResource extends Resource {
       this.loading = false;
     }
   }
-  
+
   willDestroy() {
     // Cleanup happens automatically
     this.controller.abort();
@@ -308,7 +308,7 @@ Modern Ember provides superior alternatives to legacy lifecycle hooks:
 
 **Never use `{{did-insert}}`, `{{will-destroy}}`, or `{{did-update}}` in new code.**
 
-Reference: 
+Reference:
 - [Ember Modifiers](https://github.com/ember-modifier/ember-modifier)
 - [warp-drive/reactiveweb](https://github.com/emberjs/data/tree/main/packages/reactiveweb)
 - [Glimmer Tracking](https://guides.emberjs.com/release/in-depth-topics/autotracking-in-depth/)

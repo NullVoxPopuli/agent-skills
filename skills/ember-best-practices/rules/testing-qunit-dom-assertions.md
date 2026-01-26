@@ -31,7 +31,7 @@ module('Integration | Component | greeting', function (hooks) {
 
   test('it renders', async function (assert) {
     await render(<template><Greeting @name="World" /></template>);
-    
+
     const element = this.element.querySelector('.greeting');
     assert.ok(element, 'greeting element exists');
     assert.equal(element.textContent.trim(), 'Hello, World!', 'shows greeting');
@@ -54,7 +54,7 @@ module('Integration | Component | greeting', function (hooks) {
 
   test('it renders', async function (assert) {
     await render(<template><Greeting @name="World" /></template>);
-    
+
     assert.dom('.greeting').exists('greeting element exists');
     assert.dom('.greeting').hasText('Hello, World!', 'shows greeting');
   });
@@ -68,19 +68,19 @@ module('Integration | Component | greeting', function (hooks) {
 ```javascript
 test('element visibility', async function (assert) {
   await render(<template><MyComponent /></template>);
-  
+
   // Element exists in DOM
   assert.dom('[data-test-output]').exists();
-  
+
   // Element doesn't exist
   assert.dom('[data-test-deleted]').doesNotExist();
-  
+
   // Element is visible (not display: none or visibility: hidden)
   assert.dom('[data-test-visible]').isVisible();
-  
+
   // Element is not visible
   assert.dom('[data-test-hidden]').isNotVisible();
-  
+
   // Count elements
   assert.dom('[data-test-item]').exists({ count: 3 });
 });
@@ -91,16 +91,16 @@ test('element visibility', async function (assert) {
 ```javascript
 test('text assertions', async function (assert) {
   await render(<template><Article @title="Hello World" /></template>);
-  
+
   // Exact text match
   assert.dom('h1').hasText('Hello World');
-  
+
   // Contains text (partial match)
   assert.dom('p').containsText('Hello');
-  
+
   // Any text exists
   assert.dom('h1').hasAnyText();
-  
+
   // No text
   assert.dom('.empty').hasNoText();
 });
@@ -111,19 +111,19 @@ test('text assertions', async function (assert) {
 ```javascript
 test('attribute assertions', async function (assert) {
   await render(<template><Button @disabled={{true}} /></template>);
-  
+
   // Has attribute (any value)
   assert.dom('button').hasAttribute('disabled');
-  
+
   // Has specific attribute value
   assert.dom('button').hasAttribute('type', 'submit');
-  
+
   // Attribute value matches regex
   assert.dom('a').hasAttribute('href', /^https:\/\//);
-  
+
   // Doesn't have attribute
   assert.dom('button').doesNotHaveAttribute('aria-hidden');
-  
+
   // Has ARIA attributes
   assert.dom('[role="button"]').hasAttribute('aria-label', 'Close dialog');
 });
@@ -134,13 +134,13 @@ test('attribute assertions', async function (assert) {
 ```javascript
 test('class assertions', async function (assert) {
   await render(<template><Card @status="active" /></template>);
-  
+
   // Has single class
   assert.dom('.card').hasClass('active');
-  
+
   // Doesn't have class
   assert.dom('.card').doesNotHaveClass('disabled');
-  
+
   // Has no classes at all
   assert.dom('.plain').hasNoClass();
 });
@@ -160,22 +160,22 @@ test('form assertions', async function (assert) {
       </select>
     </form>
   </template>);
-  
+
   // Input value
   assert.dom('input[type="text"]').hasValue('hello');
-  
+
   // Checkbox/radio state
   assert.dom('input[type="checkbox"]').isChecked();
   assert.dom('input[type="checkbox"]').isNotChecked();
-  
+
   // Disabled state
   assert.dom('input[type="radio"]').isDisabled();
   assert.dom('input[type="text"]').isNotDisabled();
-  
+
   // Required state
   assert.dom('input').isRequired();
   assert.dom('input').isNotRequired();
-  
+
   // Focus state
   assert.dom('input').isFocused();
   assert.dom('input').isNotFocused();
@@ -189,7 +189,7 @@ You can chain multiple assertions on the same element:
 ```javascript
 test('chained assertions', async function (assert) {
   await render(<template><Button @variant="primary" @disabled={{false}} /></template>);
-  
+
   assert.dom('button')
     .exists()
     .hasClass('btn-primary')
@@ -207,10 +207,10 @@ Add custom messages to make failures clearer:
 ```javascript
 test('custom messages', async function (assert) {
   await render(<template><UserProfile @user={{this.user}} /></template>);
-  
+
   assert.dom('[data-test-username]')
     .hasText(this.user.name, 'username is displayed correctly');
-  
+
   assert.dom('[data-test-avatar]')
     .exists('user avatar should be visible');
 });
@@ -223,13 +223,13 @@ test('list items', async function (assert) {
   await render(<template>
     <TodoList @todos={{this.todos}} />
   </template>);
-  
+
   // Exact count
   assert.dom('[data-test-todo]').exists({ count: 5 });
-  
+
   // At least one
   assert.dom('[data-test-todo]').exists({ count: 1 });
-  
+
   // None
   assert.dom('[data-test-todo]').doesNotExist();
 });
@@ -242,17 +242,17 @@ Use qunit-dom for basic accessibility checks:
 ```javascript
 test('accessibility', async function (assert) {
   await render(<template><Modal @onClose={{this.close}} /></template>);
-  
+
   // ARIA roles
   assert.dom('[role="dialog"]').exists();
   assert.dom('[role="dialog"]').hasAttribute('aria-modal', 'true');
-  
+
   // Labels
   assert.dom('[aria-label="Close modal"]').exists();
-  
+
   // Focus management
   assert.dom('[data-test-close-button]').isFocused();
-  
+
   // Required fields
   assert.dom('input[name="email"]').hasAttribute('aria-required', 'true');
 });
@@ -264,7 +264,7 @@ test('accessibility', async function (assert) {
    ```javascript
    // Good
    assert.dom('[data-test-submit-button]').exists();
-   
+
    // Avoid - classes can change
    assert.dom('.btn.btn-primary').exists();
    ```
@@ -273,7 +273,7 @@ test('accessibility', async function (assert) {
    ```javascript
    // Better - exact match
    assert.dom('h1').hasText('Welcome');
-   
+
    // Less specific - could miss issues
    assert.dom('h1').containsText('Welc');
    ```
@@ -287,10 +287,10 @@ test('accessibility', async function (assert) {
 4. **Combine with @ember/test-helpers**:
    ```javascript
    import { click, fillIn } from '@ember/test-helpers';
-   
+
    await fillIn('[data-test-email]', 'user@example.com');
    await click('[data-test-submit]');
-   
+
    assert.dom('[data-test-success]').exists();
    ```
 
@@ -298,7 +298,7 @@ test('accessibility', async function (assert) {
    ```javascript
    // Good - tests what user sees
    assert.dom('[data-test-greeting]').hasText('Hello, Alice');
-   
+
    // Avoid - tests implementation details
    assert.ok(this.component.internalState === 'ready');
    ```

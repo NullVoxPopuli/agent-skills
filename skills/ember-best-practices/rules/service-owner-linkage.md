@@ -21,7 +21,7 @@ import ApiService from '../services/api';
 class UserProfile extends Component {
   // ❌ Creates orphaned instance without owner
   api = new ApiService();
-  
+
   async loadUser() {
     // Won't have access to other services or owner features
     return this.api.fetch('/user/me');
@@ -42,7 +42,7 @@ import { service } from '@ember/service';
 class UserProfile extends Component {
   // ✅ Proper injection with owner linkage
   @service api;
-  
+
   async loadUser() {
     // Has full owner context and can inject other services
     return this.api.fetch('/user/me');
@@ -65,7 +65,7 @@ import { service } from '@ember/service';
 
 class DataTransformer {
   @service store;
-  
+
   transform(data) {
     // Can use injected services because it has an owner
     return this.store.request({ url: '/transform', data });
@@ -74,15 +74,15 @@ class DataTransformer {
 
 class DataProcessor extends Component {
   @service('store') storeService;
-  
+
   constructor(owner, args) {
     super(owner, args);
-    
+
     // Manual instantiation with owner linkage
     this.transformer = new DataTransformer();
     setOwner(this.transformer, getOwner(this));
   }
-  
+
   processData(data) {
     // transformer can now access services
     return this.transformer.transform(data);
@@ -104,12 +104,12 @@ class Logger {
     this.owner = owner;
     this.context = context;
   }
-  
+
   get config() {
     // Access configuration service via owner
     return getOwner(this).lookup('service:config');
   }
-  
+
   log(message) {
     if (this.config.enableLogging) {
       console.log(`[${this.context}]`, message);
@@ -130,7 +130,7 @@ import { createLogger } from '../utils/logger-factory';
 
 class My extends Component {
   logger = createLogger(getOwner(this), 'MyComponent');
-  
+
   performAction() {
     this.logger.log('Action performed');
   }
@@ -160,7 +160,7 @@ class ValidationService {
 
 class FormStateManager {
   data = { email: '' };
-  
+
   updateEmail(value) {
     this.data.email = value;
   }
@@ -170,7 +170,7 @@ export class AdvancedForm extends Component {
   // link() handles both owner and destruction automatically
   validation = link(this, () => new ValidationService());
   formState = link(this, () => new FormStateManager());
-  
+
   get isValid() {
     return this.validation.validate(this.formState.data);
   }
@@ -206,15 +206,15 @@ import { createService } from 'ember-primitives/utils';
 // Define service logic as a plain function
 function AnalyticsService() {
   let events = [];
-  
+
   return {
     get events() {
       return events;
     },
-    
+
     track(event) {
       events.push({ ...event, timestamp: Date.now() });
-      
+
       // Send to analytics endpoint
       fetch('/analytics', {
         method: 'POST',
@@ -251,22 +251,22 @@ import { action } from '@ember/object';
 
 export class CartService extends Service {
   @tracked items = new TrackedArray([]);
-  
+
   get total() {
     return this.items.reduce((sum, item) => sum + item.price, 0);
   }
-  
+
   @action
   addItem(item) {
     this.items.push(item);
   }
-  
+
   @action
   removeItem(id) {
     const index = this.items.findIndex(item => item.id === id);
     if (index > -1) this.items.splice(index, 1);
   }
-  
+
   @action
   clear() {
     this.items.clear();
@@ -291,7 +291,7 @@ class ShoppingCart extends Component {
     <div class="cart">
       <h3>Cart ({{this.cart.items.length}} items)</h3>
       <div>Total: ${{this.cart.total}}</div>
-      
+
       {{#each this.cart.items as |item|}}
         <div class="cart-item">
           {{item.name}} - ${{item.price}}
@@ -300,7 +300,7 @@ class ShoppingCart extends Component {
           </button>
         </div>
       {{/each}}
-      
+
       <button {{on "click" this.cart.clear}}>Clear Cart</button>
     </div>
   </template>
@@ -317,11 +317,11 @@ import { setOwner } from '@ember/application';
 
 export class NotificationManager {
   @tracked notifications = new TrackedArray([]);
-  
+
   constructor(owner) {
     setOwner(this, owner);
   }
-  
+
   @action
   add(message, type = 'info') {
     const notification = {
@@ -330,13 +330,13 @@ export class NotificationManager {
       type,
       timestamp: Date.now()
     };
-    
+
     this.notifications.push(notification);
-    
+
     // Auto-dismiss after 5 seconds
     setTimeout(() => this.dismiss(notification.id), 5000);
   }
-  
+
   @action
   dismiss(id) {
     const index = this.notifications.findIndex(n => n.id === id);
@@ -365,7 +365,7 @@ class NotificationContainer extends Component {
         </div>
       {{/each}}
     </div>
-    
+
     {{! Example usage }}
     <button {{on "click" (fn this.notifications.add "Success!" "success")}}>
       Show Notification
@@ -386,12 +386,12 @@ export function initialize(appInstance) {
       newDashboard: true,
       betaFeatures: false
     };
-    
+
     isEnabled(flag) {
       return this.flags[flag] || false;
     }
   });
-  
+
   // Make it a singleton
   appInstance.inject('route', 'featureFlags', 'service:feature-flags');
   appInstance.inject('component', 'featureFlags', 'service:feature-flags');
@@ -411,7 +411,7 @@ import { service } from '@ember/service';
 
 class FeatureGated extends Component {
   @service featureFlags;
-  
+
   get shouldShow() {
     return this.featureFlags.isEnabled(this.args.feature);
   }

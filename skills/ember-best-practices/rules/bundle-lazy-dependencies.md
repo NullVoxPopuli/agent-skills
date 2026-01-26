@@ -35,7 +35,7 @@ class Dashboard extends Component {
     const { default: Chart } = await import('chart.js/auto');
     return Chart;
   });
-  
+
   highlighterLoader = getPromiseState(async () => {
     const { default: hljs } = await import('highlight.js');
     return hljs;

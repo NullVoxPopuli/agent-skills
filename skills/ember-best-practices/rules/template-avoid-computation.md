@@ -26,7 +26,7 @@ import { sum, map, div, max, multiply, sortBy } from '../helpers/math';
     <p>Total: {{sum (map @items "price")}}</p>
     <p>Average: {{div (sum (map @items "price")) @items.length}}</p>
     <p>Max: {{max (map @items "price")}}</p>
-    
+
     {{#each (sortBy "name" @items) as |item|}}
       <div>{{item.name}}: {{multiply item.price item.quantity}}</div>
     {{/each}}
@@ -43,31 +43,31 @@ import { cached } from '@glimmer/tracking';
 export class Stats extends Component {
   // @cached is useful when getters are accessed multiple times
   // For single access, regular getters are sufficient
-  
+
   @cached
   get total() {
     return this.args.items.reduce((sum, item) => sum + item.price, 0);
   }
-  
+
   get average() {
     // No @cached needed if only accessed once in template
-    return this.args.items.length > 0 
-      ? this.total / this.args.items.length 
+    return this.args.items.length > 0
+      ? this.total / this.args.items.length
       : 0;
   }
-  
+
   get maxPrice() {
     return Math.max(...this.args.items.map(item => item.price));
   }
-  
+
   @cached
   get sortedItems() {
     // @cached useful here as it's used by itemsWithTotal
-    return [...this.args.items].sort((a, b) => 
+    return [...this.args.items].sort((a, b) =>
       a.name.localeCompare(b.name)
     );
   }
-  
+
   @cached
   get itemsWithTotal() {
     // @cached useful as accessed multiple times in {{#each}}
@@ -82,7 +82,7 @@ export class Stats extends Component {
       <p>Total: {{this.total}}</p>
       <p>Average: {{this.average}}</p>
       <p>Max: {{this.maxPrice}}</p>
-      
+
       {{#each this.itemsWithTotal key="id" as |item|}}
         <div>{{item.name}}: {{item.total}}</div>
       {{/each}}

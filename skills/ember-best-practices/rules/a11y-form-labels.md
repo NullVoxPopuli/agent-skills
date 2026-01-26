@@ -15,17 +15,17 @@ All form inputs must have associated labels, and validation errors should be ann
 // app/components/form.gjs
 <template>
   <form {{on "submit" this.handleSubmit}}>
-    <input 
-      type="email" 
+    <input
+      type="email"
       value={{this.email}}
       {{on "input" this.updateEmail}}
       placeholder="Email"
     />
-    
+
     {{#if this.emailError}}
       <span>{{this.emailError}}</span>
     {{/if}}
-    
+
     <button type="submit">Submit</button>
   </form>
 </template>```
@@ -43,19 +43,19 @@ All form inputs must have associated labels, and validation errors should be ann
           <span aria-label="required">*</span>
         {{/if}}
       </label>
-      
-      <input 
+
+      <input
         id="email-input"
-        type="email" 
+        type="email"
         value={{this.email}}
         {{on "input" this.updateEmail}}
         aria-describedby={{if this.emailError "email-error"}}
         aria-invalid={{if this.emailError "true"}}
         required={{this.isEmailRequired}}
       />
-      
+
       {{#if this.emailError}}
-        <span 
+        <span
           id="email-error"
           role="alert"
           aria-live="polite"
@@ -64,7 +64,7 @@ All form inputs must have associated labels, and validation errors should be ann
         </span>
       {{/if}}
     </div>
-    
+
     <button type="submit" disabled={{this.isSubmitting}}>
       {{#if this.isSubmitting}}
         <span aria-live="polite">Submitting...</span>
@@ -85,47 +85,47 @@ import { on } from '@ember/modifier';
 
 class UserForm extends Component {
   @tracked errorMessages = {};
-  
+
   validateEmail = (event) => {
     // Custom business logic validation
     const input = event.target;
     const value = input.value;
-    
+
     if (!value) {
       input.setCustomValidity('Email is required');
       return false;
     }
-    
+
     if (!input.validity.valid) {
       input.setCustomValidity('Must be a valid email');
       return false;
     }
-    
+
     // Additional custom validation (e.g., check if email is already taken)
     if (value === 'taken@example.com') {
       input.setCustomValidity('This email is already registered');
       return false;
     }
-    
+
     input.setCustomValidity('');
     return true;
   };
-  
+
   handleSubmit = async (event) => {
     event.preventDefault();
     const form = event.target;
-    
+
     // Run custom validations
     const emailInput = form.querySelector('[name="email"]');
     const fakeEvent = { target: emailInput };
     this.validateEmail(fakeEvent);
-    
+
     // Use native validation check
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
     }
-    
+
     const formData = new FormData(form);
     await this.args.onSubmit(formData);
   };
@@ -134,10 +134,10 @@ class UserForm extends Component {
     <form {{on "submit" this.handleSubmit}}>
       <label for="user-email">
         Email
-        <input 
+        <input
           id="user-email"
-          type="email" 
-          name="email" 
+          type="email"
+          name="email"
           required
           value={{@user.email}}
           {{on "blur" this.validateEmail}}
