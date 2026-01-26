@@ -6,8 +6,8 @@ Follow modern Ember component file conventions: use `.gjs`/`.gts` files with `<t
 
 ## Incorrect
 
-```glimmer-js
-// app/components/user-card.hbs - WRONG: Using .hbs file
+```handlebars
+{{! app/components/user-card.hbs - WRONG: Using .hbs file }}
 <div class="user-card">
   {{@name}}
 </div>
