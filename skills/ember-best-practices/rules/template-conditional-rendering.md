@@ -1,7 +1,7 @@
 ---
 title: Optimize Conditional Rendering
 category: template
-impact: high
+impact: HIGH
 ---
 
 # Optimize Conditional Rendering

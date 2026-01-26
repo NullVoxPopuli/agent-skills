@@ -9,13 +9,31 @@ tags: templates, components, functions, performance
 
 For template-only components (components without a class and `this`), use in-scope functions to keep logic close to the template while avoiding unnecessary caching overhead.
 
-**Why template-only components:**
-- Simpler than class-based components when no state is needed
-- No `this` context - all data comes from arguments
-- Functions defined in scope are recreated on each render (no caching)
-- Best for simple computations that don't need memoization
+**Incorrect (using class-based component for simple logic):**
 
-**Template-only component with in-scope functions:**
+```glimmer-js
+// app/components/product-card.gjs
+import Component from '@glimmer/component';
+
+export class ProductCard extends Component {
+  // Unnecessary class and overhead for simple formatting
+  formatPrice(price) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price);
+  }
+
+  <template>
+    <div class="product-card">
+      <h3>{{@product.name}}</h3>
+      <div class="price">{{this.formatPrice @product.price}}</div>
+    </div>
+  </template>
+}
+```
+
+**Correct (template-only component with in-scope functions):**
 
 ```glimmer-js
 // app/components/product-card.gjs

@@ -1,7 +1,7 @@
 ---
 title: Implement Robust Data Requesting Patterns
 category: service
-impact: high
+impact: HIGH
 ---
 
 # Implement Robust Data Requesting Patterns

@@ -9,6 +9,48 @@ tags: testing, msw, api-mocking, mock-service-worker
 
 Use MSW (Mock Service Worker) for API mocking in tests. MSW provides a cleaner approach than Mirage by intercepting requests at the network level without introducing unnecessary ORM patterns or abstractions.
 
+**Incorrect (using Mirage with ORM complexity):**
+
+```javascript
+// mirage/config.js
+export default function() {
+  this.namespace = '/api';
+  
+  // Complex schema and factories
+  this.get('/users', (schema) => {
+    return schema.users.all();
+  });
+  
+  // Need to maintain schema, factories, serializers
+  this.post('/users', (schema, request) => {
+    let attrs = JSON.parse(request.requestBody);
+    return schema.users.create(attrs);
+  });
+}
+```
+
+**Correct (using MSW with simple network mocking):**
+
+```javascript
+// tests/helpers/msw.js
+import { http, HttpResponse } from 'msw';
+
+// Simple request/response mocking
+export const handlers = [
+  http.get('/api/users', () => {
+    return HttpResponse.json([
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' }
+    ]);
+  }),
+  
+  http.post('/api/users', async ({ request }) => {
+    const user = await request.json();
+    return HttpResponse.json({ id: 3, ...user }, { status: 201 });
+  })
+];
+```
+
 **Why MSW over Mirage:**
 
 - **Better conventions** - Mock at the network level, not with an ORM

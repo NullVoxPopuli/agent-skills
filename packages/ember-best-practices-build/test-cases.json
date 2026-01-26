@@ -19,9 +19,17 @@
     "ruleId": "",
     "ruleTitle": "Keyboard Navigation Support",
     "type": "bad",
-    "code": "",
-    "language": "typescript",
+    "code": "// app/components/dropdown.gjs\n<template>\n  <div class=\"dropdown\" {{on \"click\" this.toggleMenu}}>\n    Menu\n    {{#if this.isOpen}}\n      <div class=\"dropdown-menu\">\n        <div {{on \"click\" this.selectOption}}>Option 1</div>\n        <div {{on \"click\" this.selectOption}}>Option 2</div>\n      </div>\n    {{/if}}\n  </div>\n</template>",
+    "language": "glimmer-js",
     "description": "no keyboard support"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "Keyboard Navigation Support",
+    "type": "good",
+    "code": "// app/components/dropdown.gjs\nimport Component from '@glimmer/component';\nimport { tracked } from '@glimmer/tracking';\nimport { action } from '@ember/object';\nimport { fn } from '@ember/helper';\nimport focusFirst from '../modifiers/focus-first';\n\nclass Dropdown extends Component {\n  @tracked isOpen = false;\n  \n  @action\n  toggleMenu() {\n    this.isOpen = !this.isOpen;\n  }\n  \n  @action\n  handleButtonKeyDown(event) {\n    if (event.key === 'ArrowDown') {\n      event.preventDefault();\n      this.isOpen = true;\n    }\n  }\n  \n  @action\n  handleMenuKeyDown(event) {\n    if (event.key === 'Escape') {\n      this.isOpen = false;\n      // Return focus to button\n      event.target.closest('.dropdown').querySelector('button').focus();\n    }\n    // Handle arrow key navigation between menu items\n    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {\n      event.preventDefault();\n      this.moveFocus(event.key === 'ArrowDown' ? 1 : -1);\n    }\n  }\n  \n  moveFocus(direction) {\n    const items = Array.from(\n      document.querySelectorAll('[role=\"menuitem\"] button')\n    );\n    const currentIndex = items.indexOf(document.activeElement);\n    const nextIndex = (currentIndex + direction + items.length) % items.length;\n    items[nextIndex]?.focus();\n  }\n  \n  @action\n  selectOption(value) {\n    this.args.onSelect?.(value);\n    this.isOpen = false;\n  }\n\n  <template>\n    <div class=\"dropdown\">\n      <button \n        type=\"button\"\n        {{on \"click\" this.toggleMenu}}\n        {{on \"keydown\" this.handleButtonKeyDown}}\n        aria-haspopup=\"true\"\n        aria-expanded=\"{{this.isOpen}}\"\n      >\n        Menu\n      </button>\n      \n      {{#if this.isOpen}}\n        <ul \n          class=\"dropdown-menu\" \n          role=\"menu\"\n          {{focusFirst '[role=\"menuitem\"] button'}}\n          {{on \"keydown\" this.handleMenuKeyDown}}\n        >\n          <li role=\"menuitem\">\n            <button type=\"button\" {{on \"click\" (fn this.selectOption \"1\")}}>\n              Option 1\n            </button>\n          </li>\n          <li role=\"menuitem\">\n            <button type=\"button\" {{on \"click\" (fn this.selectOption \"2\")}}>\n              Option 2\n            </button>\n          </li>\n        </ul>\n      {{/if}}\n    </div>\n  </template>\n}",
+    "language": "glimmer-js",
+    "description": "full keyboard support with custom modifier"
   },
   {
     "ruleId": "",
@@ -131,9 +139,25 @@
     "ruleId": "",
     "ruleTitle": "Use Modifiers for DOM Side Effects",
     "type": "bad",
+    "code": "// app/components/chart.gjs\nimport Component from '@glimmer/component';\n\nclass Chart extends Component {\n  chartInstance = null;\n  \n  constructor() {\n    super(...arguments);\n    // Can't access element here - element doesn't exist yet!\n  }\n  \n  willDestroy() {\n    super.willDestroy(...arguments);\n    this.chartInstance?.destroy();\n  }\n\n  <template>\n    <canvas id=\"chart-canvas\"></canvas>\n    {{! Manual setup is error-prone and not reusable }}\n  </template>\n}",
+    "language": "glimmer-js",
+    "description": "manual DOM manipulation in component"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "Use Modifiers for DOM Side Effects",
+    "type": "good",
+    "code": "// app/modifiers/chart.js\nimport { modifier } from 'ember-modifier';\n\nexport default modifier((element, [config]) => {\n  // Initialize chart\n  const chartInstance = new Chart(element, config);\n  \n  // Return cleanup function\n  return () => {\n    chartInstance.destroy();\n  };\n});",
+    "language": "javascript",
+    "description": "function modifier - preferred for simple side effects"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "Use Modifiers for DOM Side Effects",
+    "type": "good",
     "code": "",
     "language": "typescript",
-    "description": "manual DOM manipulation in component"
+    "description": "class-based modifier for complex state"
   },
   {
     "ruleId": "",
@@ -297,6 +321,14 @@
   },
   {
     "ruleId": "",
+    "ruleTitle": "Rule",
+    "type": "bad",
+    "code": "\n## Why\n\n**Filename conventions:**\n- Kebab-case filenames (`user-card.gjs`, not `UserCard.gjs`) follow web component standards and Ember conventions\n- Predictable: component name maps directly to filename (UserCard → user-card.gjs)\n- Avoids filesystem case-sensitivity issues across platforms\n\n**Class naming:**\n- No \"Component\" suffix - it's redundant (extends Component already declares the type)\n- PascalCase class name matches the capitalized component invocation: `<UserCard />`\n- Cleaner code: `UserCard` vs `UserCardComponent`\n\n**No default export:**\n- Modern .gjs/.gts files don't need `export default`\n- The template compiler automatically exports the component\n- Simpler syntax, less boilerplate\n- Consistent with strict-mode semantics\n\n## Naming Pattern Reference\n\n| Filename | Class Name | Template Invocation |\n|----------|-----------|---------------------|\n| `user-card.gjs` | `class UserCard` | `<UserCard />` |\n| `loading-spinner.gjs` | `class LoadingSpinner` | `<LoadingSpinner />` |\n| `nav-bar.gjs` | `class NavBar` | `<NavBar />` |\n| `todo-list.gjs` | `class TodoList` | `<TodoList />` |\n| `search-input.gjs` | `class SearchInput` | `<SearchInput />` |\n\n**Conversion rule:** \n- Filename: all lowercase, words separated by hyphens\n- Class: PascalCase, same words, no hyphens\n- `user-card.gjs` → `class UserCard`\n\n## Special Cases\n\n**Template-only components:**\n",
+    "language": "typescript",
+    "description": "Incorrect example for Rule"
+  },
+  {
+    "ruleId": "",
     "ruleTitle": "Prevent Memory Leaks in Components",
     "type": "bad",
     "code": "// app/components/live-clock.gjs\nimport Component from '@glimmer/component';\nimport { tracked } from '@glimmer/tracking';\n\nclass LiveClock extends Component {\n  @tracked time = new Date();\n  \n  constructor() {\n    super(...arguments);\n    \n    // Memory leak: interval never cleared\n    setInterval(() => {\n      this.time = new Date();\n    }, 1000);\n  }\n\n  <template>\n    <div>{{this.time}}</div>\n  </template>\n}```\n\n**Correct (proper cleanup with registerDestructor):**\n",
@@ -395,9 +427,17 @@
     "ruleId": "",
     "ruleTitle": "Compose Helpers for Reusable Logic",
     "type": "bad",
-    "code": "",
-    "language": "typescript",
+    "code": "// app/components/user-profile.gjs\n<template>\n  <div class=\"profile\">\n    <h1>{{uppercase (truncate @user.name 20)}}</h1>\n    \n    {{#if (and @user.isActive (not @user.isDeleted))}}\n      <span class=\"status\">Active</span>\n    {{/if}}\n    \n    <p>{{lowercase @user.email}}</p>\n    \n    {{#if (gt @user.posts.length 0)}}\n      <span>Posts: {{@user.posts.length}}</span>\n    {{/if}}\n  </div>\n</template>",
+    "language": "glimmer-js",
     "description": "logic duplicated in templates"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "Compose Helpers for Reusable Logic",
+    "type": "good",
+    "code": "// app/components/user-profile.gjs\nimport { displayName } from '../helpers/display-name';\nimport { isVisibleUser } from '../helpers/is-visible-user';\nimport { formatEmail } from '../helpers/format-email';\n\n<template>\n  <div class=\"profile\">\n    <h1>{{displayName @user.name}}</h1>\n    \n    {{#if (isVisibleUser @user)}}\n      <span class=\"status\">Active</span>\n    {{/if}}\n    \n    <p>{{formatEmail @user.email}}</p>\n    \n    {{#if (gt @user.posts.length 0)}}\n      <span>Posts: {{@user.posts.length}}</span>\n    {{/if}}\n  </div>\n</template>",
+    "language": "glimmer-js",
+    "description": "composed helpers"
   },
   {
     "ruleId": "",
@@ -601,11 +641,75 @@
   },
   {
     "ruleId": "",
+    "ruleTitle": "Template-Only Components with In-Scope Functions",
+    "type": "bad",
+    "code": "// app/components/product-card.gjs\nimport Component from '@glimmer/component';\n\nexport class ProductCard extends Component {\n  // Unnecessary class and overhead for simple formatting\n  formatPrice(price) {\n    return new Intl.NumberFormat('en-US', {\n      style: 'currency',\n      currency: 'USD'\n    }).format(price);\n  }\n\n  <template>\n    <div class=\"product-card\">\n      <h3>{{@product.name}}</h3>\n      <div class=\"price\">{{this.formatPrice @product.price}}</div>\n    </div>\n  </template>\n}",
+    "language": "glimmer-js",
+    "description": "using class-based component for simple logic"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "Template-Only Components with In-Scope Functions",
+    "type": "good",
+    "code": "// app/components/product-card.gjs\nfunction formatPrice(price) {\n  return new Intl.NumberFormat('en-US', {\n    style: 'currency',\n    currency: 'USD'\n  }).format(price);\n}\n\nfunction calculateDiscount(price, discountPercent) {\n  return price * (1 - discountPercent / 100);\n}\n\nfunction isOnSale(product) {\n  return product.discountPercent > 0;\n}\n\n<template>\n  <div class=\"product-card\">\n    <h3>{{@product.name}}</h3>\n    \n    {{#if (isOnSale @product)}}\n      <div class=\"price\">\n        <span class=\"original\">{{formatPrice @product.price}}</span>\n        <span class=\"sale\">\n          {{formatPrice (calculateDiscount @product.price @product.discountPercent)}}\n        </span>\n      </div>\n    {{else}}\n      <div class=\"price\">{{formatPrice @product.price}}</div>\n    {{/if}}\n    \n    <p>{{@product.description}}</p>\n  </div>\n</template>",
+    "language": "glimmer-js",
+    "description": "template-only component with in-scope functions"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "Provide DOM-Abstracted Test Utilities for Library Components",
+    "type": "bad",
+    "code": "// Consumer's test - tightly coupled to DOM\nimport { render, click } from '@ember/test-helpers';\nimport { DataGrid } from 'my-library';\n\ntest('sorting works', async function(assert) {\n  await render(<template>\n    <DataGrid @rows={{this.rows}} />\n  </template>);\n  \n  // Fragile: breaks if class names or structure change\n  await click('.data-grid__header .sort-button[data-column=\"name\"]');\n  \n  assert.dom('.data-grid__row:first-child').hasText('Alice');\n});",
+    "language": "glimmer-js",
+    "description": "exposing DOM to consumers"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "Provide DOM-Abstracted Test Utilities for Library Components",
+    "type": "good",
+    "code": "// Consumer's test - abstracted from DOM\nimport { render } from '@ember/test-helpers';\nimport { DataGrid } from 'my-library';\nimport { getDataGrid } from 'my-library/test-support';\n\ntest('sorting works', async function(assert) {\n  await render(<template>\n    <DataGrid @rows={{this.rows}} @columns={{this.columns}} />\n  </template>);\n  \n  const grid = getDataGrid();\n  \n  // Clean API: no DOM knowledge required\n  await grid.sortBy('name');\n  \n  assert.strictEqual(grid.getRow(0), 'Alice');\n  assert.deepEqual(grid.getRows(), ['Alice', 'Bob', 'Charlie']);\n});",
+    "language": "glimmer-js",
+    "description": "providing DOM-abstracted test utilities"
+  },
+  {
+    "ruleId": "",
     "ruleTitle": "Use Modern Testing Patterns",
     "type": "bad",
     "code": "// tests/integration/components/user-card-test.js\nimport { module, test } from 'qunit';\nimport { setupRenderingTest } from 'ember-qunit';\nimport { render, find, click } from '@ember/test-helpers';\nimport UserCard from 'my-app/components/user-card';\n\nmodule('Integration | Component | user-card', function(hooks) {\n  setupRenderingTest(hooks);\n\n  test('it renders', async function(assert) {\n    await render(<template><UserCard /></template>);\n    \n    // Using find() instead of qunit-dom\n    assert.ok(find('.user-card'));\n  });\n});```\n\n**Correct (modern testing patterns):**\n",
     "language": "glimmer-js",
     "description": "old testing patterns"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "MSW (Mock Service Worker) Setup for Testing",
+    "type": "bad",
+    "code": "// mirage/config.js\nexport default function() {\n  this.namespace = '/api';\n  \n  // Complex schema and factories\n  this.get('/users', (schema) => {\n    return schema.users.all();\n  });\n  \n  // Need to maintain schema, factories, serializers\n  this.post('/users', (schema, request) => {\n    let attrs = JSON.parse(request.requestBody);\n    return schema.users.create(attrs);\n  });\n}",
+    "language": "javascript",
+    "description": "using Mirage with ORM complexity"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "MSW (Mock Service Worker) Setup for Testing",
+    "type": "good",
+    "code": "// tests/helpers/msw.js\nimport { http, HttpResponse } from 'msw';\n\n// Simple request/response mocking\nexport const handlers = [\n  http.get('/api/users', () => {\n    return HttpResponse.json([\n      { id: 1, name: 'Alice' },\n      { id: 2, name: 'Bob' }\n    ]);\n  }),\n  \n  http.post('/api/users', async ({ request }) => {\n    const user = await request.json();\n    return HttpResponse.json({ id: 3, ...user }, { status: 201 });\n  })\n];",
+    "language": "javascript",
+    "description": "using MSW with simple network mocking"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "Use Appropriate Render Patterns in Tests",
+    "type": "bad",
+    "code": "// tests/integration/components/loading-spinner-test.js\nimport { render } from '@ember/test-helpers';\nimport LoadingSpinner from 'my-app/components/loading-spinner';\n\ntest('it renders', async function(assert) {\n  // ❌ Unnecessary template wrapper for component with no args\n  await render(<template>\n    <LoadingSpinner />\n  </template>);\n  \n  assert.dom('[data-test-spinner]').exists();\n});",
+    "language": "javascript",
+    "description": "using template tag unnecessarily"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "Use Appropriate Render Patterns in Tests",
+    "type": "good",
+    "code": "// tests/integration/components/user-card-test.js\nimport { module, test } from 'qunit';\nimport { setupRenderingTest } from 'ember-qunit';\nimport { render } from '@ember/test-helpers';\nimport UserCard from 'my-app/components/user-card';\n\nmodule('Integration | Component | user-card', function(hooks) {\n  setupRenderingTest(hooks);\n\n  test('it renders with arguments', async function(assert) {\n    const user = { name: 'John Doe', email: 'john@example.com' };\n    \n    // ✅ Use template tag when passing arguments\n    await render(<template>\n      <UserCard @user={{user}} />\n    </template>);\n    \n    assert.dom('[data-test-user-name]').hasText('John Doe');\n  });\n  \n  test('it renders with block content', async function(assert) {\n    // ✅ Use template tag when providing blocks\n    await render(<template>\n      <UserCard>\n        <:header>Custom Header</:header>\n        <:body>Custom Content</:body>\n      </UserCard>\n    </template>);\n    \n    assert.dom('[data-test-header]').hasText('Custom Header');\n    assert.dom('[data-test-body]').hasText('Custom Content');\n  });\n  \n  test('it renders with HTML attributes', async function(assert) {\n    // ✅ Use template tag when passing HTML attributes\n    await render(<template>\n      <UserCard class=\"featured\" data-test-featured />\n    </template>);\n    \n    assert.dom('[data-test-featured]').exists();\n    assert.dom('[data-test-featured]').hasClass('featured');\n  });\n});```\n\n**Complete example showing both patterns:**\n",
+    "language": "glimmer-js",
+    "description": "direct component render when no args needed"
   },
   {
     "ruleId": "",
@@ -622,5 +726,21 @@
     "code": "// tests/integration/components/data-loader-test.js\nimport { module, test } from 'qunit';\nimport { setupRenderingTest } from 'ember-qunit';\nimport { render, click, settled } from '@ember/test-helpers';\nimport DataLoader from 'my-app/components/data-loader';\n\nmodule('Integration | Component | data-loader', function(hooks) {\n  setupRenderingTest(hooks);\n\n  test('it loads data', async function(assert) {\n    await render(<template><DataLoader /></template>);\n    \n    await click('[data-test-load-button]');\n    \n    // GOOD: settled() automatically waits for test waiters\n    // No knowledge of timing needed - tests from user's perspective\n    await settled();\n    \n    assert.dom('[data-test-data]').hasText('Loaded data');\n  });\n});",
     "language": "glimmer-js",
     "description": "using test waiters"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "VSCode Extensions and MCP Configuration for Ember Projects",
+    "type": "bad",
+    "code": "{\n  \"recommendations\": []\n}",
+    "language": "json",
+    "description": "no extension recommendations"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "VSCode Extensions and MCP Configuration for Ember Projects",
+    "type": "good",
+    "code": "{\n  \"recommendations\": [\n    \"emberjs.vscode-ember\",\n    \"vunguyentuan.vscode-glint\",\n    \"esbenp.prettier-vscode\",\n    \"dbaeumer.vscode-eslint\"\n  ]\n}",
+    "language": "json",
+    "description": "recommended extensions for Ember"
   }
 ]

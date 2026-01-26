@@ -1,7 +1,7 @@
 ---
 title: Provide DOM-Abstracted Test Utilities for Library Components
 category: testing
-impact: medium
+impact: MEDIUM
 ---
 
 # Provide DOM-Abstracted Test Utilities for Library Components
@@ -22,7 +22,7 @@ Without abstracted test utilities:
 
 **Library authors should provide test utilities that fully abstract the DOM.** These utilities expose a public API for testing that remains stable even when internal implementation changes.
 
-### ❌ Incorrect: Exposing DOM to Consumers
+**Incorrect (exposing DOM to consumers):**
 
 ```glimmer-js
 // my-library/src/components/data-grid.gjs
@@ -64,7 +64,7 @@ test('sorting works', async function(assert) {
 - Refactoring component structure breaks consumer tests
 - No clear public API for testing
 
-### ✅ Correct: Providing DOM-Abstracted Test Utilities
+**Correct (providing DOM-abstracted test utilities):**
 
 ```glimmer-js
 // my-library/src/test-support/data-grid.js

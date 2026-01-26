@@ -4,7 +4,7 @@
 
 Follow modern Ember component file conventions: use kebab-case filenames, match class names to file names (in PascalCase), and avoid `export default` in .gjs/.gts files.
 
-## Incorrect
+**Incorrect:**
 
 ```glimmer-js
 // app/components/user-card.gjs - WRONG: Component suffix
@@ -28,9 +28,10 @@ export default class UserProfile extends Component {
       {{@name}}
     </div>
   </template>
-}```
+}
+```
 
-## Correct
+**Correct:**
 
 ```glimmer-js
 // app/components/user-card.gjs - CORRECT: kebab-case filename, no Component suffix, no default export

@@ -9,6 +9,38 @@ tags: testing, render, component-testing, test-helpers
 
 Choose the right rendering pattern based on whether your component needs arguments, blocks, or attributes in the test.
 
+**Incorrect (using template tag unnecessarily):**
+
+```javascript
+// tests/integration/components/loading-spinner-test.js
+import { render } from '@ember/test-helpers';
+import LoadingSpinner from 'my-app/components/loading-spinner';
+
+test('it renders', async function(assert) {
+  // ❌ Unnecessary template wrapper for component with no args
+  await render(<template>
+    <LoadingSpinner />
+  </template>);
+  
+  assert.dom('[data-test-spinner]').exists();
+});
+```
+
+**Correct (direct component render when no args needed):**
+
+```javascript
+// tests/integration/components/loading-spinner-test.js
+import { render } from '@ember/test-helpers';
+import LoadingSpinner from 'my-app/components/loading-spinner';
+
+test('it renders', async function(assert) {
+  // ✅ Simple: pass component directly when no args needed
+  await render(LoadingSpinner);
+  
+  assert.dom('[data-test-spinner]').exists();
+});
+```
+
 **Pattern 1: Direct component render (no args/blocks/attributes):**
 
 ```javascript

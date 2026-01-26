@@ -1,7 +1,7 @@
 ---
 title: Use Helper Libraries Effectively
 category: template
-impact: medium
+impact: MEDIUM
 ---
 
 # Use Helper Libraries Effectively

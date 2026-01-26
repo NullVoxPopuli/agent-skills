@@ -23,7 +23,8 @@ Ensure all interactive elements are keyboard accessible and focus management is 
       </div>
     {{/if}}
   </div>
-</template>```
+</template>
+```
 
 **Correct (full keyboard support with custom modifier):**
 
@@ -123,7 +124,8 @@ class Dropdown extends Component {
       {{/if}}
     </div>
   </template>
-}```
+}
+```
 
 **For focus trapping in modals, use ember-focus-trap:**
 
@@ -148,7 +150,8 @@ import FocusTrap from 'ember-focus-trap/components/focus-trap';
       </div>
     </FocusTrap>
   {{/if}}
-</template>```
+</template>
+```
 
 **Alternative: Use libraries for keyboard support:**
 

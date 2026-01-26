@@ -1,12 +1,33 @@
 ---
 title: VSCode Extensions and MCP Configuration for Ember Projects
 category: tooling
-impact: high
+impact: HIGH
 ---
 
-# VSCode Extensions and MCP Configuration for Ember Projects
+## VSCode Extensions and MCP Configuration for Ember Projects
 
 Set up recommended VSCode extensions and Model Context Protocol (MCP) servers for optimal Ember development experience.
+
+**Incorrect (no extension recommendations):**
+
+```json
+{
+  "recommendations": []
+}
+```
+
+**Correct (recommended extensions for Ember):**
+
+```json
+{
+  "recommendations": [
+    "emberjs.vscode-ember",
+    "vunguyentuan.vscode-glint",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint"
+  ]
+}
+```
 
 ## Recommended VSCode Extensions
 

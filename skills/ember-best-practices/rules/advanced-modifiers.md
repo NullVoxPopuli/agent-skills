@@ -32,7 +32,8 @@ class Chart extends Component {
     <canvas id="chart-canvas"></canvas>
     {{! Manual setup is error-prone and not reusable }}
   </template>
-}```
+}
+```
 
 **Correct (function modifier - preferred for simple side effects):**
 

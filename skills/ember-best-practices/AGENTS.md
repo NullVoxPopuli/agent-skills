@@ -1426,69 +1426,49 @@ Compose helpers to create reusable, testable logic that can be combined in templ
 
 **Incorrect: logic duplicated in templates**
 
-// app/helpers/display-name.js
-
-export function displayName(name, { maxLength = 20 } = {}) {
-
-  if (!name) return '';
-
-  const truncated = name.length > maxLength 
-
-    ? name.slice(0, maxLength) + '...'
-
-    : name;
-
-  return truncated.toUpperCase();
-
-}
-
-// app/helpers/is-visible-user.js
-
-export function isVisibleUser(user) {
-
-  return user && user.isActive && !user.isDeleted;
-
-}
-
-// app/helpers/format-email.js
-
-export function formatEmail(email) {
-
-  return email?.toLowerCase() || '';
-
-}
-
+```glimmer-js
 // app/components/user-profile.gjs
+<template>
+  <div class="profile">
+    <h1>{{uppercase (truncate @user.name 20)}}</h1>
+    
+    {{#if (and @user.isActive (not @user.isDeleted))}}
+      <span class="status">Active</span>
+    {{/if}}
+    
+    <p>{{lowercase @user.email}}</p>
+    
+    {{#if (gt @user.posts.length 0)}}
+      <span>Posts: {{@user.posts.length}}</span>
+    {{/if}}
+  </div>
+</template>
+```
 
+**Correct: composed helpers**
+
+```glimmer-js
+// app/components/user-profile.gjs
 import { displayName } from '../helpers/display-name';
-
 import { isVisibleUser } from '../helpers/is-visible-user';
-
 import { formatEmail } from '../helpers/format-email';
 
 <template>
-
   <div class="profile">
-
     <h1>{{displayName @user.name}}</h1>
-
+    
     {{#if (isVisibleUser @user)}}
-
       <span class="status">Active</span>
-
     {{/if}}
-
+    
     <p>{{formatEmail @user.email}}</p>
-
+    
     {{#if (gt @user.posts.length 0)}}
-
       <span>Posts: {{@user.posts.length}}</span>
-
     {{/if}}
-
   </div>
-
-</template>```
+</template>
+```
 
 **Functional composition with pipe helper:**
 
@@ -1510,115 +1490,100 @@ export function compose(...helperFns) {
 
 **Usage:**
 
-// app/helpers/partial-apply.js
+```glimmer-js
+// app/components/text-processor.gjs
+import { fn } from '@ember/helper';
 
-export function partialApply(fn, ...args) {
+// Individual helpers
+const uppercase = (str) => str?.toUpperCase() || '';
+const trim = (str) => str?.trim() || '';
+const truncate = (str, length = 20) => str?.slice(0, length) || '';
 
-  return (...moreArgs) => fn(...args, ...moreArgs);
+<template>
+  {{! Compose multiple transformations }}
+  <div>
+    {{pipe @text (fn trim) (fn uppercase) (fn truncate 50)}}
+  </div>
+</template>
+```
 
-}
+**Higher-order helpers:**
 
-// app/helpers/map-by.js
-
-export function mapBy(array, property) {
-
-  return array?.map(item => item[property]) || [];
-
-}
-
+```glimmer-js
 // Usage in template
-
 import { mapBy } from '../helpers/map-by';
-
 import { partialApply } from '../helpers/partial-apply';
 
 <template>
-
   {{! Extract property from array }}
-
   <ul>
-
     {{#each (mapBy @users "name") as |name|}}
-
       <li>{{name}}</li>
-
     {{/each}}
-
   </ul>
-
+  
   {{! Partial application }}
-
   {{#let (partialApply @formatNumber 2) as |formatTwoDecimals|}}
-
     <span>Price: {{formatTwoDecimals @price}}</span>
-
   {{/let}}
-
-</template>```
+</template>
+```
 
 **Chainable transformation helpers:**
 
-```typescript
+```glimmer-js
+// Usage
+import { transform } from '../helpers/transform';
+
+<template>
+  {{#let (transform @items) as |t|}}
+    {{#each t.filter((i) => i.active).sort((a, b) => a.name.localeCompare(b.name)).take(10).result as |item|}}
+      <div>{{item.name}}</div>
+    {{/each}}
+  {{/let}}
+</template>
+```
+
+**Conditional composition:**
+
+```javascript
+// app/helpers/unless.js
+export function unless(condition, falseFn, trueFn) {
+  return !condition ? falseFn() : (trueFn ? trueFn() : null);
+}
+```
 
 **Testing composed helpers:**
 
-```
-
-// app/helpers/when.js
-
-export function when(condition, trueFn, falseFn) {
-
-  return condition ? trueFn() : (falseFn ? falseFn() : null);
-
-}
-
-// app/helpers/unless.js
-
-export function unless(condition, falseFn, trueFn) {
-
-  return !condition ? falseFn() : (trueFn ? trueFn() : null);
-
-}
-
+```javascript
 // tests/helpers/display-name-test.js
-
 import { module, test } from 'qunit';
-
 import { displayName } from 'my-app/helpers/display-name';
 
 module('Unit | Helper | display-name', function() {
-
   test('it formats name correctly', function(assert) {
-
     assert.strictEqual(
-
       displayName('John Doe'),
-
       'JOHN DOE'
-
     );
-
   });
-
+  
   test('it truncates long names', function(assert) {
-
     assert.strictEqual(
-
       displayName('A Very Long Name That Should Be Truncated', { maxLength: 10 }),
-
       'A VERY LON...'
-
     );
-
   });
-
+  
   test('it handles null', function(assert) {
-
     assert.strictEqual(displayName(null), '');
-
   });
-
 });
+```
+
+Composed helpers provide testable, reusable logic that keeps templates clean and components focused on behavior rather than data transformation.
+
+Reference: [https://guides.emberjs.com/release/components/helper-functions/](https://guides.emberjs.com/release/components/helper-functions/)
 
 ### 0.10 Form Labels and Error Announcements
 
@@ -1731,7 +1696,7 @@ All form inputs must have associated labels, and validation errors should be ann
 
 ### 0.11 Implement Robust Data Requesting Patterns
 
-**Impact: high**
+**Impact: HIGH**
 
 Naive data fetching creates waterfall requests, doesn't handle errors properly, and can cause race conditions or memory leaks from uncanceled requests.
 
@@ -2310,202 +2275,127 @@ Ensure all interactive elements are keyboard accessible and focus management is 
 
 **Incorrect: no keyboard support**
 
-// app/modifiers/focus-first.js
-
-import { modifier } from 'ember-modifier';
-
-export default modifier((element, [selector = 'button']) => {
-
-  // Focus first matching element when modifier runs
-
-  element.querySelector(selector)?.focus();
-
-});
-
+```glimmer-js
 // app/components/dropdown.gjs
+<template>
+  <div class="dropdown" {{on "click" this.toggleMenu}}>
+    Menu
+    {{#if this.isOpen}}
+      <div class="dropdown-menu">
+        <div {{on "click" this.selectOption}}>Option 1</div>
+        <div {{on "click" this.selectOption}}>Option 2</div>
+      </div>
+    {{/if}}
+  </div>
+</template>
+```
 
+**Correct: full keyboard support with custom modifier**
+
+```glimmer-js
+// app/components/dropdown.gjs
 import Component from '@glimmer/component';
-
 import { tracked } from '@glimmer/tracking';
-
 import { action } from '@ember/object';
-
 import { fn } from '@ember/helper';
-
 import focusFirst from '../modifiers/focus-first';
 
 class Dropdown extends Component {
-
   @tracked isOpen = false;
-
+  
   @action
-
   toggleMenu() {
-
     this.isOpen = !this.isOpen;
-
   }
-
+  
   @action
-
   handleButtonKeyDown(event) {
-
     if (event.key === 'ArrowDown') {
-
       event.preventDefault();
-
       this.isOpen = true;
-
     }
-
   }
-
+  
   @action
-
   handleMenuKeyDown(event) {
-
     if (event.key === 'Escape') {
-
       this.isOpen = false;
-
       // Return focus to button
-
       event.target.closest('.dropdown').querySelector('button').focus();
-
     }
-
     // Handle arrow key navigation between menu items
-
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-
       event.preventDefault();
-
       this.moveFocus(event.key === 'ArrowDown' ? 1 : -1);
-
     }
-
   }
-
+  
   moveFocus(direction) {
-
     const items = Array.from(
-
       document.querySelectorAll('[role="menuitem"] button')
-
     );
-
     const currentIndex = items.indexOf(document.activeElement);
-
     const nextIndex = (currentIndex + direction + items.length) % items.length;
-
     items[nextIndex]?.focus();
-
   }
-
+  
   @action
-
   selectOption(value) {
-
     this.args.onSelect?.(value);
-
     this.isOpen = false;
-
   }
 
   <template>
-
     <div class="dropdown">
-
       <button 
-
         type="button"
-
         {{on "click" this.toggleMenu}}
-
         {{on "keydown" this.handleButtonKeyDown}}
-
         aria-haspopup="true"
-
         aria-expanded="{{this.isOpen}}"
-
       >
-
         Menu
-
       </button>
-
+      
       {{#if this.isOpen}}
-
         <ul 
-
           class="dropdown-menu" 
-
           role="menu"
-
           {{focusFirst '[role="menuitem"] button'}}
-
           {{on "keydown" this.handleMenuKeyDown}}
-
         >
-
           <li role="menuitem">
-
             <button type="button" {{on "click" (fn this.selectOption "1")}}>
-
               Option 1
-
             </button>
-
           </li>
-
           <li role="menuitem">
-
             <button type="button" {{on "click" (fn this.selectOption "2")}}>
-
               Option 2
-
             </button>
-
           </li>
-
         </ul>
-
       {{/if}}
-
     </div>
-
   </template>
-
-}```
+}
+```
 
 **For focus trapping in modals, use ember-focus-trap:**
 
-```glimmer-js
-// app/components/modal.gjs
-import FocusTrap from 'ember-focus-trap/components/focus-trap';
-
-<template>
-  {{#if this.showModal}}
-    <FocusTrap 
-      @isActive={{true}}
-      @initialFocus="#modal-title"
-    >
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <h2 id="modal-title">{{@title}}</h2>
-        {{yield}}
-        <button type="button" {{on "click" this.closeModal}}>Close</button>
-      </div>
-    </FocusTrap>
-  {{/if}}
-</template>```
+```bash
+npm install @fluentui/keyboard-keys
+```
 
 **Alternative: Use libraries for keyboard support:**
 
 For complex keyboard interactions, consider using libraries that abstract keyboard support patterns:
 
-```
+Or use [tabster](https://tabster.io/) for comprehensive keyboard navigation management including focus trapping, arrow key navigation, and modalizers.
 
-npm install @fluentui/keyboard-keys
+Proper keyboard navigation ensures all users can interact with your application effectively.
+
+Reference: [https://guides.emberjs.com/release/accessibility/keyboard/](https://guides.emberjs.com/release/accessibility/keyboard/)
 
 ### 0.15 Manage Service Owner and Linkage Patterns
 
@@ -2897,6 +2787,48 @@ MSW works in integration tests too:
 7. **Simulate delays** - Test loading states with artificial delays
 
 8. **Type-safe responses** - In TypeScript, type your response payloads
+
+**Incorrect: using Mirage with ORM complexity**
+
+```javascript
+// mirage/config.js
+export default function() {
+  this.namespace = '/api';
+  
+  // Complex schema and factories
+  this.get('/users', (schema) => {
+    return schema.users.all();
+  });
+  
+  // Need to maintain schema, factories, serializers
+  this.post('/users', (schema, request) => {
+    let attrs = JSON.parse(request.requestBody);
+    return schema.users.create(attrs);
+  });
+}
+```
+
+**Correct: using MSW with simple network mocking**
+
+```javascript
+// tests/helpers/msw.js
+import { http, HttpResponse } from 'msw';
+
+// Simple request/response mocking
+export const handlers = [
+  http.get('/api/users', () => {
+    return HttpResponse.json([
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' }
+    ]);
+  }),
+  
+  http.post('/api/users', async ({ request }) => {
+    const user = await request.json();
+    return HttpResponse.json({ id: 3, ...user }, { status: 201 });
+  })
+];
+```
 
 **Why MSW over Mirage:**
 
@@ -3294,7 +3226,7 @@ export function pluralize(count, singular, plural) {
 
 ### 0.19 Optimize Conditional Rendering
 
-**Impact: high**
+**Impact: HIGH**
 
 Inefficient conditional logic causes excessive re-renders, creates complex template code, and can lead to poor performance in lists and dynamic UIs.
 
@@ -3914,7 +3846,7 @@ Reference: [https://api.emberjs.com/ember/release/modules/@ember%2Fdestroyable](
 
 ### 0.23 Provide DOM-Abstracted Test Utilities for Library Components
 
-**Impact: medium**
+**Impact: MEDIUM**
 
 When building reusable components or libraries, consumers should not need to know implementation details or interact directly with the component's DOM. DOM structure should be considered **private** unless the author of the tests is the **owner** of the code being tested.
 
@@ -3930,7 +3862,34 @@ Without abstracted test utilities:
 
 **Library authors should provide test utilities that fully abstract the DOM.** These utilities expose a public API for testing that remains stable even when internal implementation changes.
 
+**Incorrect: exposing DOM to consumers**
+
+```glimmer-js
+// Consumer's test - tightly coupled to DOM
+import { render, click } from '@ember/test-helpers';
+import { DataGrid } from 'my-library';
+
+test('sorting works', async function(assert) {
+  await render(<template>
+    <DataGrid @rows={{this.rows}} />
+  </template>);
+  
+  // Fragile: breaks if class names or structure change
+  await click('.data-grid__header .sort-button[data-column="name"]');
+  
+  assert.dom('.data-grid__row:first-child').hasText('Alice');
+});
+```
+
 **Problems:**
+
+- Consumer knows about `.data-grid__header`, `.sort-button`, `[data-column]`
+
+- Refactoring component structure breaks consumer tests
+
+- No clear public API for testing
+
+**Correct: providing DOM-abstracted test utilities**
 
 ```glimmer-js
 // Consumer's test - abstracted from DOM
@@ -3952,12 +3911,6 @@ test('sorting works', async function(assert) {
   assert.deepEqual(grid.getRows(), ['Alice', 'Bob', 'Charlie']);
 });
 ```
-
-- Consumer knows about `.data-grid__header`, `.sort-button`, `[data-column]`
-
-- Refactoring component structure breaks consumer tests
-
-- No clear public API for testing
 
 **Benefits:**
 
@@ -4071,6 +4024,49 @@ For solo projects, the benefit is smaller but still valuable:
 
 Follow modern Ember component file conventions: use kebab-case filenames, match class names to file names (in PascalCase), and avoid `export default` in .gjs/.gts files.
 
+**Incorrect:**
+
+```typescript
+
+## Why
+
+**Filename conventions:**
+- Kebab-case filenames (`user-card.gjs`, not `UserCard.gjs`) follow web component standards and Ember conventions
+- Predictable: component name maps directly to filename (UserCard → user-card.gjs)
+- Avoids filesystem case-sensitivity issues across platforms
+
+**Class naming:**
+- No "Component" suffix - it's redundant (extends Component already declares the type)
+- PascalCase class name matches the capitalized component invocation: `<UserCard />`
+- Cleaner code: `UserCard` vs `UserCardComponent`
+
+**No default export:**
+- Modern .gjs/.gts files don't need `export default`
+- The template compiler automatically exports the component
+- Simpler syntax, less boilerplate
+- Consistent with strict-mode semantics
+
+## Naming Pattern Reference
+
+| Filename | Class Name | Template Invocation |
+|----------|-----------|---------------------|
+| `user-card.gjs` | `class UserCard` | `<UserCard />` |
+| `loading-spinner.gjs` | `class LoadingSpinner` | `<LoadingSpinner />` |
+| `nav-bar.gjs` | `class NavBar` | `<NavBar />` |
+| `todo-list.gjs` | `class TodoList` | `<TodoList />` |
+| `search-input.gjs` | `class SearchInput` | `<SearchInput />` |
+
+**Conversion rule:** 
+- Filename: all lowercase, words separated by hyphens
+- Class: PascalCase, same words, no hyphens
+- `user-card.gjs` → `class UserCard`
+
+## Special Cases
+
+**Template-only components:**
+
+```
+
 // app/components/UserProfile.gjs - WRONG: PascalCase filename
 
 import Component from '@glimmer/component';
@@ -4087,95 +4083,19 @@ export default class UserProfile extends Component {
 
   </template>
 
-}```
-
-**Filename conventions:**
-
-- Kebab-case filenames (`user-card.gjs`, not `UserCard.gjs`) follow web component standards and Ember conventions
-
-- Predictable: component name maps directly to filename (UserCard → user-card.gjs)
-
-- Avoids filesystem case-sensitivity issues across platforms
-
-**Class naming:**
-
-- No "Component" suffix - it's redundant (extends Component already declares the type)
-
-- PascalCase class name matches the capitalized component invocation: `<UserCard />`
-
-- Cleaner code: `UserCard` vs `UserCardComponent`
-
-**No default export:**
-
-- Modern .gjs/.gts files don't need `export default`
-
-- The template compiler automatically exports the component
-
-- Simpler syntax, less boilerplate
-
-- Consistent with strict-mode semantics
-
-| Filename | Class Name | Template Invocation |
-
-|----------|-----------|---------------------|
-
-| `user-card.gjs` | `class UserCard` | `<UserCard />` |
-
-| `loading-spinner.gjs` | `class LoadingSpinner` | `<LoadingSpinner />` |
-
-| `nav-bar.gjs` | `class NavBar` | `<NavBar />` |
-
-| `todo-list.gjs` | `class TodoList` | `<TodoList />` |
-
-| `search-input.gjs` | `class SearchInput` | `<SearchInput />` |
-
-**Conversion rule:** 
-
-- Filename: all lowercase, words separated by hyphens
-
-- Class: PascalCase, same words, no hyphens
-
-- `user-card.gjs` → `class UserCard`
-
-**Template-only components:**
-
-```typescript
-
-**Nested namespaces:**
-
-```
-
-// app/components/ui/button.gjs
-
-import Component from '@glimmer/component';
-
-export class Button extends Component {
-
-  <template>
-
-    <button type="button">
-
-      {{yield}}
-
-    </button>
-
-  </template>
-
 }
 
-// Usage: <Ui::Button />
-
-// app/components/admin/user/profile-card.gjs
+// app/components/user-card.gjs - CORRECT: kebab-case filename, no Component suffix, no default export
 
 import Component from '@glimmer/component';
 
-export class ProfileCard extends Component {
+export class UserCard extends Component {
 
   <template>
 
-    <div class="admin-profile">
+    <div class="user-card">
 
-      {{@user.name}}
+      {{@name}}
 
     </div>
 
@@ -4183,7 +4103,115 @@ export class ProfileCard extends Component {
 
 }
 
+// app/components/user-profile.gjs - CORRECT: All conventions followed
+
+import Component from '@glimmer/component';
+
+import { service } from '@ember/service';
+
+export class UserProfile extends Component {
+
+  @service session;
+
+  <template>
+
+    <div class="profile">
+
+      <h1>{{@name}}</h1>
+
+      {{#if this.session.isAuthenticated}}
+
+        <button>Edit Profile</button>
+
+      {{/if}}
+
+    </div>
+
+  </template>
+
+}
+
+// app/components/simple-card.gjs - Template-only, no class needed
+
+<template>
+
+  <div class="card">
+
+    {{yield}}
+
+  </div>
+
+</template>```
+
+**Components in subdirectories:**
+
+```glimmer-js
+// app/components/ui/button.gjs
+import Component from '@glimmer/component';
+
+export class Button extends Component {
+  <template>
+    <button type="button">
+      {{yield}}
+    </button>
+  </template>
+}
+
+// Usage: <Ui::Button />
+```
+
+**Nested namespaces:**
+
+```glimmer-js
+// app/components/admin/user/profile-card.gjs
+import Component from '@glimmer/component';
+
+export class ProfileCard extends Component {
+  <template>
+    <div class="admin-profile">
+      {{@user.name}}
+    </div>
+  </template>
+}
+
 // Usage: <Admin::User::ProfileCard />
+```
+
+**Positive:**
+
+- ⚡️ Cleaner, more maintainable code
+
+- 🎯 Predictable mapping between files and classes
+
+- 🌐 Follows web standards (kebab-case)
+
+- 📦 Smaller bundle size (less export overhead)
+
+- 🚀 Better alignment with modern Ember/Glimmer
+
+**Negative:**
+
+- None - this is the modern standard
+
+- **Code clarity**: +30% (shorter, clearer names)
+
+- **Bundle size**: -5-10 bytes per component (no export overhead)
+
+- **Developer experience**: Improved (predictable naming)
+
+- [Ember Components Guide](https://guides.emberjs.com/release/components/)
+
+- [Glimmer Components](https://github.com/glimmerjs/glimmer.js)
+
+- [Template Tag Format RFC](https://github.com/emberjs/rfcs/pull/779)
+
+- [Strict Mode Semantics](https://github.com/emberjs/rfcs/blob/master/text/0496-handlebars-strict-mode.md)
+
+- component-use-glimmer.md - Modern Glimmer component patterns
+
+- component-strict-mode.md - Template-only components and strict mode
+
+- route-templates.md - Route file naming conventions
 
 ### 0.25 Semantic HTML and ARIA Attributes
 
@@ -4256,17 +4284,31 @@ import { LinkTo } from '@ember/routing';
 
 For template-only components (components without a class and `this`), use in-scope functions to keep logic close to the template while avoiding unnecessary caching overhead.
 
-**Why template-only components:**
+**Incorrect: using class-based component for simple logic**
 
-- Simpler than class-based components when no state is needed
+```glimmer-js
+// app/components/product-card.gjs
+import Component from '@glimmer/component';
 
-- No `this` context - all data comes from arguments
+export class ProductCard extends Component {
+  // Unnecessary class and overhead for simple formatting
+  formatPrice(price) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price);
+  }
 
-- Functions defined in scope are recreated on each render (no caching)
+  <template>
+    <div class="product-card">
+      <h3>{{@product.name}}</h3>
+      <div class="price">{{this.formatPrice @product.price}}</div>
+    </div>
+  </template>
+}
+```
 
-- Best for simple computations that don't need memoization
-
-**Template-only component with in-scope functions:**
+**Correct: template-only component with in-scope functions**
 
 ```glimmer-js
 // app/components/product-card.gjs
@@ -4949,6 +4991,74 @@ Reference: [https://guides.emberjs.com/release/in-depth-topics/autotracking-in-d
 **Impact: MEDIUM (Simpler test code and better readability)**
 
 Choose the right rendering pattern based on whether your component needs arguments, blocks, or attributes in the test.
+
+**Incorrect: using template tag unnecessarily**
+
+```javascript
+// tests/integration/components/loading-spinner-test.js
+import { render } from '@ember/test-helpers';
+import LoadingSpinner from 'my-app/components/loading-spinner';
+
+test('it renders', async function(assert) {
+  // ❌ Unnecessary template wrapper for component with no args
+  await render(<template>
+    <LoadingSpinner />
+  </template>);
+  
+  assert.dom('[data-test-spinner]').exists();
+});
+```
+
+**Correct: direct component render when no args needed**
+
+```glimmer-js
+// tests/integration/components/user-card-test.js
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { render } from '@ember/test-helpers';
+import UserCard from 'my-app/components/user-card';
+
+module('Integration | Component | user-card', function(hooks) {
+  setupRenderingTest(hooks);
+
+  test('it renders with arguments', async function(assert) {
+    const user = { name: 'John Doe', email: 'john@example.com' };
+    
+    // ✅ Use template tag when passing arguments
+    await render(<template>
+      <UserCard @user={{user}} />
+    </template>);
+    
+    assert.dom('[data-test-user-name]').hasText('John Doe');
+  });
+  
+  test('it renders with block content', async function(assert) {
+    // ✅ Use template tag when providing blocks
+    await render(<template>
+      <UserCard>
+        <:header>Custom Header</:header>
+        <:body>Custom Content</:body>
+      </UserCard>
+    </template>);
+    
+    assert.dom('[data-test-header]').hasText('Custom Header');
+    assert.dom('[data-test-body]').hasText('Custom Content');
+  });
+  
+  test('it renders with HTML attributes', async function(assert) {
+    // ✅ Use template tag when passing HTML attributes
+    await render(<template>
+      <UserCard class="featured" data-test-featured />
+    </template>);
+    
+    assert.dom('[data-test-featured]').exists();
+    assert.dom('[data-test-featured]').hasClass('featured');
+  });
+});```
+
+**Complete example showing both patterns:**
+
+```
 
 **Pattern 1: Direct component render (no args/blocks/attributes):**
 
@@ -5861,7 +5971,7 @@ export default Component.extend({
 
 ### 0.37 Use Helper Libraries Effectively
 
-**Impact: medium**
+**Impact: MEDIUM**
 
 Reinventing common functionality with custom helpers adds maintenance burden and bundle size when well-maintained helper libraries already provide the needed functionality.
 
@@ -6630,7 +6740,7 @@ Reference: [https://guides.emberjs.com/release/testing/](https://guides.emberjs.
 
 ### 0.40 Use Native Forms with Platform Validation
 
-**Impact: high**
+**Impact: HIGH**
 
 Over-engineering forms with JavaScript when native browser features provide validation, accessibility, and UX patterns for free.
 
@@ -7731,7 +7841,30 @@ Reference: [https://guides.emberjs.com/release/typescript/](https://guides.ember
 
 ### 0.48 VSCode Extensions and MCP Configuration for Ember Projects
 
-**Impact: high**
+**Impact: HIGH**
+
+Set up recommended VSCode extensions and Model Context Protocol (MCP) servers for optimal Ember development experience.
+
+**Incorrect: no extension recommendations**
+
+```json
+{
+  "recommendations": []
+}
+```
+
+**Correct: recommended extensions for Ember**
+
+```json
+{
+  "recommendations": [
+    "emberjs.vscode-ember",
+    "vunguyentuan.vscode-glint",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint"
+  ]
+}
+```
 
 Create a `.vscode/extensions.json` file in your project root to recommend extensions to all team members:
 
@@ -8600,93 +8733,74 @@ Use modifiers (element modifiers) to handle DOM side effects and lifecycle event
 
 **Incorrect: manual DOM manipulation in component**
 
-// app/modifiers/chart.js
+```glimmer-js
+// app/components/chart.gjs
+import Component from '@glimmer/component';
 
+class Chart extends Component {
+  chartInstance = null;
+  
+  constructor() {
+    super(...arguments);
+    // Can't access element here - element doesn't exist yet!
+  }
+  
+  willDestroy() {
+    super.willDestroy(...arguments);
+    this.chartInstance?.destroy();
+  }
+
+  <template>
+    <canvas id="chart-canvas"></canvas>
+    {{! Manual setup is error-prone and not reusable }}
+  </template>
+}
+```
+
+**Correct: function modifier - preferred for simple side effects**
+
+```javascript
+// app/modifiers/chart.js
 import { modifier } from 'ember-modifier';
 
 export default modifier((element, [config]) => {
-
   // Initialize chart
-
   const chartInstance = new Chart(element, config);
-
+  
   // Return cleanup function
-
   return () => {
-
     chartInstance.destroy();
-
   };
+});
+```
+
+**Also correct: class-based modifier for complex state**
+
+// app/modifiers/autofocus.js
+
+import { modifier } from 'ember-modifier';
+
+export default modifier((element) => {
+
+  element.focus();
 
 });
 
-// app/modifiers/chart.js
+// app/components/input-field.gjs
 
-import Modifier from 'ember-modifier';
-
-import { registerDestructor } from '@ember/destroyable';
-
-export default class ChartModifier extends Modifier {
-
-  chartInstance = null;
-
-  modify(element, [config]) {
-
-    // Cleanup previous instance if config changed
-
-    if (this.chartInstance) {
-
-      this.chartInstance.destroy();
-
-    }
-
-    this.chartInstance = new Chart(element, config);
-
-    // Register cleanup
-
-    registerDestructor(this, () => {
-
-      this.chartInstance?.destroy();
-
-    });
-
-  }
-
-}
-
-// app/components/chart.gjs
-
-import chart from '../modifiers/chart';
+import autofocus from '../modifiers/autofocus';
 
 <template>
 
-  <canvas {{chart @config}}></canvas>
+  <input {{autofocus}} type="text" />
 
 </template>```
 
-**Use function modifiers** for simple side effects. Use class-based modifiers only when you need complex state management.
+**Use ember-resize-observer-modifier for resize handling:**
 
-**For commonly needed modifiers, use ember-modifier helpers:**
-
+```bash
 ember install ember-resize-observer-modifier
-
-// app/components/resizable.gjs
-
-import onResize from 'ember-resize-observer-modifier';
-
-<template>
-
-  <div {{onResize this.handleResize}}>
-
-    Content that responds to size changes
-
-  </div>
-
-</template>```
-
-Modifiers provide a clean, reusable way to manage DOM side effects without coupling to specific components.
-
-Reference: [https://guides.emberjs.com/release/components/template-lifecycle-dom-and-modifiers/](https://guides.emberjs.com/release/components/template-lifecycle-dom-and-modifiers/)
+```
 
 ---
 

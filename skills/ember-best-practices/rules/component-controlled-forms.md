@@ -1,7 +1,7 @@
 ---
 title: Use Native Forms with Platform Validation
 category: component
-impact: high
+impact: HIGH
 ---
 
 # Use Native Forms with Platform Validation

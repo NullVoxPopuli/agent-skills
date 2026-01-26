@@ -27,7 +27,8 @@ Compose helpers to create reusable, testable logic that can be combined in templ
       <span>Posts: {{@user.posts.length}}</span>
     {{/if}}
   </div>
-</template>```
+</template>
+```
 
 **Correct (composed helpers):**
 
@@ -78,7 +79,8 @@ import { formatEmail } from '../helpers/format-email';
       <span>Posts: {{@user.posts.length}}</span>
     {{/if}}
   </div>
-</template>```
+</template>
+```
 
 **Functional composition with pipe helper:**
 
@@ -114,7 +116,8 @@ const truncate = (str, length = 20) => str?.slice(0, length) || '';
   <div>
     {{pipe @text (fn trim) (fn uppercase) (fn truncate 50)}}
   </div>
-</template>```
+</template>
+```
 
 **Higher-order helpers:**
 
@@ -149,7 +152,8 @@ import { partialApply } from '../helpers/partial-apply';
   {{#let (partialApply @formatNumber 2) as |formatTwoDecimals|}}
     <span>Price: {{formatTwoDecimals @price}}</span>
   {{/let}}
-</template>```
+</template>
+```
 
 **Chainable transformation helpers:**
 
@@ -200,7 +204,8 @@ import { transform } from '../helpers/transform';
       <div>{{item.name}}</div>
     {{/each}}
   {{/let}}
-</template>```
+</template>
+```
 
 **Conditional composition:**
 
