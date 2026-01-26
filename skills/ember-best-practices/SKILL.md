@@ -9,7 +9,7 @@ metadata:
 
 # Ember.js Best Practices
 
-Comprehensive performance optimization and accessibility guide for Ember.js applications. Contains 42 rules across 7 categories, prioritized by impact to guide automated refactoring and code generation.
+Comprehensive performance optimization and accessibility guide for Ember.js applications. Contains 60 rules across 8 categories, prioritized by impact to guide automated refactoring and code generation.
 
 ## When to Apply
 
@@ -31,7 +31,10 @@ Reference these guidelines when:
 | 4 | Accessibility Best Practices | HIGH | `a11y-` |
 | 5 | Service and State Management | MEDIUM-HIGH | `service-` |
 | 6 | Template Optimization | MEDIUM | `template-` |
-| 7 | Advanced Patterns | LOW-MEDIUM | `advanced-` |
+| 7 | Performance Optimization | MEDIUM | `performance-` |
+| 8 | Testing Best Practices | MEDIUM | `testing-` |
+| 9 | Tooling and Configuration | MEDIUM | `tooling-` |
+| 10 | Advanced Patterns | MEDIUM-HIGH | `advanced-` |
 
 ## Quick Reference
 
@@ -40,6 +43,8 @@ Reference these guidelines when:
 - `route-parallel-model` - Use RSVP.hash() for parallel data loading
 - `route-loading-substates` - Implement loading substates for better UX
 - `route-lazy-routes` - Use route-based code splitting with Embroider
+- `route-templates` - Use route templates with co-located syntax
+- `route-model-caching` - Implement smart route model caching
 
 ### 2. Build and Bundle Optimization (CRITICAL)
 
@@ -61,6 +66,11 @@ Reference these guidelines when:
 - `component-args-validation` - Validate component arguments
 - `component-memory-leaks` - Prevent memory leaks in components
 - `component-strict-mode` - Use strict mode and template-only components
+- `component-avoid-classes-in-examples` - Avoid unnecessary classes in component examples
+- `component-avoid-constructors` - Avoid constructors in Glimmer components
+- `component-avoid-lifecycle-hooks` - Avoid legacy lifecycle hooks
+- `component-file-conventions` - Follow proper file naming conventions
+- `exports-named-only` - Use named exports only
 
 ### 4. Accessibility Best Practices (HIGH)
 
@@ -85,18 +95,38 @@ Reference these guidelines when:
 - `template-avoid-computation` - Move expensive work to cached getters
 - `template-helper-imports` - Import helpers directly in templates
 - `template-conditional-rendering` - Optimize conditional rendering
+- `template-fn-helper` - Use {{fn}} helper for partial application
+- `template-only-component-functions` - Use template-only components
 - `helper-composition` - Compose helpers for reusable logic
 - `helper-builtin-functions` - Use built-in helpers effectively
+- `helper-plain-functions` - Write helpers as plain functions
 
-### 7. Advanced Patterns (MEDIUM-HIGH)
+### 7. Performance Optimization (MEDIUM)
+
+- `performance-on-modifier-vs-handlers` - Use {{on}} modifier instead of event handler properties
+
+### 8. Testing Best Practices (MEDIUM)
+
+- `testing-modern-patterns` - Use modern testing patterns
+- `testing-qunit-dom-assertions` - Use qunit-dom for better test assertions
+- `testing-test-waiters` - Use @ember/test-waiters for async testing
+- `testing-render-patterns` - Use correct render patterns for components
+- `testing-msw-setup` - Mock API requests with MSW
+- `testing-library-dom-abstraction` - Use Testing Library patterns
+
+### 9. Tooling and Configuration (MEDIUM)
+
+- `tooling-template-lint-configuration` - Configure ember-template-lint for code quality
+- `vscode-setup-recommended` - VS Code extensions and MCP server setup
+
+### 10. Advanced Patterns (MEDIUM-HIGH)
 
 - `advanced-modifiers` - Use modifiers for DOM side effects
 - `advanced-helpers` - Extract reusable logic into helpers
-- `advanced-resources` - Use Resources for declarative data management
+- `advanced-resources-api` - Use Resources API for declarative data management
+- `advanced-tracked-built-ins` - Use tracked-built-ins for reactive collections
 - `advanced-concurrency` - Use ember-concurrency for task management
-- `route-templates` - Use route templates with co-located syntax
-- `route-model-caching` - Implement smart route model caching
-- `testing-modern-patterns` - Use modern testing patterns
+- `advanced-data-loading-with-ember-concurrency` - Data loading patterns with ember-concurrency
 
 ## How to Use
 
