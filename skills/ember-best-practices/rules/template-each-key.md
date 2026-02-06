@@ -1,13 +1,13 @@
 ---
 title: Use {{#each}} with @key for Lists
 impact: MEDIUM
-impactDescription: 50-70% faster list updates
+impactDescription: 50-100% faster list updates
 tags: templates, each, performance, rendering
 ---
 
 ## Use {{#each}} with @key for Lists
 
-Always use the `@key` parameter with `{{#each}}` for lists of objects to help Ember efficiently track and update items.
+Use the `key=` parameter with `{{#each}}` when objects are recreated between renders (e.g., via `.map()` or fresh API data). The default behavior uses object identity (`@identity`), which works when object references are stable.
 
 **Incorrect (no key):**
 
@@ -41,12 +41,15 @@ import UserCard from './user-card';
   </ul>
 </template>```
 
-**For arrays without stable IDs, use @identity:**
+**For arrays of primitives (strings, numbers):**
+
+`@identity` is the default, so you rarely need to specify it explicitly. It compares items by value for primitives.
 
 ```glimmer-js
 // app/components/tag-list.gjs
 <template>
-  {{#each this.tags key="@identity" as |tag|}}
+  {{! @identity is implicit, no need to write it }}
+  {{#each this.tags as |tag|}}
     <span class="tag">{{tag}}</span>
   {{/each}}
 </template>```
@@ -65,10 +68,17 @@ import UserCard from './user-card';
 
 Using proper keys allows Ember's rendering engine to efficiently update, reorder, and remove items without re-rendering the entire list.
 
-**Performance comparison:**
-- Without key: Re-renders entire list on changes
-- With key by id: Only updates changed items (50-70% faster)
-- With @identity: Good for primitive arrays (strings, numbers)
-- With @index: Only use when items never reorder
+**When to use `key=`:**
+- Objects recreated between renders (`.map()`, generators, fresh API responses) → use `key="id"` or similar
+- High-frequency updates (animations, real-time data) → always specify a key
+- Stable object references (Apollo cache, Ember Data) → default `@identity` is fine
+- Items never reorder → `key="@index"` is acceptable
 
-Reference: [Glimmer Rendering](https://guides.emberjs.com/release/components/looping-through-lists/)
+**Performance comparison (dbmon benchmark, 40 rows at 60fps):**
+- Without key (objects recreated): Destroys/recreates DOM every frame
+- With `key="data.db.id"`: DOM reuse, **2x FPS improvement**
+
+### References: 
+- [Ember API: each helper](https://api.emberjs.com/ember/release/classes/Ember.Templates.helpers/methods/each)
+- [Ember template lint: equire-each-key](https://github.com/ember-template-lint/ember-template-lint/blob/main/docs/rule/require-each-key.md)
+- [Example PR showing the fps improvement on updated lists](https://github.com/universal-ember/table/pull/68)
