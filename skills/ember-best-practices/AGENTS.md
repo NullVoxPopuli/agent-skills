@@ -37,7 +37,7 @@ Comprehensive performance optimization and accessibility guide for Ember.js appl
    - 3.4 [Avoid Unnecessary Tracking](#34-avoid-unnecessary-tracking)
    - 3.5 [Build Reactive Chains with Dependent Getters](#35-build-reactive-chains-with-dependent-getters)
    - 3.6 [Component File Naming and Export Conventions](#36-component-file-naming-and-export-conventions)
-   - 3.7 [Prefer Named Exports Outside Resolver Modules](#37-prefer-named-exports-outside-resolver-modules)
+   - 3.7 [Prefer Named Exports, Fallback to Default for Implicit Template Lookup](#37-prefer-named-exports-fallback-to-default-for-implicit-template-lookup)
    - 3.8 [Prevent Memory Leaks in Components](#38-prevent-memory-leaks-in-components)
    - 3.9 [Use {{on}} Modifier for Event Handling](#39-use-on-modifier-for-event-handling)
    - 3.10 [Use @cached for Expensive Getters](#310-use-cached-for-expensive-getters)
@@ -1670,7 +1670,7 @@ Reference: [https://guides.emberjs.com/release/in-depth-topics/autotracking-in-d
 
 **Impact: HIGH (Enforces consistent component structure and predictable imports)**
 
-Follow modern Ember component file conventions: use `.gjs`/`.gts` files with `<template>` tags (never `.hbs` files), use kebab-case filenames, match class names to file names (in PascalCase), and avoid `export default` in .gjs/.gts component files.
+Follow modern Ember component file conventions: use `.gjs`/`.gts` files with `<template>` tags (never `.hbs` files), use kebab-case filenames, match class names to file names (in PascalCase), do not use the `Component` suffix in class names, and avoid `export default` in .gjs/.gts component files.
 
 This export guidance applies to `.gjs`/`.gts` component files only. If your app still uses `.hbs`, keep default exports for resolver-facing invokables used there (or use a named export plus default alias in hybrid codebases).
 
@@ -1680,7 +1680,7 @@ This export guidance applies to `.gjs`/`.gts` component files only. If your app 
 // app/components/UserProfile.gjs - WRONG: PascalCase filename
 import Component from '@glimmer/component';
 
-export default class UserProfile extends Component {
+export class UserProfile extends Component {
   <template>
     <div class="profile">
       {{@name}}
@@ -1851,11 +1851,11 @@ export class ProfileCard extends Component {
 
 - route-templates.md - Route file naming conventions
 
-### 3.7 Prefer Named Exports Outside Resolver Modules
+### 3.7 Prefer Named Exports, Fallback to Default for Implicit Template Lookup
 
-**Impact: LOW (Clear module contracts without conflicting with Ember resolver conventions)**
+**Impact: LOW (Clear export contracts across .hbs and template-tag codebases)**
 
-Use named exports for shared utility modules and template-tag component classes. If a module should be invokable from `.hbs` templates, provide a default export. In hybrid `.gjs`/`.hbs` projects, a practical pattern is a named export plus a default export alias.
+Use named exports for shared modules imported directly in JS/TS (utilities, constants, pure functions). If a module should be invokable from `.hbs` templates via implicit lookup, provide a default export. In hybrid `.gjs`/`.hbs` projects, a practical pattern is a named export plus a default export alias.
 
 **Incorrect: default export in a shared utility module**
 
@@ -1869,6 +1869,30 @@ export default function formatDate(date) {
 **Correct: named export in a shared utility module**
 
 ```javascript
+// app/utils/format-date.js
+export function formatDate(date) {
+  return new Date(date).toLocaleDateString();
+}
+```
+
+**Correct: hybrid `.gjs`/`.hbs` named export + default alias**
+
+```javascript
+// app/helpers/format-date.js
+import { helper } from '@ember/component/helper';
+
+export const formatDate = helper(([value]) => {
+  return new Date(value).toLocaleDateString();
+});
+
+export default formatDate;
+```
+
+Use named exports when the module is imported directly by other modules and is not resolved via implicit template lookup.
+
+**Example: utility module with multiple named exports**
+
+```javascript
 // app/utils/validators.js
 export function isEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -1878,8 +1902,6 @@ export function isPhoneNumber(value) {
   return /^\d{3}-\d{3}-\d{4}$/.test(value);
 }
 ```
-
-Use named exports when the module is imported directly by other modules and is not resolved by Ember's file-based resolver.
 
 Benefits:
 
@@ -1935,13 +1957,30 @@ export default modifier((element) => {
 });
 ```
 
-**Template:**
+**Template: `.gjs`**
 
-```ts
-modules = {
-  './services/manual': { default: ManualService },
-  './services/manual-shorthand': ManualService,
-};
+```glimmer-js
+// app/templates/dashboard.gjs
+<template>
+  <h1>Dashboard</h1>
+</template>
+```
+
+**Template: `.gts`**
+
+```glimmer-ts
+// app/templates/dashboard.gts
+import type { TOC } from '@ember/component/template-only';
+
+interface Signature {
+  Args: {
+    model: unknown;
+  };
+}
+
+export default <template>
+  <h1>Dashboard</h1>
+</template> satisfies TOC<Signature>;
 ```
 
 Template-tag files must resolve via a module default export in convention-based and `import.meta.glob` flows.
@@ -1950,7 +1989,18 @@ For `app/templates/*.gjs`, the default export is implicit after compilation.
 
 With `ember-strict-application-resolver`, you can register explicit module values in `App.modules`:
 
+**Strict resolver explicit modules registration:**
+
+```ts
+modules = {
+  './services/manual': { default: ManualService },
+  './services/manual-shorthand': ManualService,
+};
+```
+
 In that explicit shorthand case, a direct value works without a default-exported module object.
+
+This is an explicit registration escape hatch and does not replace default-export requirements for `.hbs`-invokable modules.
 
 1. If a module should be invokable from `.hbs`, provide a default export.
 

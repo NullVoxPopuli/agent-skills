@@ -1,13 +1,13 @@
 ---
-title: Prefer Named Exports Outside Resolver Modules
+title: Prefer Named Exports, Fallback to Default for Implicit Template Lookup
 impact: LOW
-impactDescription: Clear module contracts without conflicting with Ember resolver conventions
-tags: exports, modules, resolver, code-organization
+impactDescription: Clear export contracts across .hbs and template-tag codebases
+tags: exports, hbs, gjs, interop, code-organization
 ---
 
-## Prefer Named Exports Outside Resolver Modules
+## Prefer Named Exports, Fallback to Default for Implicit Template Lookup
 
-Use named exports for shared utility modules and template-tag component classes. If a module should be invokable from `.hbs` templates, provide a default export. In hybrid `.gjs`/`.hbs` projects, a practical pattern is a named export plus a default export alias.
+Use named exports for shared modules imported directly in JS/TS (utilities, constants, pure functions). If a module should be invokable from `.hbs` templates via implicit lookup, provide a default export. In hybrid `.gjs`/`.hbs` projects, a practical pattern is a named export plus a default export alias.
 
 **Incorrect (default export in a shared utility module):**
 
@@ -25,25 +25,26 @@ export default function formatDate(date) {
 export function formatDate(date) {
   return new Date(date).toLocaleDateString();
 }
+```
 
-// app/components/user-card.gjs
-import { formatDate } from '../utils/format-date';
+**Correct (hybrid `.gjs`/`.hbs` named export + default alias):**
+
+```javascript
+// app/helpers/format-date.js
+import { helper } from '@ember/component/helper';
+
+export const formatDate = helper(([value]) => {
+  return new Date(value).toLocaleDateString();
+});
+
+export default formatDate;
 ```
 
 ## Where Named Exports Are Preferred
 
-Use named exports when the module is imported directly by other modules and is not resolved by Ember's file-based resolver.
+Use named exports when the module is imported directly by other modules and is not resolved via implicit template lookup.
 
-```glimmer-js
-// app/components/user-card.gjs
-import Component from '@glimmer/component';
-
-export class UserCard extends Component {
-  <template>
-    <div>{{@user.name}}</div>
-  </template>
-}
-```
+**Example (utility module with multiple named exports):**
 
 ```javascript
 // app/utils/validators.js
@@ -63,7 +64,7 @@ Benefits:
 3. Better tree-shaking for utility modules
 4. Easier multi-export module organization
 
-## Where Default Exports Are Expected
+## Where Default Exports Are Required
 
 Use default exports for modules consumed through resolver/template lookup.
 If your project uses `.hbs`, invokables that should be accessible from templates should provide `export default`.
@@ -107,7 +108,7 @@ export default modifier((element) => {
 });
 ```
 
-**Template:**
+**Template (`.gjs`):**
 
 ```glimmer-js
 // app/templates/dashboard.gjs
@@ -115,6 +116,8 @@ export default modifier((element) => {
   <h1>Dashboard</h1>
 </template>
 ```
+
+**Template (`.gts`):**
 
 ```glimmer-ts
 // app/templates/dashboard.gts
@@ -138,6 +141,8 @@ For `app/templates/*.gjs`, the default export is implicit after compilation.
 
 With `ember-strict-application-resolver`, you can register explicit module values in `App.modules`:
 
+**Strict resolver explicit modules registration:**
+
 ```ts
 modules = {
   './services/manual': { default: ManualService },
@@ -146,6 +151,7 @@ modules = {
 ```
 
 In that explicit shorthand case, a direct value works without a default-exported module object.
+This is an explicit registration escape hatch and does not replace default-export requirements for `.hbs`-invokable modules.
 
 ## Rule of Thumb
 

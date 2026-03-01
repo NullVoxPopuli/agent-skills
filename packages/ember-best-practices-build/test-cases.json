@@ -419,7 +419,7 @@
     "ruleId": "",
     "ruleTitle": "Component File Naming and Export Conventions",
     "type": "bad",
-    "code": "// app/components/UserProfile.gjs - WRONG: PascalCase filename\nimport Component from '@glimmer/component';\n\nexport default class UserProfile extends Component {\n  <template>\n    <div class=\"profile\">\n      {{@name}}\n    </div>\n  </template>\n}",
+    "code": "// app/components/UserProfile.gjs - WRONG: PascalCase filename\nimport Component from '@glimmer/component';\n\nexport class UserProfile extends Component {\n  <template>\n    <div class=\"profile\">\n      {{@name}}\n    </div>\n  </template>\n}",
     "language": "glimmer-js",
     "description": "Incorrect example for Component File Naming and Export Conventions"
   },
@@ -545,7 +545,7 @@
   },
   {
     "ruleId": "",
-    "ruleTitle": "Prefer Named Exports Outside Resolver Modules",
+    "ruleTitle": "Prefer Named Exports, Fallback to Default for Implicit Template Lookup",
     "type": "bad",
     "code": "// app/utils/format-date.js\nexport default function formatDate(date) {\n  return new Date(date).toLocaleDateString();\n}",
     "language": "javascript",
@@ -553,11 +553,19 @@
   },
   {
     "ruleId": "",
-    "ruleTitle": "Prefer Named Exports Outside Resolver Modules",
+    "ruleTitle": "Prefer Named Exports, Fallback to Default for Implicit Template Lookup",
     "type": "good",
-    "code": "// app/utils/validators.js\nexport function isEmail(value) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value);\n}\n\nexport function isPhoneNumber(value) {\n  return /^\\d{3}-\\d{3}-\\d{4}$/.test(value);\n}",
+    "code": "// app/utils/format-date.js\nexport function formatDate(date) {\n  return new Date(date).toLocaleDateString();\n}",
     "language": "javascript",
     "description": "named export in a shared utility module"
+  },
+  {
+    "ruleId": "",
+    "ruleTitle": "Prefer Named Exports, Fallback to Default for Implicit Template Lookup",
+    "type": "good",
+    "code": "// app/helpers/format-date.js\nimport { helper } from '@ember/component/helper';\n\nexport const formatDate = helper(([value]) => {\n  return new Date(value).toLocaleDateString();\n});\n\nexport default formatDate;",
+    "language": "javascript",
+    "description": "hybrid `.gjs`/`.hbs` named export + default alias"
   },
   {
     "ruleId": "",
