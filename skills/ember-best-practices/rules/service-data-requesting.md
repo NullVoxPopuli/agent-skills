@@ -8,6 +8,7 @@ tags: services, data-fetching, concurrency, cancellation, reliability
 ## Implement Robust Data Requesting Patterns
 
 Use proper patterns for data fetching including parallel requests, error handling, request cancellation, and retry logic.
+`export default` in route/service snippets below is intentional because these modules are commonly resolved by convention and referenced from templates. In hybrid `.gjs`/`.hbs` codebases, you can pair named exports with a default alias where needed.
 
 ## Problem
 

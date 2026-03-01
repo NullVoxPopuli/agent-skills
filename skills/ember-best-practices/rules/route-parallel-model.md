@@ -8,6 +8,7 @@ tags: routes, data-fetching, parallelization, performance
 ## Parallel Data Loading in Model Hooks
 
 When fetching multiple independent data sources in a route's model hook, use `Promise.all()` or RSVP.hash() to load them in parallel instead of sequentially.
+`export default` in these route examples is intentional because route modules are discovered through resolver lookup. In hybrid `.gjs`/`.hbs` codebases, keep route defaults and add named exports only when you need explicit imports elsewhere.
 
 **Incorrect (sequential loading, 3 round trips):**
 
