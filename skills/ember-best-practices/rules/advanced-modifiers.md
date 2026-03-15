@@ -104,9 +104,7 @@ export default modifier((element) => {
 // app/components/input-field.gjs
 import autofocus from '../modifiers/autofocus';
 
-<template>
-  <input {{autofocus}} type="text" />
-</template>
+<template><input {{autofocus}} type="text" /></template>
 ```
 
 **Use ember-resize-observer-modifier for resize handling:**

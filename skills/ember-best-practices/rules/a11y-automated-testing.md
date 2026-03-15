@@ -18,10 +18,10 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, fillIn, click } from '@ember/test-helpers';
 import UserForm from 'my-app/components/user-form';
 
-module('Integration | Component | user-form', function(hooks) {
+module('Integration | Component | user-form', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it submits the form', async function(assert) {
+  test('it submits the form', async function (assert) {
     await render(<template><UserForm /></template>);
     await fillIn('input', 'John');
     await click('button');
@@ -40,10 +40,10 @@ import { render, fillIn, click } from '@ember/test-helpers';
 import a11yAudit from 'ember-a11y-testing/test-support/audit';
 import UserForm from 'my-app/components/user-form';
 
-module('Integration | Component | user-form', function(hooks) {
+module('Integration | Component | user-form', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it submits the form', async function(assert) {
+  test('it submits the form', async function (assert) {
     await render(<template><UserForm /></template>);
 
     // Automatically checks for a11y violations

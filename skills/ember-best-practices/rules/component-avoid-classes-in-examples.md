@@ -127,10 +127,7 @@ export class Card extends Component {
 // Good: Teaching about dynamic classes
 export class TabButton extends Component {
   <template>
-    <button
-      class={{if @isActive "active"}}
-      {{on "click" @onClick}}
-    >
+    <button class={{if @isActive "active"}} {{on "click" @onClick}}>
       {{yield}}
     </button>
   </template>

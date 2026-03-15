@@ -15,12 +15,7 @@ All form inputs must have associated labels, and validation errors should be ann
 // app/components/form.gjs
 <template>
   <form {{on "submit" this.handleSubmit}}>
-    <input
-      type="email"
-      value={{this.email}}
-      {{on "input" this.updateEmail}}
-      placeholder="Email"
-    />
+    <input type="email" value={{this.email}} {{on "input" this.updateEmail}} placeholder="Email" />
 
     {{#if this.emailError}}
       <span>{{this.emailError}}</span>
@@ -56,11 +51,7 @@ All form inputs must have associated labels, and validation errors should be ann
       />
 
       {{#if this.emailError}}
-        <span
-          id="email-error"
-          role="alert"
-          aria-live="polite"
-        >
+        <span id="email-error" role="alert" aria-live="polite">
           {{this.emailError}}
         </span>
       {{/if}}

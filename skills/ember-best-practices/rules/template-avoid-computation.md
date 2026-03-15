@@ -53,29 +53,25 @@ export class Stats extends Component {
 
   get average() {
     // No @cached needed if only accessed once in template
-    return this.args.items.length > 0
-      ? this.total / this.args.items.length
-      : 0;
+    return this.args.items.length > 0 ? this.total / this.args.items.length : 0;
   }
 
   get maxPrice() {
-    return Math.max(...this.args.items.map(item => item.price));
+    return Math.max(...this.args.items.map((item) => item.price));
   }
 
   @cached
   get sortedItems() {
     // @cached useful here as it's used by itemsWithTotal
-    return [...this.args.items].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
+    return [...this.args.items].sort((a, b) => a.name.localeCompare(b.name));
   }
 
   @cached
   get itemsWithTotal() {
     // @cached useful as accessed multiple times in {{#each}}
-    return this.sortedItems.map(item => ({
+    return this.sortedItems.map((item) => ({
       ...item,
-      total: item.price * item.quantity
+      total: item.price * item.quantity,
     }));
   }
 

@@ -162,9 +162,7 @@ class ActionHelpers extends Component {
 
   <template>
     {{! Partial application with fn }}
-    <input
-      {{on "input" (fn this.updateValue "email")}}
-    />
+    <input {{on "input" (fn this.updateValue "email")}} />
 
     {{#each @items as |item|}}
       <li>
@@ -215,12 +213,14 @@ import { and, not } from 'ember-truth-helpers';
 
 class DynamicClasses extends Component {
   <template>
-    <div class={{concat
-      "card "
-      (ifHelper @isPremium "premium ")
-      (ifHelper (and @isNew (not @isRead)) "unread ")
-      @customClass
-    }}>
+    <div
+      class={{concat
+        "card "
+        (ifHelper @isPremium "premium ")
+        (ifHelper (and @isNew (not @isRead)) "unread ")
+        @customClass
+      }}
+    >
       <h3>{{@title}}</h3>
     </div>
   </template>
@@ -245,16 +245,13 @@ class FilteredList extends Component {
   @cached
   get filteredItems() {
     if (this.filter === 'all') return this.args.items;
-    return this.args.items.filter(item => item.status === this.filter);
+    return this.args.items.filter((item) => item.status === this.filter);
   }
 
   <template>
     <select {{on "change" (fn (mut this.filter) target.value)}}>
       {{#each (array "all" "active" "pending" "completed") as |option|}}
-        <option
-          value={{option}}
-          selected={{eq this.filter option}}
-        >
+        <option value={{option}} selected={{eq this.filter option}}>
           {{option}}
         </option>
       {{/each}}
@@ -285,19 +282,18 @@ class UserProfileCard extends Component {
   };
 
   <template>
-    <div class={{concat
-      "profile-card "
-      (ifHelper @user.isPremium "premium ")
-      (ifHelper (and @user.isOnline (not @user.isAway)) "online ")
-    }}>
+    <div
+      class={{concat
+        "profile-card "
+        (ifHelper @user.isPremium "premium ")
+        (ifHelper (and @user.isOnline (not @user.isAway)) "online ")
+      }}
+    >
       <h2>{{concat @user.firstName " " @user.lastName}}</h2>
 
       {{#if (or (eq @user.role "admin") (eq @user.role "moderator"))}}
         <span class="badge">
-          {{get (hash
-            admin="Administrator"
-            moderator="Moderator"
-          ) @user.role}}
+          {{get (hash admin="Administrator" moderator="Moderator") @user.role}}
         </span>
       {{/if}}
 
@@ -305,7 +301,8 @@ class UserProfileCard extends Component {
         <div class="actions">
           {{#each (array "profile" "settings" "privacy") as |section|}}
             <button {{on "click" (fn this.updateField "activeSection" section)}}>
-              Edit {{section}}
+              Edit
+              {{section}}
             </button>
           {{/each}}
         </div>

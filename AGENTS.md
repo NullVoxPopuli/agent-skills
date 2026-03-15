@@ -30,8 +30,13 @@ skills/
 
 ````markdown
 ---
-name: {skill-name}
-description: {One sentence describing when to use this skill. Include trigger phrases like "Deploy my app", "Check logs", etc.}
+name: { skill-name }
+description:
+  {
+    One sentence describing when to use this skill. Include trigger phrases like "Deploy my app",
+    'Check logs',
+    etc.,
+  }
 ---
 
 # {Skill Title}

@@ -40,7 +40,7 @@ import { on } from '@ember/modifier';
 class Button extends Component {
   handleClick = () => {
     this.args.onClick?.();
-  }
+  };
 
   <template>
     <button {{on "click" this.handleClick}}>
@@ -60,13 +60,10 @@ import { on } from '@ember/modifier';
 class ScrollTracker extends Component {
   handleScroll = (event) => {
     console.log('Scroll position:', event.target.scrollTop);
-  }
+  };
 
   <template>
-    <div
-      class="scrollable"
-      {{on "scroll" this.handleScroll passive=true}}
-    >
+    <div class="scrollable" {{on "scroll" this.handleScroll passive=true}}>
       {{yield}}
     </div>
   </template>
@@ -86,15 +83,15 @@ class InputField extends Component {
 
   handleFocus = () => {
     this.isFocused = true;
-  }
+  };
 
   handleBlur = () => {
     this.isFocused = false;
-  }
+  };
 
   handleInput = (event) => {
     this.args.onInput?.(event.target.value);
-  }
+  };
 
   <template>
     <input

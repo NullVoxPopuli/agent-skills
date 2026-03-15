@@ -142,7 +142,7 @@ export default class PostRoute extends Route {
     // Check cache first
     const cached = this.store.cache.peek({
       type: 'post',
-      id: params.post_id
+      id: params.post_id,
     });
 
     // Return cached if fresh (less than 5 minutes old)
@@ -153,14 +153,14 @@ export default class PostRoute extends Route {
     // Fetch fresh data
     return this.store.request({
       url: `/posts/${params.post_id}`,
-      options: { reload: true }
+      options: { reload: true },
     });
   }
 
   isCacheFresh(record) {
     const cacheTime = record.meta?.cachedAt || 0;
     const fiveMinutes = 5 * 60 * 1000;
-    return (Date.now() - cacheTime) < fiveMinutes;
+    return Date.now() - cacheTime < fiveMinutes;
   }
 
   <template>
@@ -215,17 +215,15 @@ export default class PostsRoute extends Route {
   @service store;
 
   queryParams = {
-    refresh: { refreshModel: true }
+    refresh: { refreshModel: true },
   };
 
   model(params) {
-    const options = params.refresh
-      ? { reload: true }
-      : { backgroundReload: true };
+    const options = params.refresh ? { reload: true } : { backgroundReload: true };
 
     return this.store.request({
       url: '/posts',
-      options
+      options,
     });
   }
 
@@ -263,7 +261,7 @@ export default class DashboardRoute extends Route {
     // Refresh in background
     this.store.request({
       url: '/dashboard',
-      options: { backgroundReload: true }
+      options: { backgroundReload: true },
     });
 
     return cached || this.store.request({ url: '/dashboard' });
@@ -752,7 +750,7 @@ class UserProfile extends Component {
     this.isLoading = true;
     try {
       this.data = await this.store.request({
-        url: `/users/${this.args.userId}`
+        url: `/users/${this.args.userId}`,
       });
     } catch (e) {
       this.error = e;
@@ -1089,7 +1087,8 @@ class UserGreeting extends Component {
 
   <template>
     <div {{did-update this.updateDisplayName @user}}>
-      Hello, {{this.displayName}}
+      Hello,
+      {{this.displayName}}
     </div>
   </template>
 }
@@ -1109,7 +1108,8 @@ class UserGreeting extends Component {
 
   <template>
     <div>
-      Hello, {{this.displayName}}
+      Hello,
+      {{this.displayName}}
     </div>
   </template>
 }
@@ -1126,17 +1126,15 @@ class UserStats extends Component {
   @cached
   get sortedPosts() {
     // Expensive computation only runs when @posts changes
-    return [...this.args.posts].sort((a, b) =>
-      b.createdAt - a.createdAt
-    );
+    return [...this.args.posts].sort((a, b) => b.createdAt - a.createdAt);
   }
 
   @cached
   get statistics() {
     return {
       total: this.args.posts.length,
-      published: this.args.posts.filter(p => p.published).length,
-      drafts: this.args.posts.filter(p => !p.published).length
+      published: this.args.posts.filter((p) => p.published).length,
+      drafts: this.args.posts.filter((p) => !p.published).length,
     };
   }
 
@@ -1216,7 +1214,7 @@ class UserProfile extends Component {
     this.loading = true;
     try {
       const response = await fetch(`/api/users/${this.args.userId}`, {
-        signal: this.controller.signal
+        signal: this.controller.signal,
       });
       this.userData = await response.json();
     } finally {
@@ -1517,23 +1515,23 @@ class DataAnalysis extends Component {
   // Level 1: Filter
   @cached
   get validData() {
-    return this.rawData.filter(item => item.value != null);
+    return this.rawData.filter((item) => item.value != null);
   }
 
   // Level 2: Transform (depends on validData)
   @cached
   get normalizedData() {
-    const max = Math.max(...this.validData.map(d => d.value));
-    return this.validData.map(item => ({
+    const max = Math.max(...this.validData.map((d) => d.value));
+    return this.validData.map((item) => ({
       ...item,
-      normalized: item.value / max
+      normalized: item.value / max,
     }));
   }
 
   // Level 2: Statistics (depends on validData)
   @cached
   get statistics() {
-    const values = this.validData.map(d => d.value);
+    const values = this.validData.map((d) => d.value);
     const sum = values.reduce((a, b) => a + b, 0);
     const mean = sum / values.length;
     const variance = values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length;
@@ -1544,22 +1542,22 @@ class DataAnalysis extends Component {
       mean,
       stdDev: Math.sqrt(variance),
       min: Math.min(...values),
-      max: Math.max(...values)
+      max: Math.max(...values),
     };
   }
 
   // Level 3: Depends on normalizedData and statistics
   @cached
   get outliers() {
-    const threshold = this.statistics.mean + (2 * this.statistics.stdDev);
-    return this.normalizedData.filter(item => item.value > threshold);
+    const threshold = this.statistics.mean + 2 * this.statistics.stdDev;
+    return this.normalizedData.filter((item) => item.value > threshold);
   }
 
   // Level 3: Depends on statistics
   get qualityScore() {
     const validRatio = this.validData.length / this.rawData.length;
     const outlierRatio = this.outliers.length / this.validData.length;
-    return (validRatio * 0.7) + ((1 - outlierRatio) * 0.3);
+    return validRatio * 0.7 + (1 - outlierRatio) * 0.3;
   }
 
   <template>
@@ -1593,9 +1591,9 @@ class FilteredList extends Component {
     if (!this.searchTerm) return this.args.items;
 
     const term = this.searchTerm.toLowerCase();
-    return this.args.items.filter(item =>
-      item.name.toLowerCase().includes(term) ||
-      item.description?.toLowerCase().includes(term)
+    return this.args.items.filter(
+      (item) =>
+        item.name.toLowerCase().includes(term) || item.description?.toLowerCase().includes(term),
     );
   }
 
@@ -1604,9 +1602,7 @@ class FilteredList extends Component {
   get categoryFiltered() {
     if (this.selectedCategory === 'all') return this.searchFiltered;
 
-    return this.searchFiltered.filter(item =>
-      item.category === this.selectedCategory
-    );
+    return this.searchFiltered.filter((item) => item.category === this.selectedCategory);
   }
 
   // Depends on categoryFiltered and sortDirection
@@ -1615,9 +1611,7 @@ class FilteredList extends Component {
     const items = [...this.categoryFiltered];
     const direction = this.sortDirection === 'asc' ? 1 : -1;
 
-    return items.sort((a, b) =>
-      direction * a.name.localeCompare(b.name)
-    );
+    return items.sort((a, b) => direction * a.name.localeCompare(b.name));
   }
 
   // Final result
@@ -2126,13 +2120,15 @@ class ResizeAware extends Component {
   handleResize = () => {
     this.size = {
       width: window.innerWidth,
-      height: window.innerHeight
+      height: window.innerHeight,
     };
-  }
+  };
 
   <template>
     <div {{windowListener "resize" this.handleResize}}>
-      {{this.size.width}} x {{this.size.height}}
+      {{this.size.width}}
+      x
+      {{this.size.height}}
     </div>
   </template>
 }
@@ -2163,7 +2159,7 @@ class DataLoader extends Component {
   async loadData() {
     try {
       const response = await fetch('/api/data', {
-        signal: this.abortController.signal
+        signal: this.abortController.signal,
       });
       this.data = await response.json();
     } catch (error) {
@@ -2254,7 +2250,7 @@ import { on } from '@ember/modifier';
 class Button extends Component {
   handleClick = () => {
     this.args.onClick?.();
-  }
+  };
 
   <template>
     <button {{on "click" this.handleClick}}>
@@ -2274,13 +2270,10 @@ import { on } from '@ember/modifier';
 class ScrollTracker extends Component {
   handleScroll = (event) => {
     console.log('Scroll position:', event.target.scrollTop);
-  }
+  };
 
   <template>
-    <div
-      class="scrollable"
-      {{on "scroll" this.handleScroll passive=true}}
-    >
+    <div class="scrollable" {{on "scroll" this.handleScroll passive=true}}>
       {{yield}}
     </div>
   </template>
@@ -2300,15 +2293,15 @@ class InputField extends Component {
 
   handleFocus = () => {
     this.isFocused = true;
-  }
+  };
 
   handleBlur = () => {
     this.isFocused = false;
-  }
+  };
 
   handleInput = (event) => {
     this.args.onInput?.(event.target.value);
-  }
+  };
 
   <template>
     <input
@@ -2460,7 +2453,7 @@ class DataManager extends Component {
   @cached
   get currentUser() {
     const promise = this.store.request({
-      url: '/users/me'
+      url: '/users/me',
     });
     return getPromiseState(promise);
   }
@@ -2503,8 +2496,8 @@ class FormContainer extends Component {
     email: '',
     preferences: {
       newsletter: false,
-      notifications: true
-    }
+      notifications: true,
+    },
   });
 
   // Compose validation state
@@ -2514,14 +2507,12 @@ class FormContainer extends Component {
   @tracked ui = new TrackedObject({
     isSubmitting: false,
     isDirty: false,
-    showErrors: false
+    showErrors: false,
   });
 
   // Computed field based on composed state
   get isValid() {
-    return Object.keys(this.errors).length === 0 &&
-           this.formData.email &&
-           this.formData.firstName;
+    return Object.keys(this.errors).length === 0 && this.formData.email && this.formData.firstName;
   }
 
   get canSubmit() {
@@ -2587,10 +2578,7 @@ class PaginatedList extends Component {
       {{/each}}
 
       <div class="pagination">
-        <button
-          {{on "click" this.pagination.prevPage}}
-          disabled={{eq this.pagination.page 1}}
-        >
+        <button {{on "click" this.pagination.prevPage}} disabled={{eq this.pagination.page 1}}>
           Previous
         </button>
 
@@ -2620,9 +2608,7 @@ class SelectableList extends Component {
   selection = new SelectionState();
 
   get selectedItems() {
-    return this.args.items.filter(item =>
-      this.selection.isSelected(item.id)
-    );
+    return this.args.items.filter((item) => this.selection.isSelected(item.id));
   }
 
   <template>
@@ -2767,7 +2753,10 @@ import UserCard from './user-card';
 
       <:footer as |u|>
         <div class="stats">
-          Posts: {{u.postCount}} | Followers: {{u.followers}}
+          Posts:
+          {{u.postCount}}
+          | Followers:
+          {{u.followers}}
         </div>
       </:footer>
     </UserCard>
@@ -2810,11 +2799,7 @@ class Cell extends Component {
 class DataTable extends Component {
   <template>
     <table class="data-table">
-      {{yield (hash
-        Header=HeaderCell
-        Row=Row
-        Cell=Cell
-      )}}
+      {{yield (hash Header=HeaderCell Row=Row Cell=Cell)}}
     </table>
   </template>
 }
@@ -2857,7 +2842,8 @@ import Dropdown from './dropdown';
 <template>
   <Dropdown as |dd|>
     <button {{on "click" dd.toggle}}>
-      Menu {{if dd.isOpen "▲" "▼"}}
+      Menu
+      {{if dd.isOpen "▲" "▼"}}
     </button>
 
     {{#if dd.isOpen}}
@@ -3275,22 +3261,19 @@ class DataTable extends Component {
   get columns() {
     assert(
       'DataTable requires @columns argument',
-      this.args.columns && Array.isArray(this.args.columns)
+      this.args.columns && Array.isArray(this.args.columns),
     );
 
     assert(
       '@columns must be an array of objects with "key" and "label" properties',
-      this.args.columns.every(col => col.key && col.label)
+      this.args.columns.every((col) => col.key && col.label),
     );
 
     return this.args.columns;
   }
 
   get rows() {
-    assert(
-      'DataTable requires @rows argument',
-      this.args.rows && Array.isArray(this.args.rows)
-    );
+    assert('DataTable requires @rows argument', this.args.rows && Array.isArray(this.args.rows));
 
     return this.args.rows;
   }
@@ -3438,12 +3421,7 @@ All form inputs must have associated labels, and validation errors should be ann
 // app/components/form.gjs
 <template>
   <form {{on "submit" this.handleSubmit}}>
-    <input
-      type="email"
-      value={{this.email}}
-      {{on "input" this.updateEmail}}
-      placeholder="Email"
-    />
+    <input type="email" value={{this.email}} {{on "input" this.updateEmail}} placeholder="Email" />
 
     {{#if this.emailError}}
       <span>{{this.emailError}}</span>
@@ -3479,11 +3457,7 @@ All form inputs must have associated labels, and validation errors should be ann
       />
 
       {{#if this.emailError}}
-        <span
-          id="email-error"
-          role="alert"
-          aria-live="polite"
-        >
+        <span id="email-error" role="alert" aria-live="polite">
           {{this.emailError}}
         </span>
       {{/if}}
@@ -3642,9 +3616,7 @@ class Dropdown extends Component {
   }
 
   moveFocus(direction) {
-    const items = Array.from(
-      document.querySelectorAll('[role="menuitem"] button')
-    );
+    const items = Array.from(document.querySelectorAll('[role="menuitem"] button'));
     const currentIndex = items.indexOf(document.activeElement);
     const nextIndex = (currentIndex + direction + items.length) % items.length;
     items[nextIndex]?.focus();
@@ -3824,10 +3796,10 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, fillIn, click } from '@ember/test-helpers';
 import UserForm from 'my-app/components/user-form';
 
-module('Integration | Component | user-form', function(hooks) {
+module('Integration | Component | user-form', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it submits the form', async function(assert) {
+  test('it submits the form', async function (assert) {
     await render(<template><UserForm /></template>);
     await fillIn('input', 'John');
     await click('button');
@@ -3846,10 +3818,10 @@ import { render, fillIn, click } from '@ember/test-helpers';
 import a11yAudit from 'ember-a11y-testing/test-support/audit';
 import UserForm from 'my-app/components/user-form';
 
-module('Integration | Component | user-form', function(hooks) {
+module('Integration | Component | user-form', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it submits the form', async function(assert) {
+  test('it submits the form', async function (assert) {
     await render(<template><UserForm /></template>);
 
     // Automatically checks for a11y violations
@@ -4278,9 +4250,9 @@ function AnalyticsService() {
       // Send to analytics endpoint
       fetch('/analytics', {
         method: 'POST',
-        body: JSON.stringify(event)
+        body: JSON.stringify(event),
       });
-    }
+    },
   };
 }
 
@@ -4326,7 +4298,8 @@ class ShoppingCart extends Component {
 
       {{#each this.cart.items as |item|}}
         <div class="cart-item">
-          {{item.name}} - ${{item.price}}
+          {{item.name}}
+          - ${{item.price}}
           <button {{on "click" (fn this.cart.removeItem item.id)}}>
             Remove
           </button>
@@ -4719,29 +4692,25 @@ export class Stats extends Component {
 
   get average() {
     // No @cached needed if only accessed once in template
-    return this.args.items.length > 0
-      ? this.total / this.args.items.length
-      : 0;
+    return this.args.items.length > 0 ? this.total / this.args.items.length : 0;
   }
 
   get maxPrice() {
-    return Math.max(...this.args.items.map(item => item.price));
+    return Math.max(...this.args.items.map((item) => item.price));
   }
 
   @cached
   get sortedItems() {
     // @cached useful here as it's used by itemsWithTotal
-    return [...this.args.items].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
+    return [...this.args.items].sort((a, b) => a.name.localeCompare(b.name));
   }
 
   @cached
   get itemsWithTotal() {
     // @cached useful as accessed multiple times in {{#each}}
-    return this.sortedItems.map(item => ({
+    return this.sortedItems.map((item) => ({
       ...item,
-      total: item.price * item.quantity
+      total: item.price * item.quantity,
     }));
   }
 
@@ -4880,9 +4849,16 @@ import { partialApply } from '../helpers/partial-apply';
 // Usage
 import { transform } from '../helpers/transform';
 
+function filter(items) {
+  return items
+    .filter((item) => item.active)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .take(10).result;
+}
+
 <template>
   {{#let (transform @items) as |t|}}
-    {{#each t.filter((i) => i.active).sort((a, b) => a.name.localeCompare(b.name)).take(10).result as |item|}}
+    {{#each (filter t) as |item|}}
       <div>{{item.name}}</div>
     {{/each}}
   {{/let}}
@@ -5263,7 +5239,7 @@ class DataResource extends Resource {
 
 class DataDisplay extends Component {
   @resource data = DataResource.from(() => ({
-    url: this.args.url
+    url: this.args.url,
   }));
 
   <template>
@@ -5321,7 +5297,7 @@ export class ProductCard extends Component {
   formatPrice(price) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'USD',
     }).format(price);
   }
 
@@ -5341,7 +5317,7 @@ export class ProductCard extends Component {
 function formatPrice(price) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD'
+    currency: 'USD',
   }).format(price);
 }
 
@@ -5387,7 +5363,8 @@ function formatDate(date) {
 
 <template>
   <div class="timestamp">
-    Last updated: {{formatDate @lastUpdate}}
+    Last updated:
+    {{formatDate @lastUpdate}}
   </div>
 </template>
 ```
@@ -5399,7 +5376,7 @@ function formatDate(date) {
 function getInitials(name) {
   return name
     .split(' ')
-    .map(part => part[0])
+    .map((part) => part[0])
     .join('')
     .toUpperCase();
 }
@@ -5408,7 +5385,7 @@ function getBadgeColor(status) {
   const colors = {
     active: 'green',
     pending: 'yellow',
-    inactive: 'gray'
+    inactive: 'gray',
   };
   return colors[status] || 'gray';
 }
@@ -5439,7 +5416,7 @@ function calculateTotal(basePrice, taxAmount, quantity) {
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD'
+    currency: 'USD',
   }).format(amount);
 }
 
@@ -5481,7 +5458,8 @@ export function round(number, decimals = 2) {
 
 <template>
   <div class="stats">
-    Average: {{round (average @scores)}}
+    Average:
+    {{round (average @scores)}}
   </div>
 </template>
 ```
@@ -5647,9 +5625,7 @@ Use `{{#let}}` to compute expensive values once and reuse them in the template i
 // app/components/checkout.gjs
 <template>
   {{#let
-    (this.calculateTotal this.items)
-    (this.formatCurrency this.total)
-    (this.hasDiscount this.user)
+    (this.calculateTotal this.items) (this.formatCurrency this.total) (this.hasDiscount this.user)
     as |total formattedTotal showDiscount|
   }}
     <div class="checkout">
@@ -5887,12 +5863,14 @@ import { and, not } from 'ember-truth-helpers';
 
 class DynamicClasses extends Component {
   <template>
-    <div class={{concat
-      "card "
-      (ifHelper @isPremium "premium ")
-      (ifHelper (and @isNew (not @isRead)) "unread ")
-      @customClass
-    }}>
+    <div
+      class={{concat
+        "card "
+        (ifHelper @isPremium "premium ")
+        (ifHelper (and @isNew (not @isRead)) "unread ")
+        @customClass
+      }}
+    >
       <h3>{{@title}}</h3>
     </div>
   </template>
@@ -5915,19 +5893,18 @@ class UserProfileCard extends Component {
   };
 
   <template>
-    <div class={{concat
-      "profile-card "
-      (ifHelper @user.isPremium "premium ")
-      (ifHelper (and @user.isOnline (not @user.isAway)) "online ")
-    }}>
+    <div
+      class={{concat
+        "profile-card "
+        (ifHelper @user.isPremium "premium ")
+        (ifHelper (and @user.isOnline (not @user.isAway)) "online ")
+      }}
+    >
       <h2>{{concat @user.firstName " " @user.lastName}}</h2>
 
       {{#if (or (eq @user.role "admin") (eq @user.role "moderator"))}}
         <span class="badge">
-          {{get (hash
-            admin="Administrator"
-            moderator="Moderator"
-          ) @user.role}}
+          {{get (hash admin="Administrator" moderator="Moderator") @user.role}}
         </span>
       {{/if}}
 
@@ -5935,7 +5912,8 @@ class UserProfileCard extends Component {
         <div class="actions">
           {{#each (array "profile" "settings" "privacy") as |section|}}
             <button {{on "click" (fn this.updateField "activeSection" section)}}>
-              Edit {{section}}
+              Edit
+              {{section}}
             </button>
           {{/each}}
         </div>
@@ -6370,10 +6348,8 @@ Without abstracted test utilities:
 import { render, click } from '@ember/test-helpers';
 import { DataGrid } from 'my-library';
 
-test('sorting works', async function(assert) {
-  await render(<template>
-    <DataGrid @rows={{this.rows}} />
-  </template>);
+test('sorting works', async function (assert) {
+  await render(<template><DataGrid @rows={{this.rows}} /></template>);
 
   // Fragile: breaks if class names or structure change
   await click('.data-grid__header .sort-button[data-column="name"]');
@@ -6398,10 +6374,8 @@ import { render } from '@ember/test-helpers';
 import { DataGrid } from 'my-library';
 import { getDataGrid } from 'my-library/test-support';
 
-test('sorting works', async function(assert) {
-  await render(<template>
-    <DataGrid @rows={{this.rows}} @columns={{this.columns}} />
-  </template>);
+test('sorting works', async function (assert) {
+  await render(<template><DataGrid @rows={{this.rows}} @columns={{this.columns}} /></template>);
 
   const grid = getDataGrid();
 
@@ -6549,38 +6523,36 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
 import UserCard from 'my-app/components/user-card';
 
-module('Integration | Component | user-card', function(hooks) {
+module('Integration | Component | user-card', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it renders with arguments', async function(assert) {
+  test('it renders with arguments', async function (assert) {
     const user = { name: 'John Doe', email: 'john@example.com' };
 
     // ✅ Use template tag when passing arguments
-    await render(<template>
-      <UserCard @user={{user}} />
-    </template>);
+    await render(<template><UserCard @user={{user}} /></template>);
 
     assert.dom('[data-test-user-name]').hasText('John Doe');
   });
 
-  test('it renders with block content', async function(assert) {
+  test('it renders with block content', async function (assert) {
     // ✅ Use template tag when providing blocks
-    await render(<template>
-      <UserCard>
-        <:header>Custom Header</:header>
-        <:body>Custom Content</:body>
-      </UserCard>
-    </template>);
+    await render(
+      <template>
+        <UserCard>
+          <:header>Custom Header</:header>
+          <:body>Custom Content</:body>
+        </UserCard>
+      </template>,
+    );
 
     assert.dom('[data-test-header]').hasText('Custom Header');
     assert.dom('[data-test-body]').hasText('Custom Content');
   });
 
-  test('it renders with HTML attributes', async function(assert) {
+  test('it renders with HTML attributes', async function (assert) {
     // ✅ Use template tag when passing HTML attributes
-    await render(<template>
-      <UserCard class="featured" data-test-featured />
-    </template>);
+    await render(<template><UserCard class="featured" data-test-featured /></template>);
 
     assert.dom('[data-test-featured]').exists();
     assert.dom('[data-test-featured]').hasClass('featured');
@@ -6601,10 +6573,10 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, click } from '@ember/test-helpers';
 import Button from 'my-app/components/button';
 
-module('Integration | Component | button', function(hooks) {
+module('Integration | Component | button', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it renders default button', async function(assert) {
+  test('it renders default button', async function (assert) {
     // ✅ No args needed - use direct render
     await render(Button);
 
@@ -6612,16 +6584,18 @@ module('Integration | Component | button', function(hooks) {
     assert.dom('button').hasText('Click me');
   });
 
-  test('it renders with custom text', async function(assert) {
+  test('it renders with custom text', async function (assert) {
     // ✅ Needs block content - use template tag
-    await render(<template>
-      <Button>Submit Form</Button>
-    </template>);
+    await render(
+      <template>
+        <Button>Submit Form</Button>
+      </template>,
+    );
 
     assert.dom('button').hasText('Submit Form');
   });
 
-  test('it handles click action', async function(assert) {
+  test('it handles click action', async function (assert) {
     assert.expect(1);
 
     const handleClick = () => {
@@ -6629,18 +6603,22 @@ module('Integration | Component | button', function(hooks) {
     };
 
     // ✅ Needs argument - use template tag
-    await render(<template>
-      <Button @onClick={{handleClick}}>Click me</Button>
-    </template>);
+    await render(
+      <template>
+        <Button @onClick={{handleClick}}>Click me</Button>
+      </template>,
+    );
 
     await click('button');
   });
 
-  test('it applies variant styling', async function(assert) {
+  test('it applies variant styling', async function (assert) {
     // ✅ Needs argument - use template tag
-    await render(<template>
-      <Button @variant="primary">Primary Button</Button>
-    </template>);
+    await render(
+      <template>
+        <Button @variant="primary">Primary Button</Button>
+      </template>,
+    );
 
     assert.dom('button').hasClass('btn-primary');
   });
@@ -6656,21 +6634,19 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
 import Icon from 'my-app/components/icon';
 
-module('Integration | Component | icon', function(hooks) {
+module('Integration | Component | icon', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it renders default icon', async function(assert) {
+  test('it renders default icon', async function (assert) {
     // ✅ Template-only component with no args - use direct render
     await render(Icon);
 
     assert.dom('[data-test-icon]').exists();
   });
 
-  test('it renders specific icon', async function(assert) {
+  test('it renders specific icon', async function (assert) {
     // ✅ Needs @name argument - use template tag
-    await render(<template>
-      <Icon @name="check" @size="large" />
-    </template>);
+    await render(<template><Icon @name="check" @size="large" /></template>);
 
     assert.dom('[data-test-icon]').hasAttribute('data-icon', 'check');
     assert.dom('[data-test-icon]').hasClass('icon-large');
@@ -6713,25 +6689,29 @@ await render(Divider);
 await render(Logo);
 
 // ✅ Component with arguments from test context
-await render(<template>
-  <UserList @users={{this.users}} @onSelect={{this.handleSelect}} />
-</template>);
+await render(
+  <template><UserList @users={{this.users}} @onSelect={{this.handleSelect}} /></template>,
+);
 
 // ✅ Component with named blocks
-await render(<template>
-  <Modal>
-    <:header>Title</:header>
-    <:body>Content</:body>
-    <:footer><button>Close</button></:footer>
-  </Modal>
-</template>);
+await render(
+  <template>
+    <Modal>
+      <:header>Title</:header>
+      <:body>Content</:body>
+      <:footer><button>Close</button></:footer>
+    </Modal>
+  </template>,
+);
 
 // ✅ Component with splattributes
-await render(<template>
-  <Card class="highlighted" data-test-card role="article">
-    Card content
-  </Card>
-</template>);
+await render(
+  <template>
+    <Card class="highlighted" data-test-card role="article">
+      Card content
+    </Card>
+  </template>,
+);
 ```
 
 Using the appropriate render pattern keeps tests clean and expressive.
@@ -6753,10 +6733,10 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, find, click } from '@ember/test-helpers';
 import UserCard from 'my-app/components/user-card';
 
-module('Integration | Component | user-card', function(hooks) {
+module('Integration | Component | user-card', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it renders', async function(assert) {
+  test('it renders', async function (assert) {
     await render(<template><UserCard /></template>);
 
     // Using find() instead of qunit-dom
@@ -6775,30 +6755,29 @@ import { render, click } from '@ember/test-helpers';
 import { setupIntl } from 'ember-intl/test-support';
 import UserCard from 'my-app/components/user-card';
 
-module('Integration | Component | user-card', function(hooks) {
+module('Integration | Component | user-card', function (hooks) {
   setupRenderingTest(hooks);
   setupIntl(hooks);
 
-  test('it renders user information', async function(assert) {
+  test('it renders user information', async function (assert) {
     const user = {
       name: 'John Doe',
       email: 'john@example.com',
-      avatarUrl: '/avatar.jpg'
+      avatarUrl: '/avatar.jpg',
     };
 
-    await render(<template>
-      <UserCard @user={{user}} />
-    </template>);
+    await render(<template><UserCard @user={{user}} /></template>);
 
     // qunit-dom assertions
     assert.dom('[data-test-user-name]').hasText('John Doe');
     assert.dom('[data-test-user-email]').hasText('john@example.com');
-    assert.dom('[data-test-user-avatar]')
+    assert
+      .dom('[data-test-user-avatar]')
       .hasAttribute('src', '/avatar.jpg')
       .hasAttribute('alt', 'John Doe');
   });
 
-  test('it handles edit action', async function(assert) {
+  test('it handles edit action', async function (assert) {
     assert.expect(1);
 
     const user = { name: 'John Doe', email: 'john@example.com' };
@@ -6806,9 +6785,7 @@ module('Integration | Component | user-card', function(hooks) {
       assert.deepEqual(editedUser, user, 'Edit handler called with user');
     };
 
-    await render(<template>
-      <UserCard @user={{user}} @onEdit={{handleEdit}} />
-    </template>);
+    await render(<template><UserCard @user={{user}} @onEdit={{handleEdit}} /></template>);
 
     await click('[data-test-edit-button]');
   });
@@ -6825,27 +6802,29 @@ import { render, fillIn } from '@ember/test-helpers';
 import { trackedObject } from '@ember/reactive/collections';
 import SearchBox from 'my-app/components/search-box';
 
-module('Integration | Component | search-box', function(hooks) {
+module('Integration | Component | search-box', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it performs search', async function(assert) {
+  test('it performs search', async function (assert) {
     // Use trackedObject for reactive state in tests
     const state = trackedObject({
-      results: [] as string[]
+      results: [] as string[],
     });
 
     const handleSearch = (query: string) => {
       state.results = [`Result for ${query}`];
     };
 
-    await render(<template>
-      <SearchBox @onSearch={{handleSearch}} />
-      <ul data-test-results>
-        {{#each state.results as |result|}}
-          <li>{{result}}</li>
-        {{/each}}
-      </ul>
-    </template>);
+    await render(
+      <template>
+        <SearchBox @onSearch={{handleSearch}} />
+        <ul data-test-results>
+          {{#each state.results as |result|}}
+            <li>{{result}}</li>
+          {{/each}}
+        </ul>
+      </template>,
+    );
 
     await fillIn('[data-test-search-input]', 'ember');
 
@@ -6864,20 +6843,24 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, click } from '@ember/test-helpers';
 import AsyncButton from 'my-app/components/async-button';
 
-module('Integration | Component | async-button', function(hooks) {
+module('Integration | Component | async-button', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it shows loading state during task execution', async function(assert) {
+  test('it shows loading state during task execution', async function (assert) {
     let resolveTask;
     const onSave = () => {
-      return new Promise(resolve => { resolveTask = resolve; });
+      return new Promise((resolve) => {
+        resolveTask = resolve;
+      });
     };
 
-    await render(<template>
-      <AsyncButton @onSave={{onSave}}>
-        Save
-      </AsyncButton>
-    </template>);
+    await render(
+      <template>
+        <AsyncButton @onSave={{onSave}}>
+          Save
+        </AsyncButton>
+      </template>,
+    );
 
     // Trigger the task
     await click('[data-test-button]');
@@ -6988,27 +6971,31 @@ import { render, click } from '@ember/test-helpers';
 import a11yAudit from 'ember-a11y-testing/test-support/audit';
 import Modal from 'my-app/components/modal';
 
-module('Integration | Component | modal', function(hooks) {
+module('Integration | Component | modal', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it passes accessibility audit', async function(assert) {
-    await render(<template>
-      <Modal @isOpen={{true}} @title="Test Modal">
-        <p>Modal content</p>
-      </Modal>
-    </template>);
+  test('it passes accessibility audit', async function (assert) {
+    await render(
+      <template>
+        <Modal @isOpen={{true}} @title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      </template>,
+    );
 
     await a11yAudit();
     assert.ok(true, 'no a11y violations');
   });
 
-  test('it traps focus', async function(assert) {
-    await render(<template>
-      <Modal @isOpen={{true}}>
-        <button data-test-first>First</button>
-        <button data-test-last>Last</button>
-      </Modal>
-    </template>);
+  test('it traps focus', async function (assert) {
+    await render(
+      <template>
+        <Modal @isOpen={{true}}>
+          <button data-test-first>First</button>
+          <button data-test-last>Last</button>
+        </Modal>
+      </template>,
+    );
 
     assert.dom('[data-test-first]').isFocused();
 
@@ -7028,19 +7015,12 @@ import Component from '@glimmer/component';
 class UserProfile extends Component {
   <template>
     <div class="user-profile" data-test-user-profile>
-      <img
-        src={{@user.avatar}}
-        alt={{@user.name}}
-        data-test-avatar
-      />
+      <img src={{@user.avatar}} alt={{@user.name}} data-test-avatar />
       <h2 data-test-name>{{@user.name}}</h2>
       <p data-test-email>{{@user.email}}</p>
 
       {{#if @onEdit}}
-        <button
-          {{on "click" (fn @onEdit @user)}}
-          data-test-edit-button
-        >
+        <button {{on "click" (fn @onEdit @user)}} data-test-edit-button>
           Edit
         </button>
       {{/if}}
@@ -7328,10 +7308,10 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, click, waitFor } from '@ember/test-helpers';
 import DataLoader from 'my-app/components/data-loader';
 
-module('Integration | Component | data-loader', function(hooks) {
+module('Integration | Component | data-loader', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it loads data', async function(assert) {
+  test('it loads data', async function (assert) {
     await render(<template><DataLoader /></template>);
 
     await click('[data-test-load-button]');
@@ -7354,10 +7334,10 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, click, settled } from '@ember/test-helpers';
 import DataLoader from 'my-app/components/data-loader';
 
-module('Integration | Component | data-loader', function(hooks) {
+module('Integration | Component | data-loader', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it loads data', async function(assert) {
+  test('it loads data', async function (assert) {
     await render(<template><DataLoader /></template>);
 
     await click('[data-test-load-button]');
@@ -7445,10 +7425,10 @@ import { module, test } from 'qunit';
 import { setupTest } from 'ember-qunit';
 import { settled } from '@ember/test-helpers';
 
-module('Unit | Service | data-sync', function(hooks) {
+module('Unit | Service | data-sync', function (hooks) {
   setupTest(hooks);
 
-  test('it syncs data', async function(assert) {
+  test('it syncs data', async function (assert) {
     const service = this.owner.lookup('service:data-sync');
 
     // Start async operation
@@ -7781,8 +7761,7 @@ import { getPromiseState } from '@warp-drive/reactiveweb';
 class UserProfile extends Component {
   @cached
   get userData() {
-    const promise = fetch(`/api/users/${this.args.userId}`)
-      .then(r => r.json());
+    const promise = fetch(`/api/users/${this.args.userId}`).then((r) => r.json());
     return getPromiseState(promise);
   }
 
@@ -7817,10 +7796,7 @@ class Search extends Component {
   });
 
   <template>
-    <input
-      type="search"
-      {{on "input" (fn this.searchTask.perform (pick "target.value"))}}
-    />
+    <input type="search" {{on "input" (fn this.searchTask.perform (pick "target.value"))}} />
 
     {{! Use derived data from task state - no tracked properties needed }}
     {{#if this.searchTask.isRunning}}
@@ -7858,7 +7834,7 @@ class FormSubmit extends Component {
   submitTask = dropTask(async (formData) => {
     const response = await fetch('/api/save', {
       method: 'POST',
-      body: JSON.stringify(formData)
+      body: JSON.stringify(formData),
     });
     return response.json();
   });
@@ -7945,7 +7921,7 @@ class Bad extends Component {
   @tracked data = null;
 
   fetchTask = task(async () => {
-    this.data = await fetch('/api/data').then(r => r.json());
+    this.data = await fetch('/api/data').then((r) => r.json());
   });
 
   // template reads: {{this.data}}
@@ -7954,7 +7930,7 @@ class Bad extends Component {
 // AFTER (correct - using derived data from TaskInstance API)
 class Good extends Component {
   fetchTask = restartableTask(async () => {
-    return fetch('/api/data').then(r => r.json());
+    return fetch('/api/data').then((r) => r.json());
   });
 
   // template reads: {{this.fetchTask.lastSuccessful.value}}
@@ -7965,7 +7941,7 @@ class Good extends Component {
 class Better extends Component {
   @cached
   get data() {
-    return getPromiseState(fetch('/api/data').then(r => r.json()));
+    return getPromiseState(fetch('/api/data').then((r) => r.json()));
   }
 
   // template reads: {{#if this.data.isFulfilled}}{{this.data.value}}{{/if}}
@@ -8011,7 +7987,7 @@ class Search extends Component {
 
     try {
       const response = await fetch(`/api/search?q=${query}`, {
-        signal: controller.signal
+        signal: controller.signal,
       });
       this.results = await response.json();
     } catch (e) {
@@ -8117,7 +8093,7 @@ class FormActions extends Component {
   saveTask = dropTask(async (data) => {
     const response = await fetch('/api/save', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
     return response.json();
   });
@@ -8126,7 +8102,7 @@ class FormActions extends Component {
   processTask = enqueueTask(async (item) => {
     const response = await fetch('/api/process', {
       method: 'POST',
-      body: JSON.stringify(item)
+      body: JSON.stringify(item),
     });
     return response.json();
   });
@@ -8138,10 +8114,7 @@ class FormActions extends Component {
   });
 
   <template>
-    <button
-      {{on "click" (fn this.saveTask.perform @data)}}
-      disabled={{this.saveTask.isRunning}}
-    >
+    <button {{on "click" (fn this.saveTask.perform @data)}} disabled={{this.saveTask.isRunning}}>
       Save
     </button>
   </template>
@@ -8350,9 +8323,7 @@ import chart from '../modifiers/chart';
 // app/components/input-field.gjs
 import autofocus from '../modifiers/autofocus';
 
-<template>
-  <input {{autofocus}} type="text" />
-</template>
+<template><input {{autofocus}} type="text" /></template>
 ```
 
 **Use ember-resize-observer-modifier for resize handling:**
@@ -8406,7 +8377,7 @@ export default class TodoList extends Component {
   @action
   removeTodo(id) {
     // This also won't trigger a re-render!
-    const index = this.todos.findIndex(t => t.id === id);
+    const index = this.todos.findIndex((t) => t.id === id);
     this.todos.splice(index, 1);
   }
 

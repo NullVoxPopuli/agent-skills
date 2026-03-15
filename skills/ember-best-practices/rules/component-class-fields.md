@@ -66,7 +66,7 @@ class DataManager extends Component {
   @cached
   get currentUser() {
     const promise = this.store.request({
-      url: '/users/me'
+      url: '/users/me',
     });
     return getPromiseState(promise);
   }
@@ -107,8 +107,8 @@ class FormContainer extends Component {
     email: '',
     preferences: {
       newsletter: false,
-      notifications: true
-    }
+      notifications: true,
+    },
   });
 
   // Compose validation state
@@ -118,14 +118,12 @@ class FormContainer extends Component {
   @tracked ui = new TrackedObject({
     isSubmitting: false,
     isDirty: false,
-    showErrors: false
+    showErrors: false,
   });
 
   // Computed field based on composed state
   get isValid() {
-    return Object.keys(this.errors).length === 0 &&
-           this.formData.email &&
-           this.formData.firstName;
+    return Object.keys(this.errors).length === 0 && this.formData.email && this.formData.firstName;
   }
 
   get canSubmit() {
@@ -217,10 +215,7 @@ class PaginatedList extends Component {
       {{/each}}
 
       <div class="pagination">
-        <button
-          {{on "click" this.pagination.prevPage}}
-          disabled={{eq this.pagination.page 1}}
-        >
+        <button {{on "click" this.pagination.prevPage}} disabled={{eq this.pagination.page 1}}>
           Previous
         </button>
 
@@ -288,9 +283,7 @@ class SelectableList extends Component {
   selection = new SelectionState();
 
   get selectedItems() {
-    return this.args.items.filter(item =>
-      this.selection.isSelected(item.id)
-    );
+    return this.args.items.filter((item) => this.selection.isSelected(item.id));
   }
 
   <template>

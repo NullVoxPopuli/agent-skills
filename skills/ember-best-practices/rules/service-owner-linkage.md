@@ -223,9 +223,9 @@ function AnalyticsService() {
       // Send to analytics endpoint
       fetch('/analytics', {
         method: 'POST',
-        body: JSON.stringify(event)
+        body: JSON.stringify(event),
       });
-    }
+    },
   };
 }
 
@@ -300,7 +300,8 @@ class ShoppingCart extends Component {
 
       {{#each this.cart.items as |item|}}
         <div class="cart-item">
-          {{item.name}} - ${{item.price}}
+          {{item.name}}
+          - ${{item.price}}
           <button {{on "click" (fn this.cart.removeItem item.id)}}>
             Remove
           </button>

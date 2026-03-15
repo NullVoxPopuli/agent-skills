@@ -108,7 +108,10 @@ import UserCard from './user-card';
 
       <:footer as |u|>
         <div class="stats">
-          Posts: {{u.postCount}} | Followers: {{u.followers}}
+          Posts:
+          {{u.postCount}}
+          | Followers:
+          {{u.followers}}
         </div>
       </:footer>
     </UserCard>
@@ -151,11 +154,7 @@ class Cell extends Component {
 class DataTable extends Component {
   <template>
     <table class="data-table">
-      {{yield (hash
-        Header=HeaderCell
-        Row=Row
-        Cell=Cell
-      )}}
+      {{yield (hash Header=HeaderCell Row=Row Cell=Cell)}}
     </table>
   </template>
 }
@@ -211,13 +210,7 @@ class Dropdown extends Component {
     this.isOpen = false;
   }
 
-  <template>
-    {{yield (hash
-      isOpen=this.isOpen
-      toggle=this.toggle
-      close=this.close
-    )}}
-  </template>
+  <template>{{yield (hash isOpen=this.isOpen toggle=this.toggle close=this.close)}}</template>
 }
 ```
 
@@ -228,7 +221,8 @@ import Dropdown from './dropdown';
 <template>
   <Dropdown as |dd|>
     <button {{on "click" dd.toggle}}>
-      Menu {{if dd.isOpen "▲" "▼"}}
+      Menu
+      {{if dd.isOpen "▲" "▼"}}
     </button>
 
     {{#if dd.isOpen}}

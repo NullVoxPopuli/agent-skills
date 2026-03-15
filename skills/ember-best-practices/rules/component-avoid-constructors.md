@@ -38,7 +38,7 @@ class UserProfile extends Component {
     this.isLoading = true;
     try {
       this.data = await this.store.request({
-        url: `/users/${this.args.userId}`
+        url: `/users/${this.args.userId}`,
       });
     } catch (e) {
       this.error = e;

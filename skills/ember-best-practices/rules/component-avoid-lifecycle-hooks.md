@@ -40,7 +40,8 @@ class UserGreeting extends Component {
 
   <template>
     <div {{did-update this.updateDisplayName @user}}>
-      Hello, {{this.displayName}}
+      Hello,
+      {{this.displayName}}
     </div>
   </template>
 }
@@ -60,7 +61,8 @@ class UserGreeting extends Component {
 
   <template>
     <div>
-      Hello, {{this.displayName}}
+      Hello,
+      {{this.displayName}}
     </div>
   </template>
 }
@@ -77,17 +79,15 @@ class UserStats extends Component {
   @cached
   get sortedPosts() {
     // Expensive computation only runs when @posts changes
-    return [...this.args.posts].sort((a, b) =>
-      b.createdAt - a.createdAt
-    );
+    return [...this.args.posts].sort((a, b) => b.createdAt - a.createdAt);
   }
 
   @cached
   get statistics() {
     return {
       total: this.args.posts.length,
-      published: this.args.posts.filter(p => p.published).length,
-      drafts: this.args.posts.filter(p => !p.published).length
+      published: this.args.posts.filter((p) => p.published).length,
+      drafts: this.args.posts.filter((p) => !p.published).length,
     };
   }
 
@@ -187,7 +187,7 @@ class UserProfile extends Component {
     this.loading = true;
     try {
       const response = await fetch(`/api/users/${this.args.userId}`, {
-        signal: this.controller.signal
+        signal: this.controller.signal,
       });
       this.userData = await response.json();
     } finally {
