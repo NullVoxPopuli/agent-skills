@@ -90,12 +90,7 @@ class SignupForm extends Component {
   <template>
     <form {{on "submit" this.handleSubmit}}>
       {{! ✅ Browser handles validation automatically }}
-      <input
-        type="email"
-        name="email"
-        required
-        placeholder="email@example.com"
-      />
+      <input type="email" name="email" required placeholder="email@example.com" />
 
       <input
         type="password"
@@ -157,13 +152,7 @@ class ValidatedForm extends Component {
     <form {{on "submit" this.handleSubmit}}>
       <div>
         <label for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          name="email"
-          required
-          {{on "input" this.handleInput}}
-        />
+        <input id="email" type="email" name="email" required {{on "input" this.handleInput}} />
         {{#if (this.errors.get "email")}}
           <span class="error" role="alert">
             {{this.errors.get "email"}}
@@ -266,13 +255,7 @@ class PasswordMatchForm extends Component {
 
   <template>
     <form {{on "submit" this.handleSubmit}}>
-      <input
-        type="password"
-        name="password"
-        required
-        minlength="8"
-        placeholder="Password"
-      />
+      <input type="password" name="password" required minlength="8" placeholder="Password" />
 
       <input
         type="password"

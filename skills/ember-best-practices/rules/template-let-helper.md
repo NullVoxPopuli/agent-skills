@@ -61,9 +61,7 @@ Use `{{#let}}` to compute expensive values once and reuse them in the template i
 // app/components/checkout.gjs
 <template>
   {{#let
-    (this.calculateTotal this.items)
-    (this.formatCurrency this.total)
-    (this.hasDiscount this.user)
+    (this.calculateTotal this.items) (this.formatCurrency this.total) (this.hasDiscount this.user)
     as |total formattedTotal showDiscount|
   }}
     <div class="checkout">

@@ -48,7 +48,7 @@ export default class PostRoute extends Route {
     // Check cache first
     const cached = this.store.cache.peek({
       type: 'post',
-      id: params.post_id
+      id: params.post_id,
     });
 
     // Return cached if fresh (less than 5 minutes old)
@@ -59,14 +59,14 @@ export default class PostRoute extends Route {
     // Fetch fresh data
     return this.store.request({
       url: `/posts/${params.post_id}`,
-      options: { reload: true }
+      options: { reload: true },
     });
   }
 
   isCacheFresh(record) {
     const cacheTime = record.meta?.cachedAt || 0;
     const fiveMinutes = 5 * 60 * 1000;
-    return (Date.now() - cacheTime) < fiveMinutes;
+    return Date.now() - cacheTime < fiveMinutes;
   }
 
   <template>
@@ -163,17 +163,15 @@ export default class PostsRoute extends Route {
   @service store;
 
   queryParams = {
-    refresh: { refreshModel: true }
+    refresh: { refreshModel: true },
   };
 
   model(params) {
-    const options = params.refresh
-      ? { reload: true }
-      : { backgroundReload: true };
+    const options = params.refresh ? { reload: true } : { backgroundReload: true };
 
     return this.store.request({
       url: '/posts',
-      options
+      options,
     });
   }
 
@@ -211,7 +209,7 @@ export default class DashboardRoute extends Route {
     // Refresh in background
     this.store.request({
       url: '/dashboard',
-      options: { backgroundReload: true }
+      options: { backgroundReload: true },
     });
 
     return cached || this.store.request({ url: '/dashboard' });

@@ -27,10 +27,10 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, click, waitFor } from '@ember/test-helpers';
 import DataLoader from 'my-app/components/data-loader';
 
-module('Integration | Component | data-loader', function(hooks) {
+module('Integration | Component | data-loader', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it loads data', async function(assert) {
+  test('it loads data', async function (assert) {
     await render(<template><DataLoader /></template>);
 
     await click('[data-test-load-button]');
@@ -101,10 +101,10 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, click, settled } from '@ember/test-helpers';
 import DataLoader from 'my-app/components/data-loader';
 
-module('Integration | Component | data-loader', function(hooks) {
+module('Integration | Component | data-loader', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it loads data', async function(assert) {
+  test('it loads data', async function (assert) {
     await render(<template><DataLoader /></template>);
 
     await click('[data-test-load-button]');
@@ -221,10 +221,10 @@ import { module, test } from 'qunit';
 import { setupTest } from 'ember-qunit';
 import { settled } from '@ember/test-helpers';
 
-module('Unit | Service | data-sync', function(hooks) {
+module('Unit | Service | data-sync', function (hooks) {
   setupTest(hooks);
 
-  test('it syncs data', async function(assert) {
+  test('it syncs data', async function (assert) {
     const service = this.owner.lookup('service:data-sync');
 
     // Start async operation

@@ -9,12 +9,13 @@ A structured repository for creating and maintaining Ember.js Best Practices opt
   - `_template.md` - Template for creating new rules
   - `area-description.md` - Individual rule files
 - `metadata.json` - Document metadata (version, organization, abstract)
-- __`AGENTS.md`__ - Compiled output (generated)
-- __`SKILL.md`__ - Skill definition for Claude Code
+- **`AGENTS.md`** - Compiled output (generated)
+- **`SKILL.md`** - Skill definition for Claude Code
 
 ## Rule Categories
 
 Rules are organized by prefix:
+
 - `route-` for Route Loading and Data Fetching (Section 1)
 - `bundle-` for Build and Bundle Optimization (Section 2)
 - `component-` for Component and Reactivity (Section 3)
@@ -27,7 +28,7 @@ Rules are organized by prefix:
 
 Each rule file should follow this structure:
 
-```markdown
+````markdown
 ---
 title: Rule Title Here
 impact: MEDIUM
@@ -54,7 +55,7 @@ Brief explanation of the rule and why it matters.
 Optional explanatory text after examples.
 
 Reference: [Link](https://example.com)
-```
+````
 
 ## File Naming Convention
 

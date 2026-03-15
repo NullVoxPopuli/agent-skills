@@ -9,6 +9,7 @@
 // These commands can cause irreversible harm to a user's system.
 // Everything not in this map is implicitly allowed.
 // ---------------------------------------------------------------------------
+// prettier-ignore
 export const BLOCKED_COMMANDS: Readonly<Record<string, string>> = {
   rm: 'rm',                     // Deletes files — can cause permanent data loss
   sudo: 'sudo',                 // Privilege escalation — runs commands as root
@@ -43,24 +44,23 @@ export const BLOCKED_COMMANDS: Readonly<Record<string, string>> = {
 // Pre-compile one regex per blocked command.
 // Matches the bare command name OR a path-prefixed form (e.g. /bin/rm, ./rm).
 // The lookahead ensures we match whole words, not substrings like "framework".
-type BlockedCommand = keyof typeof BLOCKED_COMMANDS
+type BlockedCommand = keyof typeof BLOCKED_COMMANDS;
 
-export const BLOCKED_PATTERNS: ReadonlyArray<{ cmd: string; re: RegExp }> =
-  (Object.entries(BLOCKED_COMMANDS) as Array<[BlockedCommand, string]>).map(
-    ([cmd, tokenPattern]) => {
-      return {
-        cmd,
-        // Matches:  rm ...  |  /bin/rm ...  |  ./rm ...  |  ../bin/rm ...
-        re: new RegExp(`(?:^|[\\s|;&\`$(])(?:[./][\\w./-]*/)?${tokenPattern}(?=[\\s|;&\`$()><!]|$)`),
-      }
-    }
-  )
+export const BLOCKED_PATTERNS: ReadonlyArray<{ cmd: string; re: RegExp }> = (
+  Object.entries(BLOCKED_COMMANDS) as Array<[BlockedCommand, string]>
+).map(([cmd, tokenPattern]) => {
+  return {
+    cmd,
+    // Matches:  rm ...  |  /bin/rm ...  |  ./rm ...  |  ../bin/rm ...
+    re: new RegExp(`(?:^|[\\s|;&\`$(])(?:[./][\\w./-]*/)?${tokenPattern}(?=[\\s|;&\`$()><!]|$)`),
+  };
+});
 
 export interface Violation {
-  file: string
-  line: number
-  command: string
-  content: string
+  file: string;
+  line: number;
+  command: string;
+  content: string;
 }
 
 /**
@@ -70,20 +70,16 @@ export interface Violation {
  * may read and act on any text it encounters.
  * `lineOffset` is the 0-based line index of the first line in the parent file.
  */
-export function scanLines(
-  text: string,
-  filePath: string,
-  lineOffset: number
-): Violation[] {
-  const violations: Violation[] = []
-  const lines = text.split('\n')
+export function scanLines(text: string, filePath: string, lineOffset: number): Violation[] {
+  const violations: Violation[] = [];
+  const lines = text.split('\n');
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-    const trimmed = line.trim()
+    const line = lines[i];
+    const trimmed = line.trim();
 
     // Skip blank lines
-    if (!trimmed) continue
+    if (!trimmed) continue;
 
     for (const { cmd, re } of BLOCKED_PATTERNS) {
       if (re.test(line)) {
@@ -92,13 +88,13 @@ export function scanLines(
           line: lineOffset + i + 1,
           command: cmd,
           content: trimmed,
-        })
-        break // One violation per line is enough
+        });
+        break; // One violation per line is enough
       }
     }
   }
 
-  return violations
+  return violations;
 }
 
 /**
@@ -106,33 +102,31 @@ export function scanLines(
  * Returns an array of { code, startLine } where startLine is the 0-based
  * index of the first line of code content within the parent file.
  */
-export function extractBashBlocks(
-  markdown: string
-): Array<{ code: string; startLine: number }> {
-  const blocks: Array<{ code: string; startLine: number }> = []
-  const lines = markdown.split('\n')
-  let inBlock = false
-  let blockLines: string[] = []
-  let blockStart = 0
+export function extractBashBlocks(markdown: string): Array<{ code: string; startLine: number }> {
+  const blocks: Array<{ code: string; startLine: number }> = [];
+  const lines = markdown.split('\n');
+  let inBlock = false;
+  let blockLines: string[] = [];
+  let blockStart = 0;
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
+    const line = lines[i];
     if (!inBlock) {
       if (/^```(bash|sh|shell)\s*$/i.test(line.trim())) {
-        inBlock = true
-        blockLines = []
-        blockStart = i + 1 // content starts on next line (0-based)
+        inBlock = true;
+        blockLines = [];
+        blockStart = i + 1; // content starts on next line (0-based)
       }
     } else {
       if (/^```\s*$/.test(line.trim())) {
-        blocks.push({ code: blockLines.join('\n'), startLine: blockStart })
-        inBlock = false
-        blockLines = []
+        blocks.push({ code: blockLines.join('\n'), startLine: blockStart });
+        inBlock = false;
+        blockLines = [];
       } else {
-        blockLines.push(line)
+        blockLines.push(line);
       }
     }
   }
 
-  return blocks
+  return blocks;
 }

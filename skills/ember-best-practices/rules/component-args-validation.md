@@ -78,22 +78,19 @@ class DataTable extends Component {
   get columns() {
     assert(
       'DataTable requires @columns argument',
-      this.args.columns && Array.isArray(this.args.columns)
+      this.args.columns && Array.isArray(this.args.columns),
     );
 
     assert(
       '@columns must be an array of objects with "key" and "label" properties',
-      this.args.columns.every(col => col.key && col.label)
+      this.args.columns.every((col) => col.key && col.label),
     );
 
     return this.args.columns;
   }
 
   get rows() {
-    assert(
-      'DataTable requires @rows argument',
-      this.args.rows && Array.isArray(this.args.rows)
-    );
+    assert('DataTable requires @rows argument', this.args.rows && Array.isArray(this.args.rows));
 
     return this.args.rows;
   }

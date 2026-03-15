@@ -116,7 +116,7 @@ class SearchResults extends Component {
 
     try {
       const response = yield this.store.request({
-        url: `/search?q=${encodeURIComponent(query)}`
+        url: `/search?q=${encodeURIComponent(query)}`,
       });
       this.results = response.content;
     } catch (error) {

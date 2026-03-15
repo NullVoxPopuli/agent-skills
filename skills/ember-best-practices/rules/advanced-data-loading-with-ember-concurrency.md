@@ -59,8 +59,7 @@ import { getPromiseState } from '@warp-drive/reactiveweb';
 class UserProfile extends Component {
   @cached
   get userData() {
-    const promise = fetch(`/api/users/${this.args.userId}`)
-      .then(r => r.json());
+    const promise = fetch(`/api/users/${this.args.userId}`).then((r) => r.json());
     return getPromiseState(promise);
   }
 
@@ -95,10 +94,7 @@ class Search extends Component {
   });
 
   <template>
-    <input
-      type="search"
-      {{on "input" (fn this.searchTask.perform (pick "target.value"))}}
-    />
+    <input type="search" {{on "input" (fn this.searchTask.perform (pick "target.value"))}} />
 
     {{! Use derived data from task state - no tracked properties needed }}
     {{#if this.searchTask.isRunning}}
@@ -142,7 +138,7 @@ class FormSubmit extends Component {
   submitTask = dropTask(async (formData) => {
     const response = await fetch('/api/save', {
       method: 'POST',
-      body: JSON.stringify(formData)
+      body: JSON.stringify(formData),
     });
     return response.json();
   });
@@ -212,7 +208,7 @@ class Bad extends Component {
   @tracked data = null;
 
   fetchTask = task(async () => {
-    this.data = await fetch('/api/data').then(r => r.json());
+    this.data = await fetch('/api/data').then((r) => r.json());
   });
 
   // template reads: {{this.data}}
@@ -221,7 +217,7 @@ class Bad extends Component {
 // AFTER (correct - using derived data from TaskInstance API)
 class Good extends Component {
   fetchTask = restartableTask(async () => {
-    return fetch('/api/data').then(r => r.json());
+    return fetch('/api/data').then((r) => r.json());
   });
 
   // template reads: {{this.fetchTask.lastSuccessful.value}}
@@ -232,7 +228,7 @@ class Good extends Component {
 class Better extends Component {
   @cached
   get data() {
-    return getPromiseState(fetch('/api/data').then(r => r.json()));
+    return getPromiseState(fetch('/api/data').then((r) => r.json()));
   }
 
   // template reads: {{#if this.data.isFulfilled}}{{this.data.value}}{{/if}}

@@ -146,23 +146,23 @@ class DataAnalysis extends Component {
   // Level 1: Filter
   @cached
   get validData() {
-    return this.rawData.filter(item => item.value != null);
+    return this.rawData.filter((item) => item.value != null);
   }
 
   // Level 2: Transform (depends on validData)
   @cached
   get normalizedData() {
-    const max = Math.max(...this.validData.map(d => d.value));
-    return this.validData.map(item => ({
+    const max = Math.max(...this.validData.map((d) => d.value));
+    return this.validData.map((item) => ({
       ...item,
-      normalized: item.value / max
+      normalized: item.value / max,
     }));
   }
 
   // Level 2: Statistics (depends on validData)
   @cached
   get statistics() {
-    const values = this.validData.map(d => d.value);
+    const values = this.validData.map((d) => d.value);
     const sum = values.reduce((a, b) => a + b, 0);
     const mean = sum / values.length;
     const variance = values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length;
@@ -173,22 +173,22 @@ class DataAnalysis extends Component {
       mean,
       stdDev: Math.sqrt(variance),
       min: Math.min(...values),
-      max: Math.max(...values)
+      max: Math.max(...values),
     };
   }
 
   // Level 3: Depends on normalizedData and statistics
   @cached
   get outliers() {
-    const threshold = this.statistics.mean + (2 * this.statistics.stdDev);
-    return this.normalizedData.filter(item => item.value > threshold);
+    const threshold = this.statistics.mean + 2 * this.statistics.stdDev;
+    return this.normalizedData.filter((item) => item.value > threshold);
   }
 
   // Level 3: Depends on statistics
   get qualityScore() {
     const validRatio = this.validData.length / this.rawData.length;
     const outlierRatio = this.outliers.length / this.validData.length;
-    return (validRatio * 0.7) + ((1 - outlierRatio) * 0.3);
+    return validRatio * 0.7 + (1 - outlierRatio) * 0.3;
   }
 
   <template>
@@ -222,9 +222,9 @@ class FilteredList extends Component {
     if (!this.searchTerm) return this.args.items;
 
     const term = this.searchTerm.toLowerCase();
-    return this.args.items.filter(item =>
-      item.name.toLowerCase().includes(term) ||
-      item.description?.toLowerCase().includes(term)
+    return this.args.items.filter(
+      (item) =>
+        item.name.toLowerCase().includes(term) || item.description?.toLowerCase().includes(term),
     );
   }
 
@@ -233,9 +233,7 @@ class FilteredList extends Component {
   get categoryFiltered() {
     if (this.selectedCategory === 'all') return this.searchFiltered;
 
-    return this.searchFiltered.filter(item =>
-      item.category === this.selectedCategory
-    );
+    return this.searchFiltered.filter((item) => item.category === this.selectedCategory);
   }
 
   // Depends on categoryFiltered and sortDirection
@@ -244,9 +242,7 @@ class FilteredList extends Component {
     const items = [...this.categoryFiltered];
     const direction = this.sortDirection === 'asc' ? 1 : -1;
 
-    return items.sort((a, b) =>
-      direction * a.name.localeCompare(b.name)
-    );
+    return items.sort((a, b) => direction * a.name.localeCompare(b.name));
   }
 
   // Final result

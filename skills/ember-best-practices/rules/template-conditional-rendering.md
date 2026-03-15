@@ -78,15 +78,12 @@ import { cached } from '@glimmer/tracking';
 class UserCard extends Component {
   @cached
   get isActive() {
-    return this.args.user.status === 'active' &&
-           this.args.user.lastLoginDays < 30;
+    return this.args.user.status === 'active' && this.args.user.lastLoginDays < 30;
   }
 
   @cached
   get showActions() {
-    return this.args.canEdit &&
-           !this.args.user.locked &&
-           this.isActive;
+    return this.args.canEdit && !this.args.user.locked && this.isActive;
   }
 
   <template>
@@ -246,7 +243,7 @@ class DataResource extends Resource {
 
 class DataDisplay extends Component {
   @resource data = DataResource.from(() => ({
-    url: this.args.url
+    url: this.args.url,
   }));
 
   <template>

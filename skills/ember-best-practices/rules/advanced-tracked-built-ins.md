@@ -37,7 +37,7 @@ export default class TodoList extends Component {
   @action
   removeTodo(id) {
     // This also won't trigger a re-render!
-    const index = this.todos.findIndex(t => t.id === id);
+    const index = this.todos.findIndex((t) => t.id === id);
     this.todos.splice(index, 1);
   }
 
@@ -75,7 +75,7 @@ export default class TodoList extends Component {
   @action
   removeTodo(id) {
     // This also triggers re-render!
-    const index = this.todos.findIndex(t => t.id === id);
+    const index = this.todos.findIndex((t) => t.id === id);
     this.todos.splice(index, 1);
   }
 

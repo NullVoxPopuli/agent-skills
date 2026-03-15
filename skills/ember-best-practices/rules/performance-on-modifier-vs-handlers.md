@@ -174,11 +174,7 @@ export default class KeyboardNav extends Component {
   }
 
   <template>
-    <div
-      role="button"
-      tabindex="0"
-      {{on "keydown" this.handleKeyDown}}
-    >
+    <div role="button" tabindex="0" {{on "keydown" this.handleKeyDown}}>
       {{yield}}
     </div>
   </template>

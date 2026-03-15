@@ -7,5 +7,13 @@
         "disabled": false
       }
     }
+  },
+  // ============================================================================
+  // Save and formatting behavior
+  // ============================================================================
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }

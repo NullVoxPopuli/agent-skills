@@ -20,7 +20,7 @@ export class ProductCard extends Component {
   formatPrice(price) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'USD',
     }).format(price);
   }
 
@@ -40,7 +40,7 @@ export class ProductCard extends Component {
 function formatPrice(price) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD'
+    currency: 'USD',
   }).format(price);
 }
 
@@ -87,17 +87,13 @@ export class ProductList extends Component {
   @cached
   get sortedProducts() {
     // Expensive sort, accessed in template multiple times
-    return [...this.args.products].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
+    return [...this.args.products].sort((a, b) => a.name.localeCompare(b.name));
   }
 
   @cached
   get filteredProducts() {
     // Depends on sortedProducts - benefits from caching
-    return this.sortedProducts.filter(p =>
-      p.category === this.args.selectedCategory
-    );
+    return this.sortedProducts.filter((p) => p.category === this.args.selectedCategory);
   }
 
   <template>
@@ -120,7 +116,8 @@ function formatDate(date) {
 
 <template>
   <div class="timestamp">
-    Last updated: {{formatDate @lastUpdate}}
+    Last updated:
+    {{formatDate @lastUpdate}}
   </div>
 </template>
 ```
@@ -132,7 +129,7 @@ function formatDate(date) {
 function getInitials(name) {
   return name
     .split(' ')
-    .map(part => part[0])
+    .map((part) => part[0])
     .join('')
     .toUpperCase();
 }
@@ -141,7 +138,7 @@ function getBadgeColor(status) {
   const colors = {
     active: 'green',
     pending: 'yellow',
-    inactive: 'gray'
+    inactive: 'gray',
   };
   return colors[status] || 'gray';
 }
@@ -172,7 +169,7 @@ function calculateTotal(basePrice, taxAmount, quantity) {
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD'
+    currency: 'USD',
   }).format(amount);
 }
 
@@ -214,7 +211,8 @@ export function round(number, decimals = 2) {
 
 <template>
   <div class="stats">
-    Average: {{round (average @scores)}}
+    Average:
+    {{round (average @scores)}}
   </div>
 </template>
 ```

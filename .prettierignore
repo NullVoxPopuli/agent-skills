@@ -1,0 +1,13 @@
+# Generated skill artifacts
+skills/*/AGENTS.md
+skills/*.zip
+
+# Generated package artifacts
+packages/ember-best-practices-build/test-cases.json
+packages/ember-best-practices-agents-md-codemod/best-practices/
+
+# Temporary output
+**/tmp/
+
+# Lockfiles
+pnpm-lock.yaml

@@ -49,10 +49,8 @@ export class DataGrid extends Component {
 import { render, click } from '@ember/test-helpers';
 import { DataGrid } from 'my-library';
 
-test('sorting works', async function(assert) {
-  await render(<template>
-    <DataGrid @rows={{this.rows}} />
-  </template>);
+test('sorting works', async function (assert) {
+  await render(<template><DataGrid @rows={{this.rows}} /></template>);
 
   // Fragile: breaks if class names or structure change
   await click('.data-grid__header .sort-button[data-column="name"]');
@@ -100,8 +98,7 @@ export class DataGridTestHelper {
    * @returns {Array<string>} Row text content
    */
   getRows() {
-    return findAll('[data-test-row]', this.container)
-      .map(el => el.textContent.trim());
+    return findAll('[data-test-row]', this.container).map((el) => el.textContent.trim());
   }
 
   /**
@@ -154,10 +151,8 @@ import { render } from '@ember/test-helpers';
 import { DataGrid } from 'my-library';
 import { getDataGrid } from 'my-library/test-support';
 
-test('sorting works', async function(assert) {
-  await render(<template>
-    <DataGrid @rows={{this.rows}} @columns={{this.columns}} />
-  </template>);
+test('sorting works', async function (assert) {
+  await render(<template><DataGrid @rows={{this.rows}} @columns={{this.columns}} /></template>);
 
   const grid = getDataGrid();
 

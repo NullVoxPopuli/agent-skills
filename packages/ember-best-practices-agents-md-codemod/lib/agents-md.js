@@ -8,21 +8,21 @@
  * Key differences: no version detection, uses bundled content from this repo.
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** Directory name for best practices in user's project */
-export const DOCS_DIR_NAME = ".ember-best-practices";
+export const DOCS_DIR_NAME = '.ember-best-practices';
 
 /** Gitignore entry to add */
-const GITIGNORE_ENTRY = ".ember-best-practices/";
+const GITIGNORE_ENTRY = '.ember-best-practices/';
 
 /** Markers for injected content - allows safe re-runs */
-const START_MARKER = "<!-- EMBER-BEST-PRACTICES-AGENTS-MD-START -->";
-const END_MARKER = "<!-- EMBER-BEST-PRACTICES-AGENTS-MD-END -->";
+const START_MARKER = '<!-- EMBER-BEST-PRACTICES-AGENTS-MD-START -->';
+const END_MARKER = '<!-- EMBER-BEST-PRACTICES-AGENTS-MD-END -->';
 
 /**
  * Get the path to bundled best-practices content.
@@ -30,9 +30,9 @@ const END_MARKER = "<!-- EMBER-BEST-PRACTICES-AGENTS-MD-END -->";
  * When published, uses ./best-practices relative to package.
  */
 export function getBundledBestPracticesPath() {
-  const pkgRoot = path.join(__dirname, "..");
-  const monorepoPath = path.join(pkgRoot, "../../skills/ember-best-practices");
-  const bundledPath = path.join(pkgRoot, "best-practices");
+  const pkgRoot = path.join(__dirname, '..');
+  const monorepoPath = path.join(pkgRoot, '../../skills/ember-best-practices');
+  const bundledPath = path.join(pkgRoot, 'best-practices');
 
   if (fs.existsSync(monorepoPath)) {
     return monorepoPath;
@@ -45,8 +45,8 @@ export function getBundledBestPracticesPath() {
  */
 export function copyBestPractices(destDir) {
   const sourceDir = getBundledBestPracticesPath();
-  const rulesSource = path.join(sourceDir, "rules");
-  const rulesDest = path.join(destDir, "rules");
+  const rulesSource = path.join(sourceDir, 'rules');
+  const rulesDest = path.join(destDir, 'rules');
 
   if (!fs.existsSync(rulesSource)) {
     throw new Error(
@@ -62,22 +62,19 @@ export function copyBestPractices(destDir) {
 
   const entries = fs.readdirSync(rulesSource, { withFileTypes: true });
   for (const entry of entries) {
-    if (entry.name.startsWith("_") && entry.name !== "_sections.md") continue;
-    if (entry.name === "README.md") continue;
+    if (entry.name.startsWith('_') && entry.name !== '_sections.md') continue;
+    if (entry.name === 'README.md') continue;
     const srcPath = path.join(rulesSource, entry.name);
     const destPath = path.join(rulesDest, entry.name);
     if (entry.isDirectory()) {
       fs.cpSync(srcPath, destPath, { recursive: true });
-    } else if (entry.name.endsWith(".md")) {
+    } else if (entry.name.endsWith('.md')) {
       fs.copyFileSync(srcPath, destPath);
     }
   }
 
-  if (fs.existsSync(path.join(sourceDir, "metadata.json"))) {
-    fs.copyFileSync(
-      path.join(sourceDir, "metadata.json"),
-      path.join(destDir, "metadata.json"),
-    );
+  if (fs.existsSync(path.join(sourceDir, 'metadata.json'))) {
+    fs.copyFileSync(path.join(sourceDir, 'metadata.json'), path.join(destDir, 'metadata.json'));
   }
 }
 
@@ -90,13 +87,13 @@ export function collectDocFiles(dir) {
     .readdirSync(dir, { recursive: true })
     .filter(
       (f) =>
-        typeof f === "string" &&
-        f.endsWith(".md") &&
+        typeof f === 'string' &&
+        f.endsWith('.md') &&
         !/[/\\]index\.md$/i.test(f) &&
-        !f.startsWith("index."),
+        !f.startsWith('index.'),
     )
     .sort()
-    .map((f) => ({ relativePath: f.replace(/\\/g, "/") }));
+    .map((f) => ({ relativePath: f.replace(/\\/g, '/') }));
 }
 
 /**
@@ -105,13 +102,9 @@ export function collectDocFiles(dir) {
 function groupByDirectory(files) {
   const grouped = new Map();
   for (const filePath of files) {
-    const lastSlash = Math.max(
-      filePath.lastIndexOf("/"),
-      filePath.lastIndexOf("\\"),
-    );
-    const dir = lastSlash === -1 ? "." : filePath.slice(0, lastSlash);
-    const fileName =
-      lastSlash === -1 ? filePath : filePath.slice(lastSlash + 1);
+    const lastSlash = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
+    const dir = lastSlash === -1 ? '.' : filePath.slice(0, lastSlash);
+    const fileName = lastSlash === -1 ? filePath : filePath.slice(lastSlash + 1);
     const existing = grouped.get(dir);
     if (existing) {
       existing.push(fileName);
@@ -127,24 +120,22 @@ function groupByDirectory(files) {
  * Format matches Next.js agents-md for tool compatibility.
  */
 export function generateIndex(data) {
-  const { docsPath, files, outputFile = "AGENTS.md" } = data;
+  const { docsPath, files, outputFile = 'AGENTS.md' } = data;
   const parts = [];
 
-  parts.push("[Ember Best Practices Index]");
+  parts.push('[Ember Best Practices Index]');
   parts.push(`root: ${docsPath}`);
   parts.push(
-    "STOP. What you remember about Ember.js may be outdated. Always search docs and read before any Ember task.",
+    'STOP. What you remember about Ember.js may be outdated. Always search docs and read before any Ember task.',
   );
-  parts.push(
-    `If docs missing, run: npx ember-best-practices-agents-md --output ${outputFile}`,
-  );
+  parts.push(`If docs missing, run: npx ember-best-practices-agents-md --output ${outputFile}`);
 
   const grouped = groupByDirectory(files);
   for (const [dir, fileNames] of grouped) {
-    parts.push(`${dir}:{${fileNames.join(",")}}`);
+    parts.push(`${dir}:{${fileNames.join(',')}}`);
   }
 
-  return parts.join("|");
+  return parts.join('|');
 }
 
 function hasExistingIndex(content) {
@@ -165,27 +156,23 @@ export function injectIntoAgentsMd(agentsMdContent, indexContent) {
   if (hasExistingIndex(agentsMdContent)) {
     const startIdx = agentsMdContent.indexOf(START_MARKER);
     const endIdx = agentsMdContent.indexOf(END_MARKER) + END_MARKER.length;
-    return (
-      agentsMdContent.slice(0, startIdx) +
-      wrappedContent +
-      agentsMdContent.slice(endIdx)
-    );
+    return agentsMdContent.slice(0, startIdx) + wrappedContent + agentsMdContent.slice(endIdx);
   }
 
-  const separator = agentsMdContent.endsWith("\n") ? "\n" : "\n\n";
-  return agentsMdContent + separator + wrappedContent + "\n";
+  const separator = agentsMdContent.endsWith('\n') ? '\n' : '\n\n';
+  return agentsMdContent + separator + wrappedContent + '\n';
 }
 
 /**
  * Add .ember-best-practices/ to .gitignore if not already present.
  */
 export function ensureGitignoreEntry(cwd) {
-  const gitignorePath = path.join(cwd, ".gitignore");
+  const gitignorePath = path.join(cwd, '.gitignore');
   const entryRegex = /^\s*\.ember-best-practices(?:\/.*)?$/;
 
-  let content = "";
+  let content = '';
   if (fs.existsSync(gitignorePath)) {
-    content = fs.readFileSync(gitignorePath, "utf-8");
+    content = fs.readFileSync(gitignorePath, 'utf-8');
   }
 
   const hasEntry = content.split(/\r?\n/).some((line) => entryRegex.test(line));
@@ -194,13 +181,12 @@ export function ensureGitignoreEntry(cwd) {
     return { path: gitignorePath, updated: false, alreadyPresent: true };
   }
 
-  const needsNewline = content.length > 0 && !content.endsWith("\n");
-  const header = content.includes("# ember-best-practices-agents-md")
-    ? ""
-    : "# ember-best-practices-agents-md\n";
-  const newContent =
-    content + (needsNewline ? "\n" : "") + header + GITIGNORE_ENTRY + "\n";
+  const needsNewline = content.length > 0 && !content.endsWith('\n');
+  const header = content.includes('# ember-best-practices-agents-md')
+    ? ''
+    : '# ember-best-practices-agents-md\n';
+  const newContent = content + (needsNewline ? '\n' : '') + header + GITIGNORE_ENTRY + '\n';
 
-  fs.writeFileSync(gitignorePath, newContent, "utf-8");
+  fs.writeFileSync(gitignorePath, newContent, 'utf-8');
   return { path: gitignorePath, updated: true, alreadyPresent: false };
 }

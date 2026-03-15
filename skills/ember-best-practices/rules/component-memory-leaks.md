@@ -125,13 +125,15 @@ class ResizeAware extends Component {
   handleResize = () => {
     this.size = {
       width: window.innerWidth,
-      height: window.innerHeight
+      height: window.innerHeight,
     };
-  }
+  };
 
   <template>
     <div {{windowListener "resize" this.handleResize}}>
-      {{this.size.width}} x {{this.size.height}}
+      {{this.size.width}}
+      x
+      {{this.size.height}}
     </div>
   </template>
 }
@@ -162,7 +164,7 @@ class DataLoader extends Component {
   async loadData() {
     try {
       const response = await fetch('/api/data', {
-        signal: this.abortController.signal
+        signal: this.abortController.signal,
       });
       this.data = await response.json();
     } catch (error) {

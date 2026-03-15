@@ -16,7 +16,7 @@ This export guidance applies to `.gjs`/`.gts` component files only. If your app 
 
 ```handlebars
 {{! app/components/user-card.hbs - WRONG: Using .hbs file }}
-<div class="user-card">
+<div class='user-card'>
   {{@name}}
 </div>
 ```

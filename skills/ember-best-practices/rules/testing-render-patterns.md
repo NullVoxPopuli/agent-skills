@@ -74,38 +74,36 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
 import UserCard from 'my-app/components/user-card';
 
-module('Integration | Component | user-card', function(hooks) {
+module('Integration | Component | user-card', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it renders with arguments', async function(assert) {
+  test('it renders with arguments', async function (assert) {
     const user = { name: 'John Doe', email: 'john@example.com' };
 
     // ✅ Use template tag when passing arguments
-    await render(<template>
-      <UserCard @user={{user}} />
-    </template>);
+    await render(<template><UserCard @user={{user}} /></template>);
 
     assert.dom('[data-test-user-name]').hasText('John Doe');
   });
 
-  test('it renders with block content', async function(assert) {
+  test('it renders with block content', async function (assert) {
     // ✅ Use template tag when providing blocks
-    await render(<template>
-      <UserCard>
-        <:header>Custom Header</:header>
-        <:body>Custom Content</:body>
-      </UserCard>
-    </template>);
+    await render(
+      <template>
+        <UserCard>
+          <:header>Custom Header</:header>
+          <:body>Custom Content</:body>
+        </UserCard>
+      </template>,
+    );
 
     assert.dom('[data-test-header]').hasText('Custom Header');
     assert.dom('[data-test-body]').hasText('Custom Content');
   });
 
-  test('it renders with HTML attributes', async function(assert) {
+  test('it renders with HTML attributes', async function (assert) {
     // ✅ Use template tag when passing HTML attributes
-    await render(<template>
-      <UserCard class="featured" data-test-featured />
-    </template>);
+    await render(<template><UserCard class="featured" data-test-featured /></template>);
 
     assert.dom('[data-test-featured]').exists();
     assert.dom('[data-test-featured]').hasClass('featured');
@@ -122,10 +120,10 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, click } from '@ember/test-helpers';
 import Button from 'my-app/components/button';
 
-module('Integration | Component | button', function(hooks) {
+module('Integration | Component | button', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it renders default button', async function(assert) {
+  test('it renders default button', async function (assert) {
     // ✅ No args needed - use direct render
     await render(Button);
 
@@ -133,16 +131,18 @@ module('Integration | Component | button', function(hooks) {
     assert.dom('button').hasText('Click me');
   });
 
-  test('it renders with custom text', async function(assert) {
+  test('it renders with custom text', async function (assert) {
     // ✅ Needs block content - use template tag
-    await render(<template>
-      <Button>Submit Form</Button>
-    </template>);
+    await render(
+      <template>
+        <Button>Submit Form</Button>
+      </template>,
+    );
 
     assert.dom('button').hasText('Submit Form');
   });
 
-  test('it handles click action', async function(assert) {
+  test('it handles click action', async function (assert) {
     assert.expect(1);
 
     const handleClick = () => {
@@ -150,18 +150,22 @@ module('Integration | Component | button', function(hooks) {
     };
 
     // ✅ Needs argument - use template tag
-    await render(<template>
-      <Button @onClick={{handleClick}}>Click me</Button>
-    </template>);
+    await render(
+      <template>
+        <Button @onClick={{handleClick}}>Click me</Button>
+      </template>,
+    );
 
     await click('button');
   });
 
-  test('it applies variant styling', async function(assert) {
+  test('it applies variant styling', async function (assert) {
     // ✅ Needs argument - use template tag
-    await render(<template>
-      <Button @variant="primary">Primary Button</Button>
-    </template>);
+    await render(
+      <template>
+        <Button @variant="primary">Primary Button</Button>
+      </template>,
+    );
 
     assert.dom('button').hasClass('btn-primary');
   });
@@ -177,21 +181,19 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
 import Icon from 'my-app/components/icon';
 
-module('Integration | Component | icon', function(hooks) {
+module('Integration | Component | icon', function (hooks) {
   setupRenderingTest(hooks);
 
-  test('it renders default icon', async function(assert) {
+  test('it renders default icon', async function (assert) {
     // ✅ Template-only component with no args - use direct render
     await render(Icon);
 
     assert.dom('[data-test-icon]').exists();
   });
 
-  test('it renders specific icon', async function(assert) {
+  test('it renders specific icon', async function (assert) {
     // ✅ Needs @name argument - use template tag
-    await render(<template>
-      <Icon @name="check" @size="large" />
-    </template>);
+    await render(<template><Icon @name="check" @size="large" /></template>);
 
     assert.dom('[data-test-icon]').hasAttribute('data-icon', 'check');
     assert.dom('[data-test-icon]').hasClass('icon-large');
@@ -225,25 +227,29 @@ await render(Divider);
 await render(Logo);
 
 // ✅ Component with arguments from test context
-await render(<template>
-  <UserList @users={{this.users}} @onSelect={{this.handleSelect}} />
-</template>);
+await render(
+  <template><UserList @users={{this.users}} @onSelect={{this.handleSelect}} /></template>,
+);
 
 // ✅ Component with named blocks
-await render(<template>
-  <Modal>
-    <:header>Title</:header>
-    <:body>Content</:body>
-    <:footer><button>Close</button></:footer>
-  </Modal>
-</template>);
+await render(
+  <template>
+    <Modal>
+      <:header>Title</:header>
+      <:body>Content</:body>
+      <:footer><button>Close</button></:footer>
+    </Modal>
+  </template>,
+);
 
 // ✅ Component with splattributes
-await render(<template>
-  <Card class="highlighted" data-test-card role="article">
-    Card content
-  </Card>
-</template>);
+await render(
+  <template>
+    <Card class="highlighted" data-test-card role="article">
+      Card content
+    </Card>
+  </template>,
+);
 ```
 
 Using the appropriate render pattern keeps tests clean and expressive.

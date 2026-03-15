@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Lint skills files to ensure only allow-listed shell commands are used",
   "type": "module",
-  "packageManager": "pnpm@10.24.0",
   "scripts": {
     "lint": "node src/index.ts",
     "test": "vitest run"

@@ -14,12 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
-        with:
-          version: 10.24.0
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version-file: package.json
+          cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install
       - run: pnpm --filter ember-best-practices-build validate

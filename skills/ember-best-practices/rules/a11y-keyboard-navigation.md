@@ -77,9 +77,7 @@ class Dropdown extends Component {
   }
 
   moveFocus(direction) {
-    const items = Array.from(
-      document.querySelectorAll('[role="menuitem"] button')
-    );
+    const items = Array.from(document.querySelectorAll('[role="menuitem"] button'));
     const currentIndex = items.indexOf(document.activeElement);
     const nextIndex = (currentIndex + direction + items.length) % items.length;
     items[nextIndex]?.focus();
@@ -139,10 +137,7 @@ import FocusTrap from 'ember-focus-trap/components/focus-trap';
 
 <template>
   {{#if this.showModal}}
-    <FocusTrap
-      @isActive={{true}}
-      @initialFocus="#modal-title"
-    >
+    <FocusTrap @isActive={{true}} @initialFocus="#modal-title">
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <h2 id="modal-title">{{@title}}</h2>
         {{yield}}

@@ -196,9 +196,16 @@ export function transform(value) {
 // Usage
 import { transform } from '../helpers/transform';
 
+function filter(items) {
+  return items
+    .filter((item) => item.active)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .take(10).result;
+}
+
 <template>
   {{#let (transform @items) as |t|}}
-    {{#each t.filter((i) => i.active).sort((a, b) => a.name.localeCompare(b.name)).take(10).result as |item|}}
+    {{#each (filter t) as |item|}}
       <div>{{item.name}}</div>
     {{/each}}
   {{/let}}

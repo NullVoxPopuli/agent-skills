@@ -40,7 +40,7 @@ class Search extends Component {
 
     try {
       const response = await fetch(`/api/search?q=${query}`, {
-        signal: controller.signal
+        signal: controller.signal,
       });
       this.results = await response.json();
     } catch (e) {
@@ -146,7 +146,7 @@ class FormActions extends Component {
   saveTask = dropTask(async (data) => {
     const response = await fetch('/api/save', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
     return response.json();
   });
@@ -155,7 +155,7 @@ class FormActions extends Component {
   processTask = enqueueTask(async (item) => {
     const response = await fetch('/api/process', {
       method: 'POST',
-      body: JSON.stringify(item)
+      body: JSON.stringify(item),
     });
     return response.json();
   });
@@ -167,10 +167,7 @@ class FormActions extends Component {
   });
 
   <template>
-    <button
-      {{on "click" (fn this.saveTask.perform @data)}}
-      disabled={{this.saveTask.isRunning}}
-    >
+    <button {{on "click" (fn this.saveTask.perform @data)}} disabled={{this.saveTask.isRunning}}>
       Save
     </button>
   </template>
