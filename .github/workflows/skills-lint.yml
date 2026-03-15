@@ -7,6 +7,21 @@ on:
     branches: [main]
 
 jobs:
+  format:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install
+      - run: pnpm lint:format
+
   lint:
     runs-on: ubuntu-latest
     permissions:
@@ -16,8 +31,8 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
-          node-version: '24'
-          cache: 'pnpm'
+          node-version-file: package.json
+          cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install
       - run: pnpm --filter skills-lint test
